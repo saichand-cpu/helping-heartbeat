@@ -223,7 +223,7 @@ function RequestsPanel() {
   };
   useEffect(() => { load(); }, []);
 
-  const setStatus = async (id: string, status: string) => {
+  const setStatus = async (id: string, status: "completed" | "open" | "accepted" | "cancelled") => {
     await supabase.from("help_requests").update({ status }).eq("id", id);
     toast.success(`Marked ${status}`);
     load();

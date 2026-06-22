@@ -3,10 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/site/Logo";
 import { Button } from "@/components/ui/button";
 import {
-  LayoutDashboard, HeartHandshake, MessageCircle, User as UserIcon, LogOut, Moon, Sun, Plus,
+  LayoutDashboard, HeartHandshake, MessageCircle, User as UserIcon, LogOut, Moon, Sun, Plus, Shield,
 } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { useEffect, useState } from "react";
+import { useIsAdmin } from "@/hooks/use-role";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -18,7 +19,7 @@ export const Route = createFileRoute("/_authenticated")({
   component: AuthedLayout,
 });
 
-const nav = [
+const baseNav = [
   { to: "/dashboard" as const, label: "Dashboard", icon: LayoutDashboard },
   { to: "/requests" as const, label: "Requests", icon: HeartHandshake },
   { to: "/messages" as const, label: "Messages", icon: MessageCircle },
