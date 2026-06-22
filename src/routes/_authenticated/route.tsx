@@ -30,10 +30,15 @@ function AuthedLayout() {
   const { theme, toggle } = useTheme();
   const navigate = useNavigate();
   const [email, setEmail] = useState<string>("");
+  const { isAdmin } = useIsAdmin();
+  const nav = isAdmin
+    ? [...baseNav, { to: "/admin" as const, label: "Admin", icon: Shield }]
+    : baseNav;
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? ""));
   }, []);
+
 
   const signOut = async () => {
     await supabase.auth.signOut();
