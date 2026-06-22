@@ -14,7 +14,211 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      help_requests: {
+        Row: {
+          budget: number | null
+          category: Database["public"]["Enums"]["request_category"]
+          created_at: string
+          deadline: string | null
+          description: string
+          helper_id: string | null
+          id: string
+          image_url: string | null
+          location: string | null
+          requester_id: string
+          status: Database["public"]["Enums"]["request_status"]
+          title: string
+          updated_at: string
+          urgency: Database["public"]["Enums"]["urgency_level"]
+        }
+        Insert: {
+          budget?: number | null
+          category?: Database["public"]["Enums"]["request_category"]
+          created_at?: string
+          deadline?: string | null
+          description: string
+          helper_id?: string | null
+          id?: string
+          image_url?: string | null
+          location?: string | null
+          requester_id: string
+          status?: Database["public"]["Enums"]["request_status"]
+          title: string
+          updated_at?: string
+          urgency?: Database["public"]["Enums"]["urgency_level"]
+        }
+        Update: {
+          budget?: number | null
+          category?: Database["public"]["Enums"]["request_category"]
+          created_at?: string
+          deadline?: string | null
+          description?: string
+          helper_id?: string | null
+          id?: string
+          image_url?: string | null
+          location?: string | null
+          requester_id?: string
+          status?: Database["public"]["Enums"]["request_status"]
+          title?: string
+          updated_at?: string
+          urgency?: Database["public"]["Enums"]["urgency_level"]
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          read: boolean
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          full_name: string
+          id: string
+          interests: string[] | null
+          karma_points: number
+          languages: string[] | null
+          location: string | null
+          onboarded: boolean
+          role: Database["public"]["Enums"]["user_role"]
+          skills: string[] | null
+          updated_at: string
+          username: string | null
+          verified: boolean
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          full_name?: string
+          id: string
+          interests?: string[] | null
+          karma_points?: number
+          languages?: string[] | null
+          location?: string | null
+          onboarded?: boolean
+          role?: Database["public"]["Enums"]["user_role"]
+          skills?: string[] | null
+          updated_at?: string
+          username?: string | null
+          verified?: boolean
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          full_name?: string
+          id?: string
+          interests?: string[] | null
+          karma_points?: number
+          languages?: string[] | null
+          location?: string | null
+          onboarded?: boolean
+          role?: Database["public"]["Enums"]["user_role"]
+          skills?: string[] | null
+          updated_at?: string
+          username?: string | null
+          verified?: boolean
+        }
+        Relationships: []
+      }
+      request_offers: {
+        Row: {
+          created_at: string
+          helper_id: string
+          id: string
+          message: string | null
+          request_id: string
+          status: Database["public"]["Enums"]["offer_status"]
+        }
+        Insert: {
+          created_at?: string
+          helper_id: string
+          id?: string
+          message?: string | null
+          request_id: string
+          status?: Database["public"]["Enums"]["offer_status"]
+        }
+        Update: {
+          created_at?: string
+          helper_id?: string
+          id?: string
+          message?: string | null
+          request_id?: string
+          status?: Database["public"]["Enums"]["offer_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "request_offers_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "help_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number
+          request_id: string
+          reviewee_id: string
+          reviewer_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating: number
+          request_id: string
+          reviewee_id: string
+          reviewer_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          request_id?: string
+          reviewee_id?: string
+          reviewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "help_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +227,22 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      offer_status: "pending" | "accepted" | "declined" | "withdrawn"
+      request_category:
+        | "education"
+        | "medical"
+        | "food"
+        | "transport"
+        | "technology"
+        | "elder_care"
+        | "child_care"
+        | "jobs"
+        | "donations"
+        | "emergency"
+        | "other"
+      request_status: "open" | "accepted" | "completed" | "cancelled"
+      urgency_level: "low" | "normal" | "high" | "emergency"
+      user_role: "seeker" | "helper" | "both"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +369,24 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      offer_status: ["pending", "accepted", "declined", "withdrawn"],
+      request_category: [
+        "education",
+        "medical",
+        "food",
+        "transport",
+        "technology",
+        "elder_care",
+        "child_care",
+        "jobs",
+        "donations",
+        "emergency",
+        "other",
+      ],
+      request_status: ["open", "accepted", "completed", "cancelled"],
+      urgency_level: ["low", "normal", "high", "emergency"],
+      user_role: ["seeker", "helper", "both"],
+    },
   },
 } as const
