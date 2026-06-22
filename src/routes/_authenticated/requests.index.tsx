@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/requests")({
+export const Route = createFileRoute("/_authenticated/requests/")({
   component: RequestsBrowse,
 });
 
