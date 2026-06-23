@@ -72,36 +72,47 @@ function Dashboard() {
         </div>
       </motion.div>
 
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        {cards.map((c, i) => (
-          <motion.div key={c.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-            className="relative rounded-3xl border border-border bg-card p-5 overflow-hidden">
-            <div className={`absolute -top-8 -right-8 h-24 w-24 rounded-full bg-gradient-to-br ${c.color} opacity-20 blur-2xl`} />
-            <c.icon className="h-5 w-5 text-primary" />
-            <div className="mt-3 text-3xl font-bold">{c.value}</div>
-            <div className="text-xs text-muted-foreground">{c.label}</div>
-          </motion.div>
-        ))}
-      </div>
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList className="glass">
+          <TabsTrigger value="overview"><Sparkles className="h-4 w-4 mr-1" /> Overview</TabsTrigger>
+          <TabsTrigger value="match"><Brain className="h-4 w-4 mr-1" /> AI Smart Match</TabsTrigger>
+        </TabsList>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-3xl p-6 shadow-soft">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Sparkles className="h-4 w-4 text-primary" /> AI Suggestions
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+            {cards.map((c, i) => (
+              <motion.div key={c.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                className="relative rounded-3xl border border-border bg-card p-5 overflow-hidden">
+                <div className={`absolute -top-8 -right-8 h-24 w-24 rounded-full bg-gradient-to-br ${c.color} opacity-20 blur-2xl`} />
+                <c.icon className="h-5 w-5 text-primary" />
+                <div className="mt-3 text-3xl font-bold">{c.value}</div>
+                <div className="text-xs text-muted-foreground">{c.label}</div>
+              </motion.div>
+            ))}
           </div>
-          <h3 className="mt-2 text-xl font-semibold">Help someone nearby today</h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            Open requests matched to your skills appear in your feed. Tap "Offer help" to start a conversation.
-          </p>
-          <Link to="/requests" className="mt-4 inline-flex"><Button variant="outline" className="gap-1">Explore feed <ArrowRight className="h-4 w-4" /></Button></Link>
-        </motion.div>
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl p-6 bg-gradient-brand text-primary-foreground shadow-pop relative overflow-hidden">
-          <MessageCircle className="h-6 w-6" />
-          <h3 className="mt-2 text-xl font-semibold">{stats.unread} unread messages</h3>
-          <p className="text-sm opacity-90 mt-1">Keep the conversations going. Kindness compounds.</p>
-          <Link to="/messages" className="mt-4 inline-flex"><Button variant="secondary" className="gap-1">Open inbox <ArrowRight className="h-4 w-4" /></Button></Link>
-        </motion.div>
-      </div>
+
+          <div className="grid lg:grid-cols-2 gap-6">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-3xl p-6 shadow-soft">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Sparkles className="h-4 w-4 text-primary" /> Community
+              </div>
+              <h3 className="mt-2 text-xl font-semibold">Visit the global feed</h3>
+              <p className="text-sm text-muted-foreground mt-1">See updates, stories, and announcements from your community.</p>
+              <Link to="/feed" className="mt-4 inline-flex"><Button variant="outline" className="gap-1">Open feed <ArrowRight className="h-4 w-4" /></Button></Link>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl p-6 bg-gradient-brand text-primary-foreground shadow-pop relative overflow-hidden">
+              <MessageCircle className="h-6 w-6" />
+              <h3 className="mt-2 text-xl font-semibold">{stats.unread} unread messages</h3>
+              <p className="text-sm opacity-90 mt-1">Keep the conversations going. Kindness compounds.</p>
+              <Link to="/messages" className="mt-4 inline-flex"><Button variant="secondary" className="gap-1">Open inbox <ArrowRight className="h-4 w-4" /></Button></Link>
+            </motion.div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="match">
+          <SmartMatchPanel />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
