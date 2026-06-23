@@ -116,3 +116,79 @@ function Dashboard() {
     </div>
   );
 }
+
+type MatchResult = { request_id: string; title: string; category: string; urgency: string; score: number; reasons: string[] };
+
+function SmartMatchPanel() {
+  const run = useServerFn(smartMatch);
+  const [matches, setMatches] = useState<MatchResult[] | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const go = async () => {
+    setLoading(true);
+    try {
+      const res = await run();
+      setMatches(res as MatchResult[]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="glass rounded-3xl p-6 shadow-soft">
+      <div className="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Brain className="h-4 w-4 text-primary" /> AI Smart Match
+          </div>
+          <h3 className="text-xl font-semibold mt-1">Find people you're perfect to help</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Our AI scans open requests against your skills, interests, and bio to find the best matches.
+          </p>
+        </div>
+        <Button onClick={go} disabled={loading} className="bg-gradient-brand text-primary-foreground border-0 shadow-glow">
+          {loading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Sparkles className="h-4 w-4 mr-1" />}
+          {matches ? "Re-run match" : "Run smart match"}
+        </Button>
+      </div>
+
+      {loading && (
+        <div className="mt-5 space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
+        </div>
+      )}
+
+      {!loading && matches && matches.length === 0 && (
+        <div className="mt-6 text-sm text-muted-foreground text-center py-10">
+          No strong matches right now. Check back when new requests appear.
+        </div>
+      )}
+
+      {!loading && matches && matches.length > 0 && (
+        <div className="mt-5 grid md:grid-cols-2 gap-4">
+          {matches.map((m) => (
+            <motion.div key={m.request_id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+              className="rounded-2xl border border-border bg-card p-4 flex gap-4">
+              <div className="relative h-16 w-16 shrink-0">
+                <svg viewBox="0 0 36 36" className="h-16 w-16 -rotate-90">
+                  <circle cx="18" cy="18" r="15" fill="none" stroke="currentColor" className="text-muted opacity-30" strokeWidth="3" />
+                  <circle cx="18" cy="18" r="15" fill="none" stroke="currentColor" className="text-primary"
+                    strokeWidth="3" strokeDasharray={`${(m.score / 100) * 94.2} 94.2`} strokeLinecap="round" />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center text-sm font-bold">{m.score}%</div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold truncate">{m.title}</div>
+                <div className="text-xs text-muted-foreground">{m.category} · {m.urgency}</div>
+                <ul className="mt-2 text-xs space-y-1 text-muted-foreground">
+                  {m.reasons.map((r, i) => <li key={i}>• {r}</li>)}
+                </ul>
+                <Link to="/requests" className="inline-block mt-2 text-xs text-primary font-medium">Offer help →</Link>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
