@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      advertisements: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string
+          destination_url: string
+          id: string
+          image_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description?: string
+          destination_url: string
+          id?: string
+          image_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string
+          destination_url?: string
+          id?: string
+          image_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       help_requests: {
         Row: {
           budget: number | null
@@ -128,6 +161,94 @@ export type Database = {
         }
         Relationships: []
       }
+      post_comments: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          post_id: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          post_id: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_likes: {
+        Row: {
+          created_at: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      posts: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          image_url: string | null
+          is_announcement: boolean
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_announcement?: boolean
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_announcement?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       premium_plans: {
         Row: {
           created_at: string
@@ -179,6 +300,8 @@ export type Database = {
           languages: string[] | null
           location: string | null
           onboarded: boolean
+          premium_tier: string | null
+          premium_until: string | null
           role: Database["public"]["Enums"]["user_role"]
           skills: string[] | null
           updated_at: string
@@ -196,6 +319,8 @@ export type Database = {
           languages?: string[] | null
           location?: string | null
           onboarded?: boolean
+          premium_tier?: string | null
+          premium_until?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           skills?: string[] | null
           updated_at?: string
@@ -213,6 +338,8 @@ export type Database = {
           languages?: string[] | null
           location?: string | null
           onboarded?: boolean
+          premium_tier?: string | null
+          premium_until?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           skills?: string[] | null
           updated_at?: string
@@ -293,6 +420,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      time_capsules: {
+        Row: {
+          collected_karma: number
+          created_at: string
+          description: string
+          goal_karma: number
+          id: string
+          media: Json
+          owner_id: string
+          title: string
+          unlocked_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          collected_karma?: number
+          created_at?: string
+          description?: string
+          goal_karma: number
+          id?: string
+          media?: Json
+          owner_id: string
+          title: string
+          unlocked_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          collected_karma?: number
+          created_at?: string
+          description?: string
+          goal_karma?: number
+          id?: string
+          media?: Json
+          owner_id?: string
+          title?: string
+          unlocked_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
