@@ -486,6 +486,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      contribute_to_capsule: {
+        Args: { _amount: number; _capsule_id: string }
+        Returns: {
+          collected_karma: number
+          created_at: string
+          description: string
+          goal_karma: number
+          id: string
+          media: Json
+          owner_id: string
+          title: string
+          unlocked_at: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "time_capsules"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
