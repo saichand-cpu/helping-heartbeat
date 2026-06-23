@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Shield, Users, HeartHandshake, CreditCard, Banknote, Plus, Trash2, Save, Lock,
+  Shield, Users, HeartHandshake, CreditCard, Banknote, Plus, Trash2, Save, Lock, Megaphone,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -90,15 +90,17 @@ function AdminDashboard() {
       <StatsRow />
 
       <Tabs defaultValue="users" className="space-y-4">
-        <TabsList className="glass">
+        <TabsList className="glass flex-wrap h-auto">
           <TabsTrigger value="users"><Users className="h-4 w-4 mr-1" /> Users</TabsTrigger>
           <TabsTrigger value="requests"><HeartHandshake className="h-4 w-4 mr-1" /> Requests</TabsTrigger>
           <TabsTrigger value="plans"><CreditCard className="h-4 w-4 mr-1" /> Plans</TabsTrigger>
+          <TabsTrigger value="ads"><Megaphone className="h-4 w-4 mr-1" /> Ads</TabsTrigger>
           <TabsTrigger value="payment"><Banknote className="h-4 w-4 mr-1" /> Payment</TabsTrigger>
         </TabsList>
         <TabsContent value="users"><UsersPanel /></TabsContent>
         <TabsContent value="requests"><RequestsPanel /></TabsContent>
         <TabsContent value="plans"><PlansPanel /></TabsContent>
+        <TabsContent value="ads"><AdsPanel /></TabsContent>
         <TabsContent value="payment"><PaymentPanel /></TabsContent>
       </Tabs>
     </div>
