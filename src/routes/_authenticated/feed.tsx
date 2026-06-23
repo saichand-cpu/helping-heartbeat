@@ -131,7 +131,7 @@ function FeedPage() {
         author_id: me,
         body: body.trim(),
         image_url: imageUrl.trim() || null,
-        is_announcement: isAdmin && announce,
+        is_announcement: !!(isAdmin && announce),
       })
       .select()
       .single();
