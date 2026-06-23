@@ -1,11 +1,14 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useServerFn } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  HeartHandshake, Award, Clock, CheckCircle2, MessageCircle, Sparkles, Plus, ArrowRight,
+  HeartHandshake, Award, Clock, CheckCircle2, MessageCircle, Sparkles, Plus, ArrowRight, Brain, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+import { smartMatch } from "@/lib/ai-match.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
