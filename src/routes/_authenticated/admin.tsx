@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Shield, Users, HeartHandshake, CreditCard, Banknote, Plus, Trash2, Save, Lock,
+  Shield, Users, HeartHandshake, CreditCard, Banknote, Plus, Trash2, Save, Lock, Megaphone,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -90,15 +90,17 @@ function AdminDashboard() {
       <StatsRow />
 
       <Tabs defaultValue="users" className="space-y-4">
-        <TabsList className="glass">
+        <TabsList className="glass flex-wrap h-auto">
           <TabsTrigger value="users"><Users className="h-4 w-4 mr-1" /> Users</TabsTrigger>
           <TabsTrigger value="requests"><HeartHandshake className="h-4 w-4 mr-1" /> Requests</TabsTrigger>
           <TabsTrigger value="plans"><CreditCard className="h-4 w-4 mr-1" /> Plans</TabsTrigger>
+          <TabsTrigger value="ads"><Megaphone className="h-4 w-4 mr-1" /> Ads</TabsTrigger>
           <TabsTrigger value="payment"><Banknote className="h-4 w-4 mr-1" /> Payment</TabsTrigger>
         </TabsList>
         <TabsContent value="users"><UsersPanel /></TabsContent>
         <TabsContent value="requests"><RequestsPanel /></TabsContent>
         <TabsContent value="plans"><PlansPanel /></TabsContent>
+        <TabsContent value="ads"><AdsPanel /></TabsContent>
         <TabsContent value="payment"><PaymentPanel /></TabsContent>
       </Tabs>
     </div>
@@ -413,6 +415,101 @@ function PaymentPanel() {
       <Button onClick={save} className="bg-gradient-brand text-primary-foreground border-0">
         <Save className="h-4 w-4 mr-1" /> Save settings
       </Button>
+    </div>
+  );
+}
+
+type Ad = {
+  id: string;
+  title: string;
+  description: string;
+  destination_url: string;
+  image_url: string | null;
+  active: boolean;
+};
+
+function AdsPanel() {
+  const [ads, setAds] = useState<Ad[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState({ title: "", description: "", destination_url: "", image_url: "" });
+
+  const load = async () => {
+    setLoading(true);
+    const { data } = await supabase.from("advertisements").select("*").order("created_at", { ascending: false });
+    setAds((data ?? []) as Ad[]);
+    setLoading(false);
+  };
+  useEffect(() => { load(); }, []);
+
+  const publish = async () => {
+    if (!form.title.trim() || !form.destination_url.trim()) return toast.error("Title and URL required");
+    const { error } = await supabase.from("advertisements").insert({
+      title: form.title.trim(),
+      description: form.description.trim(),
+      destination_url: form.destination_url.trim(),
+      image_url: form.image_url.trim() || null,
+      active: true,
+    });
+    if (error) return toast.error(error.message);
+    setForm({ title: "", description: "", destination_url: "", image_url: "" });
+    toast.success("Ad published");
+    load();
+  };
+
+  const toggle = async (a: Ad) => {
+    await supabase.from("advertisements").update({ active: !a.active }).eq("id", a.id);
+    load();
+  };
+  const remove = async (id: string) => {
+    if (!confirm("Delete this ad?")) return;
+    await supabase.from("advertisements").delete().eq("id", id);
+    load();
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="glass rounded-2xl p-5 shadow-soft space-y-3 max-w-2xl">
+        <h3 className="font-semibold flex items-center gap-2"><Megaphone className="h-4 w-4" /> Create advertisement</h3>
+        <div>
+          <Label className="text-xs">Title</Label>
+          <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Support local kindness initiatives" />
+        </div>
+        <div>
+          <Label className="text-xs">Description</Label>
+          <Textarea rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+        </div>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div>
+            <Label className="text-xs">Destination URL</Label>
+            <Input value={form.destination_url} onChange={(e) => setForm({ ...form, destination_url: e.target.value })} placeholder="https://..." />
+          </div>
+          <div>
+            <Label className="text-xs">Image URL (optional)</Label>
+            <Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} />
+          </div>
+        </div>
+        <Button onClick={publish} className="bg-gradient-brand text-primary-foreground border-0">
+          <Plus className="h-4 w-4 mr-1" /> Publish ad
+        </Button>
+      </div>
+
+      {loading ? <Skeleton className="h-40 w-full" /> : (
+        <div className="glass rounded-2xl p-5 shadow-soft divide-y divide-border">
+          {ads.map((a) => (
+            <div key={a.id} className="flex items-center gap-3 py-3 flex-wrap">
+              {a.image_url && <img src={a.image_url} alt="" className="h-12 w-12 rounded-lg object-cover" />}
+              <div className="flex-1 min-w-0">
+                <div className="font-medium truncate">{a.title}</div>
+                <div className="text-xs text-muted-foreground truncate">{a.destination_url}</div>
+              </div>
+              <Badge variant={a.active ? "default" : "secondary"}>{a.active ? "Active" : "Inactive"}</Badge>
+              <Switch checked={a.active} onCheckedChange={() => toggle(a)} />
+              <Button size="sm" variant="ghost" onClick={() => remove(a.id)}><Trash2 className="h-4 w-4" /></Button>
+            </div>
+          ))}
+          {ads.length === 0 && <div className="text-sm text-muted-foreground py-6 text-center">No ads yet.</div>}
+        </div>
+      )}
     </div>
   );
 }
