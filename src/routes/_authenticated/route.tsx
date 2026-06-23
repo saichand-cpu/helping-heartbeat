@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/site/Logo";
 import { Button } from "@/components/ui/button";
 import {
-  LayoutDashboard, HeartHandshake, MessageCircle, User as UserIcon, LogOut, Moon, Sun, Plus, Shield,
+  LayoutDashboard, HeartHandshake, MessageCircle, User as UserIcon, LogOut, Moon, Sun, Plus, Shield, Newspaper, Trophy, Sparkles,
 } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { useEffect, useState } from "react";
@@ -21,8 +21,11 @@ export const Route = createFileRoute("/_authenticated")({
 
 const baseNav = [
   { to: "/dashboard" as const, label: "Dashboard", icon: LayoutDashboard },
+  { to: "/feed" as const, label: "Feed", icon: Newspaper },
   { to: "/requests" as const, label: "Requests", icon: HeartHandshake },
   { to: "/messages" as const, label: "Messages", icon: MessageCircle },
+  { to: "/capsules" as const, label: "Capsules", icon: Sparkles },
+  { to: "/leaderboard" as const, label: "Leaderboard", icon: Trophy },
   { to: "/profile" as const, label: "Profile", icon: UserIcon },
 ];
 
