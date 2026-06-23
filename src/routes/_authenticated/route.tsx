@@ -102,10 +102,10 @@ function AuthedLayout() {
 
         {/* mobile bottom nav */}
         <div className="lg:hidden fixed bottom-3 left-3 right-3 z-40">
-          <div className="glass rounded-2xl px-2 py-2 grid grid-cols-4 shadow-pop">
+          <div className="glass rounded-2xl px-2 py-2 flex overflow-x-auto gap-1 shadow-pop">
             {nav.map((n) => (
               <Link key={n.to} to={n.to} activeProps={{ className: "text-primary" }}
-                className="flex flex-col items-center gap-0.5 py-1.5 text-xs text-muted-foreground">
+                className="flex flex-col items-center gap-0.5 py-1.5 px-3 text-xs text-muted-foreground shrink-0">
                 <n.icon className="h-5 w-5" /> {n.label}
               </Link>
             ))}
