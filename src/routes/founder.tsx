@@ -65,9 +65,10 @@ function FounderPage() {
             <div className="aspect-square rounded-[2rem] glass shadow-pop p-1 rotate-3 hover:rotate-0 transition-transform duration-500">
               <div className="h-full w-full rounded-[1.7rem] bg-gradient-brand flex items-center justify-center text-primary-foreground">
                 <div className="text-center">
-                  <div className="mx-auto h-24 w-24 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-4xl font-bold">SL</div>
-                  <div className="mt-4 text-xl font-semibold">SaiChand L.</div>
+                  <div className="mx-auto h-24 w-24 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-4xl font-bold">LS</div>
+                  <div className="mt-4 text-xl font-semibold">L. Saichand</div>
                   <div className="text-sm opacity-90">Founder, HumanLink</div>
+                  <div className="text-xs opacity-75 mt-1">Hyderabad, India</div>
                 </div>
               </div>
             </div>
