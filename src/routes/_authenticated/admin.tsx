@@ -505,6 +505,24 @@ function AdsPanel() {
 
   return (
     <div className="space-y-4">
+      {/* Analytics summary */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          { label: "Impressions", value: totals.impressions, sub: `${totals.impressions7d} in 7d`, Icon: Eye },
+          { label: "Clicks", value: totals.clicks, sub: `${totals.clicks7d} in 7d`, Icon: MousePointerClick },
+          { label: "Overall CTR", value: `${overallCtr}%`, sub: "clicks / impressions", Icon: TrendingUp },
+          { label: "Active ads", value: ads.filter((a) => a.active).length, sub: `${ads.length} total`, Icon: Megaphone },
+        ].map((s) => (
+          <div key={s.label} className="glass rounded-2xl p-4 shadow-soft">
+            <div className="flex items-center justify-between text-xs text-muted-foreground uppercase tracking-wide">
+              {s.label} <s.Icon className="h-3.5 w-3.5" />
+            </div>
+            <div className="mt-1 text-2xl font-bold">{s.value}</div>
+            <div className="text-xs text-muted-foreground mt-0.5">{s.sub}</div>
+          </div>
+        ))}
+      </div>
+
       <div className="glass rounded-2xl p-5 shadow-soft space-y-3 max-w-2xl">
         <h3 className="font-semibold flex items-center gap-2"><Megaphone className="h-4 w-4" /> Create advertisement</h3>
         <div>
@@ -532,18 +550,38 @@ function AdsPanel() {
 
       {loading ? <Skeleton className="h-40 w-full" /> : (
         <div className="glass rounded-2xl p-5 shadow-soft divide-y divide-border">
-          {ads.map((a) => (
-            <div key={a.id} className="flex items-center gap-3 py-3 flex-wrap">
-              {a.image_url && <img src={a.image_url} alt="" className="h-12 w-12 rounded-lg object-cover" />}
-              <div className="flex-1 min-w-0">
-                <div className="font-medium truncate">{a.title}</div>
-                <div className="text-xs text-muted-foreground truncate">{a.destination_url}</div>
+          {ads.map((a) => {
+            const s = stats[a.id] ?? { impressions: 0, clicks: 0, impressions7d: 0, clicks7d: 0 };
+            const ctr = s.impressions ? ((s.clicks / s.impressions) * 100).toFixed(2) : "0.00";
+            return (
+              <div key={a.id} className="py-3 space-y-2">
+                <div className="flex items-center gap-3 flex-wrap">
+                  {a.image_url && <img src={a.image_url} alt="" className="h-12 w-12 rounded-lg object-cover" />}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">{a.title}</div>
+                    <div className="text-xs text-muted-foreground truncate">{a.destination_url}</div>
+                  </div>
+                  <Badge variant={a.active ? "default" : "secondary"}>{a.active ? "Active" : "Inactive"}</Badge>
+                  <Switch checked={a.active} onCheckedChange={() => toggle(a)} />
+                  <Button size="sm" variant="ghost" onClick={() => remove(a.id)}><Trash2 className="h-4 w-4" /></Button>
+                </div>
+                <div className="flex flex-wrap gap-2 text-xs pl-0 sm:pl-[60px]">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted/60">
+                    <Eye className="h-3 w-3" /> {s.impressions} <span className="text-muted-foreground">impressions</span>
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted/60">
+                    <MousePointerClick className="h-3 w-3" /> {s.clicks} <span className="text-muted-foreground">clicks</span>
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-primary">
+                    <TrendingUp className="h-3 w-3" /> {ctr}% CTR
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted/40 text-muted-foreground">
+                    7d: {s.impressions7d} / {s.clicks7d}
+                  </span>
+                </div>
               </div>
-              <Badge variant={a.active ? "default" : "secondary"}>{a.active ? "Active" : "Inactive"}</Badge>
-              <Switch checked={a.active} onCheckedChange={() => toggle(a)} />
-              <Button size="sm" variant="ghost" onClick={() => remove(a.id)}><Trash2 className="h-4 w-4" /></Button>
-            </div>
-          ))}
+            );
+          })}
           {ads.length === 0 && <div className="text-sm text-muted-foreground py-6 text-center">No ads yet.</div>}
         </div>
       )}
