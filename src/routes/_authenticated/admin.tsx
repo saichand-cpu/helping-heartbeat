@@ -13,6 +13,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Shield, Users, HeartHandshake, CreditCard, Banknote, Plus, Trash2, Save, Lock, Megaphone,
+  Eye, MousePointerClick, TrendingUp,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -428,16 +429,41 @@ type Ad = {
   active: boolean;
 };
 
+type AdStats = { impressions: number; clicks: number; impressions7d: number; clicks7d: number };
+
 function AdsPanel() {
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ title: "", description: "", destination_url: "", image_url: "" });
+  const [stats, setStats] = useState<Record<string, AdStats>>({});
 
   const load = async () => {
     setLoading(true);
     const { data } = await supabase.from("advertisements").select("*").order("created_at", { ascending: false });
-    setAds((data ?? []) as Ad[]);
+    const list = (data ?? []) as Ad[];
+    setAds(list);
     setLoading(false);
+
+    // Load analytics
+    const { data: events } = await supabase
+      .from("ad_events")
+      .select("ad_id, event_type, created_at");
+    const cutoff = Date.now() - 7 * 86400000;
+    const agg: Record<string, AdStats> = {};
+    for (const a of list) agg[a.id] = { impressions: 0, clicks: 0, impressions7d: 0, clicks7d: 0 };
+    for (const e of events ?? []) {
+      const s = agg[e.ad_id];
+      if (!s) continue;
+      const recent = new Date(e.created_at).getTime() >= cutoff;
+      if (e.event_type === "impression") {
+        s.impressions++;
+        if (recent) s.impressions7d++;
+      } else if (e.event_type === "click") {
+        s.clicks++;
+        if (recent) s.clicks7d++;
+      }
+    }
+    setStats(agg);
   };
   useEffect(() => { load(); }, []);
 
@@ -465,6 +491,17 @@ function AdsPanel() {
     await supabase.from("advertisements").delete().eq("id", id);
     load();
   };
+
+  const totals = Object.values(stats).reduce(
+    (acc, s) => ({
+      impressions: acc.impressions + s.impressions,
+      clicks: acc.clicks + s.clicks,
+      impressions7d: acc.impressions7d + s.impressions7d,
+      clicks7d: acc.clicks7d + s.clicks7d,
+    }),
+    { impressions: 0, clicks: 0, impressions7d: 0, clicks7d: 0 },
+  );
+  const overallCtr = totals.impressions ? ((totals.clicks / totals.impressions) * 100).toFixed(2) : "0.00";
 
   return (
     <div className="space-y-4">
