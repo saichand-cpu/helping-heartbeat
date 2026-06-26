@@ -388,11 +388,44 @@ function CommentThread({ postId, me }: { postId: string; me: string | null }) {
 }
 
 function AdCard({ ad }: { ad: Ad }) {
+  const ref = useRef<HTMLAnchorElement>(null);
+  const loggedRef = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || loggedRef.current) return;
+    const obs = new IntersectionObserver(async (entries) => {
+      if (entries[0].isIntersecting && !loggedRef.current) {
+        loggedRef.current = true;
+        obs.disconnect();
+        const { data } = await supabase.auth.getUser();
+        await supabase.from("ad_events").insert({
+          ad_id: ad.id,
+          event_type: "impression",
+          user_id: data.user?.id ?? null,
+        });
+      }
+    }, { threshold: 0.5 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [ad.id]);
+
+  const onClick = async () => {
+    const { data } = await supabase.auth.getUser();
+    void supabase.from("ad_events").insert({
+      ad_id: ad.id,
+      event_type: "click",
+      user_id: data.user?.id ?? null,
+    });
+  };
+
   return (
     <a
+      ref={ref}
       href={ad.destination_url}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={onClick}
       className="block rounded-3xl border border-dashed border-primary/40 bg-gradient-to-br from-primary/5 to-amber-500/5 p-5 hover:shadow-pop transition"
     >
       <div className="flex items-center justify-between mb-2">
