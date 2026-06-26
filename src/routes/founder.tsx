@@ -58,7 +58,7 @@ function FounderPage() {
             <p className="mt-6 text-lg text-muted-foreground max-w-2xl">
               Humanity becomes stronger when people help each other. HumanLink began the day that belief turned into action.
             </p>
-            <p className="mt-6 text-sm font-medium text-muted-foreground">— SaiChand L., Founder</p>
+            <p className="mt-6 text-sm font-medium text-muted-foreground">— L. Saichand, Founder · Hyderabad, India</p>
           </div>
 
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7, delay: 0.2 }} className="relative">
