@@ -8,10 +8,10 @@ import { Heart, Users, Shield, Sparkles, Target, Eye, ArrowRight, Quote } from "
 export const Route = createFileRoute("/founder")({
   head: () => ({
     meta: [
-      { title: "Founder Story — HumanLink" },
-      { name: "description", content: "How HumanLink began — a story of compassion, trust, and the belief that humanity becomes stronger when people help each other." },
-      { property: "og:title", content: "Founder Story — HumanLink" },
-      { property: "og:description", content: "Built by SaiChand L. to make helping people as simple as sending a message." },
+      { title: "Founder Story — HumanLink | L. Saichand, Hyderabad" },
+      { name: "description", content: "How HumanLink began — founded by L. Saichand in Hyderabad, India, on a simple belief that humanity becomes stronger when people help each other." },
+      { property: "og:title", content: "Founder Story — HumanLink | L. Saichand" },
+      { property: "og:description", content: "Built by L. Saichand in Hyderabad to make helping people as simple as sending a message." },
     ],
   }),
   component: FounderPage,
