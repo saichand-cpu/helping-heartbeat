@@ -121,7 +121,7 @@ function FounderPage() {
           <p className="text-xl md:text-2xl font-medium italic">
             "Our mission is to make helping people as simple as sending a message."
           </p>
-          <footer className="mt-4 text-sm text-muted-foreground">— SaiChand L., Founder of HumanLink</footer>
+          <footer className="mt-4 text-sm text-muted-foreground">— L. Saichand, Founder of HumanLink · Hyderabad, India</footer>
         </motion.blockquote>
       </section>
 
