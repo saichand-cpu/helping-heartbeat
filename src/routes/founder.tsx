@@ -8,10 +8,10 @@ import { Heart, Users, Shield, Sparkles, Target, Eye, ArrowRight, Quote } from "
 export const Route = createFileRoute("/founder")({
   head: () => ({
     meta: [
-      { title: "Founder Story — HumanLink" },
-      { name: "description", content: "How HumanLink began — a story of compassion, trust, and the belief that humanity becomes stronger when people help each other." },
-      { property: "og:title", content: "Founder Story — HumanLink" },
-      { property: "og:description", content: "Built by SaiChand L. to make helping people as simple as sending a message." },
+      { title: "Founder Story — HumanLink | L. Saichand, Hyderabad" },
+      { name: "description", content: "How HumanLink began — founded by L. Saichand in Hyderabad, India, on a simple belief that humanity becomes stronger when people help each other." },
+      { property: "og:title", content: "Founder Story — HumanLink | L. Saichand" },
+      { property: "og:description", content: "Built by L. Saichand in Hyderabad to make helping people as simple as sending a message." },
     ],
   }),
   component: FounderPage,
@@ -58,16 +58,17 @@ function FounderPage() {
             <p className="mt-6 text-lg text-muted-foreground max-w-2xl">
               Humanity becomes stronger when people help each other. HumanLink began the day that belief turned into action.
             </p>
-            <p className="mt-6 text-sm font-medium text-muted-foreground">— SaiChand L., Founder</p>
+            <p className="mt-6 text-sm font-medium text-muted-foreground">— L. Saichand, Founder · Hyderabad, India</p>
           </div>
 
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7, delay: 0.2 }} className="relative">
             <div className="aspect-square rounded-[2rem] glass shadow-pop p-1 rotate-3 hover:rotate-0 transition-transform duration-500">
               <div className="h-full w-full rounded-[1.7rem] bg-gradient-brand flex items-center justify-center text-primary-foreground">
                 <div className="text-center">
-                  <div className="mx-auto h-24 w-24 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-4xl font-bold">SL</div>
-                  <div className="mt-4 text-xl font-semibold">SaiChand L.</div>
+                  <div className="mx-auto h-24 w-24 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-4xl font-bold">LS</div>
+                  <div className="mt-4 text-xl font-semibold">L. Saichand</div>
                   <div className="text-sm opacity-90">Founder, HumanLink</div>
+                  <div className="text-xs opacity-75 mt-1">Hyderabad, India</div>
                 </div>
               </div>
             </div>
@@ -120,7 +121,7 @@ function FounderPage() {
           <p className="text-xl md:text-2xl font-medium italic">
             "Our mission is to make helping people as simple as sending a message."
           </p>
-          <footer className="mt-4 text-sm text-muted-foreground">— SaiChand L., Founder of HumanLink</footer>
+          <footer className="mt-4 text-sm text-muted-foreground">— L. Saichand, Founder of HumanLink · Hyderabad, India</footer>
         </motion.blockquote>
       </section>
 
