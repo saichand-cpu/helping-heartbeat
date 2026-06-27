@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
 import {
-  Plus, MapPin, Clock, AlertTriangle, Search, Heart,
+  Plus, MapPin, Clock, AlertTriangle, Search, Heart, Loader2,
   GraduationCap, Stethoscope, Utensils, Car, Laptop, Users, Baby, Briefcase, Gift, Siren, Sparkles,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -46,6 +47,48 @@ function RequestsBrowse() {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string>("all");
   const [loading, setLoading] = useState(true);
+  const [meId, setMeId] = useState<string | null>(null);
+  const [offering, setOffering] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setMeId(data.user?.id ?? null));
+  }, []);
+
+  const offerHelp = async (r: Request) => {
+    if (!meId) {
+      toast.error("Please sign in to offer help");
+      return;
+    }
+    if (r.requester_id === meId) {
+      toast.info("This is your own request");
+      navigate({ to: "/messages" });
+      return;
+    }
+    setOffering(r.id);
+    try {
+      const { error: offerErr } = await supabase
+        .from("request_offers")
+        .insert({ request_id: r.id, helper_id: meId, message: "I'd love to help with this." });
+      // Ignore duplicate-offer unique violations; still send a message
+      if (offerErr && offerErr.code !== "23505") throw offerErr;
+
+      const { error: msgErr } = await supabase.from("messages").insert({
+        sender_id: meId,
+        receiver_id: r.requester_id,
+        content: `Hi! I saw your request "${r.title}" and I'd love to help. When works for you?`,
+      });
+      if (msgErr) throw msgErr;
+
+      toast.success("Offer sent — opening chat");
+      navigate({ to: "/messages" });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not send offer");
+    } finally {
+      setOffering(null);
+    }
+  };
+
 
   useEffect(() => {
     (async () => {
@@ -122,8 +165,19 @@ function RequestsBrowse() {
                   <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {r.location || "Anywhere"}</span>
                   <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {new Date(r.created_at).toLocaleDateString()}</span>
                 </div>
-                <Button className="w-full mt-4 bg-gradient-brand text-primary-foreground border-0 shadow-glow" size="sm">
-                  Offer help
+                <Button
+                  onClick={() => offerHelp(r)}
+                  disabled={offering === r.id}
+                  className="w-full mt-4 bg-gradient-brand text-primary-foreground border-0 shadow-glow"
+                  size="sm"
+                >
+                  {offering === r.id ? (
+                    <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Sending…</>
+                  ) : r.requester_id === meId ? (
+                    "View your request"
+                  ) : (
+                    "Offer help"
+                  )}
                 </Button>
               </motion.div>
             );
