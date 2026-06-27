@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/site/Logo";
 import { Button } from "@/components/ui/button";
 import {
-  LayoutDashboard, HeartHandshake, MessageCircle, User as UserIcon, LogOut, Moon, Sun, Plus, Shield, Newspaper, Trophy, Sparkles,
+  LayoutDashboard, HeartHandshake, MessageCircle, User as UserIcon, LogOut, Moon, Sun, Plus, Shield, Newspaper, Trophy, Sparkles, BarChart3,
 } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { useEffect, useState } from "react";
@@ -35,7 +35,10 @@ function AuthedLayout() {
   const [email, setEmail] = useState<string>("");
   const { isAdmin } = useIsAdmin();
   const nav = isAdmin
-    ? [...baseNav, { to: "/admin" as const, label: "Admin", icon: Shield }]
+    ? [...baseNav,
+        { to: "/admin-metrics" as const, label: "Metrics", icon: BarChart3 },
+        { to: "/admin" as const, label: "Admin", icon: Shield },
+      ]
     : baseNav;
 
   useEffect(() => {
