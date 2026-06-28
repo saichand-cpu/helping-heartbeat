@@ -35,18 +35,19 @@ export function StoriesBar({ me }: { me: string | null }) {
 
   const load = async () => {
     setLoading(true);
-    const { data: rows } = await supabase
+    const { data: rowsRaw } = await (supabase as any)
       .from("stories")
       .select("*")
       .gt("expires_at", new Date().toISOString())
       .order("created_at", { ascending: true });
-    const ids = Array.from(new Set((rows ?? []).map((r) => r.author_id)));
+    const rows: StoryRow[] = (rowsRaw ?? []) as StoryRow[];
+    const ids = Array.from(new Set(rows.map((r) => r.author_id)));
     const { data: authors } = ids.length
       ? await supabase.from("profiles").select("id, full_name, avatar_url, incognito, premium_tier").in("id", ids)
       : { data: [] as any[] };
     const amap = new Map((authors ?? []).map((a: any) => [a.id, a]));
     const byAuthor = new Map<string, Bundle>();
-    for (const r of rows ?? []) {
+    for (const r of rows) {
       const b = byAuthor.get(r.author_id) ?? { author_id: r.author_id, author: amap.get(r.author_id), stories: [], hasNew: true };
       b.stories.push(r);
       byAuthor.set(r.author_id, b);
