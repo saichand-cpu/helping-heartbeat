@@ -283,14 +283,16 @@ function FeedPage() {
 }
 
 function PostCard({
-  post, me, onLike, onShare,
+  post, me, onLike, onShare, onDelete,
 }: {
   post: Post;
   me: string | null;
   onLike: () => void;
   onShare: () => void;
+  onDelete: () => void;
 }) {
   const [showComments, setShowComments] = useState(false);
+  const isOwner = me === post.author_id;
 
   const announcementClass = post.is_announcement
     ? "ring-2 ring-amber-400/70 shadow-[0_0_24px_-4px_rgba(245,158,11,0.6)] bg-gradient-to-br from-primary/[0.04] via-card to-amber-500/[0.04]"
