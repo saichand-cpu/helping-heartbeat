@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { VerifiedBadge } from "@/components/site/VerifiedBadge";
 import { toast } from "sonner";
 import {
-  Heart, MessageCircle, Share2, Send, Sparkles, Megaphone, Image as ImageIcon, ExternalLink, Loader2, Wand2, EyeOff,
+  Heart, MessageCircle, Share2, Send, Sparkles, Megaphone, Image as ImageIcon, ExternalLink, Loader2, Wand2, EyeOff, Trash2,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { writeCaption } from "@/lib/ai.functions";
