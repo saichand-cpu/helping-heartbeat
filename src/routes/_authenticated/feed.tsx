@@ -275,6 +275,13 @@ function FeedPage() {
         )}
         <div ref={sentinelRef} className="h-8" />
       </div>
+      <ShareSheet
+        open={!!shareFor}
+        onOpenChange={(v) => !v && setShareFor(null)}
+        url={shareFor ? `${window.location.origin}/feed#${shareFor.id}` : ""}
+        title="HumanLink"
+        text={shareFor?.body.slice(0, 120) ?? ""}
+      />
     </div>
   );
 }
