@@ -54,3 +54,42 @@ Respond ONLY with valid JSON. No markdown.`;
       urgency: parsed.urgency ?? "normal",
     };
   });
+
+const CaptionInput = z.object({
+  draft: z.string().max(2000).optional().default(""),
+  tone: z.enum(["warm", "celebratory", "informative", "urgent"]).optional().default("warm"),
+});
+
+export const writeCaption = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => CaptionInput.parse(input))
+  .handler(async ({ data }): Promise<{ caption: string }> => {
+    const apiKey = process.env.LOVABLE_API_KEY;
+    if (!apiKey) throw new Error("AI is not configured");
+
+    const system = `You are HUMI, the writing voice of HumanLink — a kindness-first community.
+Rewrite or expand the user's draft into a short feed post (2-4 sentences, max ~280 chars).
+Tone: ${data.tone}. Keep it human, warm, specific, and free of hashtags or emojis unless the draft already used them.
+If the draft is empty, invent a brief uplifting community update suitable for HumanLink.
+Return ONLY the post text — no quotes, no preamble, no markdown.`;
+
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Lovable-API-Key": apiKey },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: data.draft || "(empty draft — write something)" },
+        ],
+      }),
+    });
+
+    if (res.status === 402) throw new Error("AI credits exhausted. Please add credits.");
+    if (res.status === 429) throw new Error("Rate limited. Try again in a moment.");
+    if (!res.ok) throw new Error("AI request failed");
+
+    const json = await res.json();
+    const caption = (json.choices?.[0]?.message?.content ?? "").trim().replace(/^["']|["']$/g, "");
+    return { caption };
+  });
+
