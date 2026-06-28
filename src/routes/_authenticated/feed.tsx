@@ -11,8 +11,11 @@ import { Switch } from "@/components/ui/switch";
 import { VerifiedBadge } from "@/components/site/VerifiedBadge";
 import { toast } from "sonner";
 import {
-  Heart, MessageCircle, Share2, Send, Sparkles, Megaphone, Image as ImageIcon, ExternalLink,
+  Heart, MessageCircle, Share2, Send, Sparkles, Megaphone, Image as ImageIcon, ExternalLink, Loader2, Wand2, EyeOff,
 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { writeCaption } from "@/lib/ai.functions";
+import { displayIdentity } from "@/lib/identity";
 
 export const Route = createFileRoute("/_authenticated/feed")({
   component: FeedPage,
@@ -25,7 +28,7 @@ type Post = {
   image_url: string | null;
   is_announcement: boolean;
   created_at: string;
-  author?: { full_name: string; avatar_url: string | null; premium_tier: string | null };
+  author?: { id?: string; full_name: string; avatar_url: string | null; premium_tier: string | null; incognito?: boolean };
   like_count: number;
   comment_count: number;
   liked_by_me: boolean;
@@ -55,6 +58,8 @@ function FeedPage() {
   const [body, setBody] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [announce, setAnnounce] = useState(false);
+  const [improving, setImproving] = useState(false);
+  const captionFn = useServerFn(writeCaption);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setMe(data.user?.id ?? null));
@@ -81,7 +86,7 @@ function FeedPage() {
     const authorIds = Array.from(new Set(rows.map((r) => r.author_id)));
     const postIds = rows.map((r) => r.id);
     const [{ data: authors }, { data: likes }, { data: comments }, { data: myLikes }] = await Promise.all([
-      supabase.from("profiles").select("id, full_name, avatar_url, premium_tier").in("id", authorIds),
+      supabase.from("profiles").select("id, full_name, avatar_url, premium_tier, incognito").in("id", authorIds),
       supabase.from("post_likes").select("post_id").in("post_id", postIds),
       supabase.from("post_comments").select("post_id").in("post_id", postIds),
       me ? supabase.from("post_likes").select("post_id").in("post_id", postIds).eq("user_id", me) : Promise.resolve({ data: [] as any[] }),
@@ -136,7 +141,7 @@ function FeedPage() {
       .select()
       .single();
     if (error) return toast.error(error.message);
-    const { data: prof } = await supabase.from("profiles").select("full_name, avatar_url, premium_tier").eq("id", me).maybeSingle();
+    const { data: prof } = await supabase.from("profiles").select("id, full_name, avatar_url, premium_tier, incognito").eq("id", me).maybeSingle();
     setPosts((prev) => [
       { ...(data as any), author: prof as any, like_count: 0, comment_count: 0, liked_by_me: false },
       ...prev,
@@ -169,6 +174,19 @@ function FeedPage() {
     }
     await navigator.clipboard.writeText(url);
     toast.success("Link copied");
+  };
+
+  const writeWithHumi = async () => {
+    setImproving(true);
+    try {
+      const { caption } = await captionFn({ data: { draft: body, tone: "warm" } });
+      if (caption) setBody(caption);
+      toast.success("HUMI polished your draft");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not reach HUMI");
+    } finally {
+      setImproving(false);
+    }
   };
 
   return (
