@@ -16,6 +16,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiHumiChatRouteImport } from './routes/api/humi-chat'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedFeedRouteImport } from './routes/_authenticated/feed'
@@ -61,6 +62,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHumiChatRoute = ApiHumiChatRouteImport.update({
+  id: '/api/humi-chat',
+  path: '/api/humi-chat',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
@@ -144,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/feed': typeof AuthenticatedFeedRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/api/humi-chat': typeof ApiHumiChatRoute
   '/admin-dashboard/metrics': typeof AuthenticatedAdminDashboardMetricsRoute
   '/profile/$userId': typeof AuthenticatedProfileUserIdRoute
   '/requests/new': typeof AuthenticatedRequestsNewRoute
@@ -164,6 +171,7 @@ export interface FileRoutesByTo {
   '/feed': typeof AuthenticatedFeedRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/api/humi-chat': typeof ApiHumiChatRoute
   '/admin-dashboard/metrics': typeof AuthenticatedAdminDashboardMetricsRoute
   '/profile/$userId': typeof AuthenticatedProfileUserIdRoute
   '/requests/new': typeof AuthenticatedRequestsNewRoute
@@ -186,6 +194,7 @@ export interface FileRoutesById {
   '/_authenticated/feed': typeof AuthenticatedFeedRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/api/humi-chat': typeof ApiHumiChatRoute
   '/_authenticated/admin-dashboard/metrics': typeof AuthenticatedAdminDashboardMetricsRoute
   '/_authenticated/profile/$userId': typeof AuthenticatedProfileUserIdRoute
   '/_authenticated/requests/new': typeof AuthenticatedRequestsNewRoute
@@ -208,6 +217,7 @@ export interface FileRouteTypes {
     | '/feed'
     | '/messages'
     | '/profile'
+    | '/api/humi-chat'
     | '/admin-dashboard/metrics'
     | '/profile/$userId'
     | '/requests/new'
@@ -228,6 +238,7 @@ export interface FileRouteTypes {
     | '/feed'
     | '/messages'
     | '/profile'
+    | '/api/humi-chat'
     | '/admin-dashboard/metrics'
     | '/profile/$userId'
     | '/requests/new'
@@ -249,6 +260,7 @@ export interface FileRouteTypes {
     | '/_authenticated/feed'
     | '/_authenticated/messages'
     | '/_authenticated/profile'
+    | '/api/humi-chat'
     | '/_authenticated/admin-dashboard/metrics'
     | '/_authenticated/profile/$userId'
     | '/_authenticated/requests/new'
@@ -264,6 +276,7 @@ export interface RootRouteChildren {
   FounderRoute: typeof FounderRoute
   LeaderboardRoute: typeof LeaderboardRoute
   PricingRoute: typeof PricingRoute
+  ApiHumiChatRoute: typeof ApiHumiChatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -315,6 +328,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/humi-chat': {
+      id: '/api/humi-chat'
+      path: '/api/humi-chat'
+      fullPath: '/api/humi-chat'
+      preLoaderRoute: typeof ApiHumiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/profile': {
@@ -455,6 +475,7 @@ const rootRouteChildren: RootRouteChildren = {
   FounderRoute: FounderRoute,
   LeaderboardRoute: LeaderboardRoute,
   PricingRoute: PricingRoute,
+  ApiHumiChatRoute: ApiHumiChatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
