@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/site/Logo";
 import { Button } from "@/components/ui/button";
 import {
-  LayoutDashboard, HeartHandshake, MessageCircle, User as UserIcon, LogOut, Moon, Sun, Plus, Shield, Newspaper, Trophy, Sparkles, BarChart3, Crown,
+  LayoutDashboard, HeartHandshake, MessageCircle, User as UserIcon, LogOut, Moon, Sun, Plus, Shield, Newspaper, Trophy, Sparkles, BarChart3, Crown, Home,
 } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { useEffect, useState } from "react";
