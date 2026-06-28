@@ -4,9 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { CreditCard, Smartphone, ShieldCheck, Loader2, CheckCircle2 } from "lucide-react";
+import { CreditCard, Smartphone, ShieldCheck, Loader2, CheckCircle2, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useIsAdmin } from "@/hooks/use-role";
 
 type Plan = {
   id: string;
@@ -29,6 +30,7 @@ export function MockPaymentModal({
   const [stage, setStage] = useState<"form" | "processing" | "done">("form");
   const [card, setCard] = useState({ number: "4242 4242 4242 4242", name: "", exp: "12/29", cvc: "123" });
   const [upi, setUpi] = useState("you@upi");
+  const { isAdmin } = useIsAdmin();
 
   const reset = () => setStage("form");
 
@@ -96,7 +98,19 @@ export function MockPaymentModal({
         </div>
 
         <div className="p-6">
-          {stage === "form" && (
+          {stage === "form" && isAdmin && (
+            <div className="py-6 flex flex-col items-center gap-3 text-center">
+              <div className="h-14 w-14 rounded-full bg-amber-400/15 flex items-center justify-center">
+                <Crown className="h-7 w-7 text-amber-500" />
+              </div>
+              <div className="font-bold text-lg">God-mode active</div>
+              <p className="text-sm text-muted-foreground max-w-xs">
+                As an administrator you already have permanent Pro access — every paywall, ad-credit limit, and tier gate is bypassed. No charge needed.
+              </p>
+              <Button onClick={() => onOpenChange(false)} variant="outline" className="mt-2">Close</Button>
+            </div>
+          )}
+          {stage === "form" && !isAdmin && (
             <Tabs defaultValue="card">
               <TabsList className="grid grid-cols-2 w-full">
                 <TabsTrigger value="card"><CreditCard className="h-4 w-4 mr-1" />Card</TabsTrigger>
