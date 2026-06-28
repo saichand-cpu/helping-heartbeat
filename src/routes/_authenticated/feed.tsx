@@ -296,7 +296,15 @@ function PostCard({
   onDelete: () => void;
 }) {
   const [showComments, setShowComments] = useState(false);
+  const [resolved, setResolved] = useState<string | null>(null);
   const isOwner = me === post.author_id;
+  const isVideo = !!post.image_url && /\.(mp4|webm|mov)(\?|$)/i.test(post.image_url);
+
+  useEffect(() => {
+    let alive = true;
+    resolveMediaUrl(post.image_url).then((u) => { if (alive) setResolved(u); });
+    return () => { alive = false; };
+  }, [post.image_url]);
 
   const announcementClass = post.is_announcement
     ? "ring-2 ring-amber-400/70 shadow-[0_0_24px_-4px_rgba(245,158,11,0.6)] bg-gradient-to-br from-primary/[0.04] via-card to-amber-500/[0.04]"
@@ -343,8 +351,10 @@ function PostCard({
         ) : Header;
       })()}
       <p className="whitespace-pre-wrap text-sm leading-relaxed">{post.body}</p>
-      {post.image_url && (
-        <img src={post.image_url} alt="" className="mt-3 w-full rounded-2xl border border-border max-h-[480px] object-cover" />
+      {resolved && (
+        isVideo
+          ? <video src={resolved} controls className="mt-3 w-full rounded-2xl border border-border max-h-[480px]" />
+          : <img src={resolved} alt="" className="mt-3 w-full rounded-2xl border border-border max-h-[480px] object-cover" />
       )}
       <div className="mt-4 flex items-center gap-1 text-sm">
         <Button variant="ghost" size="sm" onClick={onLike} className={post.liked_by_me ? "text-red-500" : "text-muted-foreground"}>
