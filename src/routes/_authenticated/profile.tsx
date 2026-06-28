@@ -33,6 +33,7 @@ function ProfilePage() {
     role: "both",
     skills: "",
     languages: "",
+    phone: "",
     karma_points: 0,
     verified: false,
     incognito: false,
