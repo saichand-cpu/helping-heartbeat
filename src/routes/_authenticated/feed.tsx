@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { VerifiedBadge } from "@/components/site/VerifiedBadge";
 import { toast } from "sonner";
 import {
-  Heart, MessageCircle, Share2, Send, Sparkles, Megaphone, Image as ImageIcon, ExternalLink, Loader2, Wand2, EyeOff,
+  Heart, MessageCircle, Share2, Send, Sparkles, Megaphone, Image as ImageIcon, ExternalLink, Loader2, Wand2, EyeOff, Trash2,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { writeCaption } from "@/lib/ai.functions";
@@ -246,7 +246,19 @@ function FeedPage() {
       <div className="space-y-4">
         {posts.map((p, i) => (
           <div key={p.id}>
-            <PostCard post={p} me={me} onLike={() => toggleLike(p)} onShare={() => share(p)} />
+            <PostCard
+              post={p}
+              me={me}
+              onLike={() => toggleLike(p)}
+              onShare={() => share(p)}
+              onDelete={async () => {
+                if (!confirm("Delete this post?")) return;
+                const { error } = await supabase.from("posts").delete().eq("id", p.id);
+                if (error) return toast.error(error.message);
+                setPosts((prev) => prev.filter((x) => x.id !== p.id));
+                toast.success("Post deleted");
+              }}
+            />
             {ads.length > 0 && (i + 1) % 6 === 0 && (
               <div className="mt-4">
                 <AdCard ad={ads[Math.floor(i / 6) % ads.length]} />
@@ -271,14 +283,16 @@ function FeedPage() {
 }
 
 function PostCard({
-  post, me, onLike, onShare,
+  post, me, onLike, onShare, onDelete,
 }: {
   post: Post;
   me: string | null;
   onLike: () => void;
   onShare: () => void;
+  onDelete: () => void;
 }) {
   const [showComments, setShowComments] = useState(false);
+  const isOwner = me === post.author_id;
 
   const announcementClass = post.is_announcement
     ? "ring-2 ring-amber-400/70 shadow-[0_0_24px_-4px_rgba(245,158,11,0.6)] bg-gradient-to-br from-primary/[0.04] via-card to-amber-500/[0.04]"
@@ -298,9 +312,10 @@ function PostCard({
       )}
       {(() => {
         const id = displayIdentity({ ...post.author, id: post.author_id }, me);
-        return (
+        const clickable = !id.isIncognito && post.author_id !== me;
+        const Header = (
           <div className="flex items-center gap-3 mb-3">
-            <div className="h-10 w-10 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground text-sm font-bold">
+            <div className="h-10 w-10 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground text-sm font-bold overflow-hidden">
               {id.isIncognito ? (
                 <EyeOff className="h-4 w-4" />
               ) : id.avatar_url ? (
@@ -319,6 +334,9 @@ function PostCard({
             </div>
           </div>
         );
+        return clickable ? (
+          <Link to="/profile/$userId" params={{ userId: post.author_id }} className="block hover:opacity-90">{Header}</Link>
+        ) : Header;
       })()}
       <p className="whitespace-pre-wrap text-sm leading-relaxed">{post.body}</p>
       {post.image_url && (
@@ -334,6 +352,11 @@ function PostCard({
         <Button variant="ghost" size="sm" onClick={onShare} className="text-muted-foreground ml-auto">
           <Share2 className="h-4 w-4" />
         </Button>
+        {isOwner && (
+          <Button variant="ghost" size="sm" onClick={onDelete} className="text-muted-foreground hover:text-destructive" aria-label="Delete post">
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
       </div>
       <AnimatePresence>
         {showComments && (

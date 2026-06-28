@@ -26,6 +26,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedRequestsIndexRouteImport } from './routes/_authenticated/requests.index'
 import { Route as AuthenticatedAdminDashboardIndexRouteImport } from './routes/_authenticated/admin-dashboard.index'
 import { Route as AuthenticatedRequestsNewRouteImport } from './routes/_authenticated/requests.new'
+import { Route as AuthenticatedProfileUserIdRouteImport } from './routes/_authenticated/profile.$userId'
 import { Route as AuthenticatedAdminDashboardMetricsRouteImport } from './routes/_authenticated/admin-dashboard.metrics'
 
 const PricingRoute = PricingRouteImport.update({
@@ -116,6 +117,12 @@ const AuthenticatedRequestsNewRoute =
     path: '/requests/new',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedProfileUserIdRoute =
+  AuthenticatedProfileUserIdRouteImport.update({
+    id: '/$userId',
+    path: '/$userId',
+    getParentRoute: () => AuthenticatedProfileRoute,
+  } as any)
 const AuthenticatedAdminDashboardMetricsRoute =
   AuthenticatedAdminDashboardMetricsRouteImport.update({
     id: '/admin-dashboard/metrics',
@@ -136,8 +143,9 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/feed': typeof AuthenticatedFeedRoute
   '/messages': typeof AuthenticatedMessagesRoute
-  '/profile': typeof AuthenticatedProfileRoute
+  '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/admin-dashboard/metrics': typeof AuthenticatedAdminDashboardMetricsRoute
+  '/profile/$userId': typeof AuthenticatedProfileUserIdRoute
   '/requests/new': typeof AuthenticatedRequestsNewRoute
   '/admin-dashboard/': typeof AuthenticatedAdminDashboardIndexRoute
   '/requests/': typeof AuthenticatedRequestsIndexRoute
@@ -155,8 +163,9 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/feed': typeof AuthenticatedFeedRoute
   '/messages': typeof AuthenticatedMessagesRoute
-  '/profile': typeof AuthenticatedProfileRoute
+  '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/admin-dashboard/metrics': typeof AuthenticatedAdminDashboardMetricsRoute
+  '/profile/$userId': typeof AuthenticatedProfileUserIdRoute
   '/requests/new': typeof AuthenticatedRequestsNewRoute
   '/admin-dashboard': typeof AuthenticatedAdminDashboardIndexRoute
   '/requests': typeof AuthenticatedRequestsIndexRoute
@@ -176,8 +185,9 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/feed': typeof AuthenticatedFeedRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
-  '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRouteWithChildren
   '/_authenticated/admin-dashboard/metrics': typeof AuthenticatedAdminDashboardMetricsRoute
+  '/_authenticated/profile/$userId': typeof AuthenticatedProfileUserIdRoute
   '/_authenticated/requests/new': typeof AuthenticatedRequestsNewRoute
   '/_authenticated/admin-dashboard/': typeof AuthenticatedAdminDashboardIndexRoute
   '/_authenticated/requests/': typeof AuthenticatedRequestsIndexRoute
@@ -199,6 +209,7 @@ export interface FileRouteTypes {
     | '/messages'
     | '/profile'
     | '/admin-dashboard/metrics'
+    | '/profile/$userId'
     | '/requests/new'
     | '/admin-dashboard/'
     | '/requests/'
@@ -218,6 +229,7 @@ export interface FileRouteTypes {
     | '/messages'
     | '/profile'
     | '/admin-dashboard/metrics'
+    | '/profile/$userId'
     | '/requests/new'
     | '/admin-dashboard'
     | '/requests'
@@ -238,6 +250,7 @@ export interface FileRouteTypes {
     | '/_authenticated/messages'
     | '/_authenticated/profile'
     | '/_authenticated/admin-dashboard/metrics'
+    | '/_authenticated/profile/$userId'
     | '/_authenticated/requests/new'
     | '/_authenticated/admin-dashboard/'
     | '/_authenticated/requests/'
@@ -374,6 +387,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRequestsNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/profile/$userId': {
+      id: '/_authenticated/profile/$userId'
+      path: '/$userId'
+      fullPath: '/profile/$userId'
+      preLoaderRoute: typeof AuthenticatedProfileUserIdRouteImport
+      parentRoute: typeof AuthenticatedProfileRoute
+    }
     '/_authenticated/admin-dashboard/metrics': {
       id: '/_authenticated/admin-dashboard/metrics'
       path: '/admin-dashboard/metrics'
@@ -384,6 +404,17 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedProfileRouteChildren {
+  AuthenticatedProfileUserIdRoute: typeof AuthenticatedProfileUserIdRoute
+}
+
+const AuthenticatedProfileRouteChildren: AuthenticatedProfileRouteChildren = {
+  AuthenticatedProfileUserIdRoute: AuthenticatedProfileUserIdRoute,
+}
+
+const AuthenticatedProfileRouteWithChildren =
+  AuthenticatedProfileRoute._addFileChildren(AuthenticatedProfileRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAdminMetricsRoute: typeof AuthenticatedAdminMetricsRoute
@@ -391,7 +422,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFeedRoute: typeof AuthenticatedFeedRoute
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
-  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRouteWithChildren
   AuthenticatedAdminDashboardMetricsRoute: typeof AuthenticatedAdminDashboardMetricsRoute
   AuthenticatedRequestsNewRoute: typeof AuthenticatedRequestsNewRoute
   AuthenticatedAdminDashboardIndexRoute: typeof AuthenticatedAdminDashboardIndexRoute
@@ -405,7 +436,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFeedRoute: AuthenticatedFeedRoute,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
-  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRouteWithChildren,
   AuthenticatedAdminDashboardMetricsRoute:
     AuthenticatedAdminDashboardMetricsRoute,
   AuthenticatedRequestsNewRoute: AuthenticatedRequestsNewRoute,

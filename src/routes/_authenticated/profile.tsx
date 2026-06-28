@@ -33,6 +33,7 @@ function ProfilePage() {
     role: "both",
     skills: "",
     languages: "",
+    phone: "",
     karma_points: 0,
     verified: false,
     incognito: false,
@@ -52,6 +53,7 @@ function ProfilePage() {
           role: data.role ?? "both",
           skills: (data.skills ?? []).join(", "),
           languages: (data.languages ?? []).join(", "),
+          phone: (data as any).phone ?? "",
           karma_points: data.karma_points ?? 0,
           verified: data.verified ?? false,
           incognito: (data as any).incognito ?? false,
@@ -73,8 +75,9 @@ function ProfilePage() {
       role: profile.role as never,
       skills: profile.skills.split(",").map((s) => s.trim()).filter(Boolean),
       languages: profile.languages.split(",").map((s) => s.trim()).filter(Boolean),
+      phone: profile.phone.trim() || null,
       onboarded: true,
-    }).eq("id", u.user.id);
+    } as any).eq("id", u.user.id);
     setSaving(false);
     if (error) return toast.error(error.message);
     toast.success("Profile updated");
@@ -194,6 +197,10 @@ function ProfilePage() {
             <Label>Languages</Label>
             <Input value={profile.languages} onChange={(e) => setProfile({ ...profile, languages: e.target.value })} placeholder="English, Spanish" />
           </div>
+        </div>
+        <div>
+          <Label>Phone (private — only shown after you accept a helper's offer)</Label>
+          <Input value={profile.phone} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} placeholder="+91 98765 43210" type="tel" />
         </div>
         <Button type="submit" disabled={saving} className="bg-gradient-brand text-primary-foreground border-0 shadow-glow">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save changes"}

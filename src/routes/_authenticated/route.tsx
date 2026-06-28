@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/site/Logo";
 import { Button } from "@/components/ui/button";
 import {
-  LayoutDashboard, HeartHandshake, MessageCircle, User as UserIcon, LogOut, Moon, Sun, Plus, Shield, Newspaper, Trophy, Sparkles, BarChart3, Crown,
+  LayoutDashboard, HeartHandshake, MessageCircle, User as UserIcon, LogOut, Moon, Sun, Plus, Shield, Newspaper, Trophy, Sparkles, BarChart3, Crown, Home,
 } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { useEffect, useState } from "react";
@@ -107,6 +107,15 @@ function AuthedLayout() {
         <main className="min-h-[80vh]">
           <Outlet />
         </main>
+
+        {/* Floating Home button - global */}
+        <Link
+          to="/dashboard"
+          aria-label="Home"
+          className="fixed bottom-24 right-4 lg:bottom-6 lg:right-6 z-50 h-14 w-14 rounded-full bg-gradient-brand text-primary-foreground shadow-pop hover:shadow-glow grid place-items-center transition-transform hover:scale-105 active:scale-95"
+        >
+          <Home className="h-6 w-6" />
+        </Link>
 
         {/* mobile bottom nav */}
         <div className="lg:hidden fixed bottom-3 left-3 right-3 z-40">
