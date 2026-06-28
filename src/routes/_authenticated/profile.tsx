@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Award, ShieldCheck, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,15 +9,23 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Award, ShieldCheck } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Storefront } from "@/components/site/Storefront";
+import { usePremium } from "@/hooks/use-premium";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
 });
 
 function ProfilePage() {
+  const { canAccess, tier, godMode } = usePremium();
+  const canIncognito = canAccess("pro");
+  const canStorefront = canAccess("plus");
+  const [meId, setMeId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [togglingIncognito, setTogglingIncognito] = useState(false);
   const [profile, setProfile] = useState({
     full_name: "",
     bio: "",
@@ -27,12 +35,14 @@ function ProfilePage() {
     languages: "",
     karma_points: 0,
     verified: false,
+    incognito: false,
   });
 
   useEffect(() => {
     (async () => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) return;
+      setMeId(u.user.id);
       const { data } = await supabase.from("profiles").select("*").eq("id", u.user.id).maybeSingle();
       if (data) {
         setProfile({
@@ -44,6 +54,7 @@ function ProfilePage() {
           languages: (data.languages ?? []).join(", "),
           karma_points: data.karma_points ?? 0,
           verified: data.verified ?? false,
+          incognito: (data as any).incognito ?? false,
         });
       }
       setLoading(false);
@@ -69,6 +80,22 @@ function ProfilePage() {
     toast.success("Profile updated");
   };
 
+  const toggleIncognito = async (next: boolean) => {
+    if (!meId || !canIncognito) {
+      toast.error("Incognito is a Pro perk");
+      return;
+    }
+    setTogglingIncognito(true);
+    setProfile((p) => ({ ...p, incognito: next }));
+    const { error } = await supabase.from("profiles").update({ incognito: next } as any).eq("id", meId);
+    setTogglingIncognito(false);
+    if (error) {
+      setProfile((p) => ({ ...p, incognito: !next }));
+      return toast.error(error.message);
+    }
+    toast.success(next ? "Incognito on — you'll appear as Anonymous Helper" : "Incognito off");
+  };
+
   if (loading) return <div className="glass rounded-3xl h-96 animate-pulse" />;
 
   return (
@@ -85,10 +112,51 @@ function ProfilePage() {
               <Badge variant="secondary" className="gap-1"><Award className="h-3 w-3" /> {profile.karma_points} karma</Badge>
               {profile.verified && <Badge variant="secondary" className="gap-1"><ShieldCheck className="h-3 w-3" /> Verified</Badge>}
               <Badge variant="secondary">{profile.role}</Badge>
+              {profile.incognito && (
+                <Badge variant="secondary" className="gap-1"><EyeOff className="h-3 w-3" /> Incognito</Badge>
+              )}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Privacy: Incognito mode */}
+      <section className="glass rounded-3xl p-5 md:p-6 shadow-soft">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+              <EyeOff className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="font-semibold flex items-center gap-2">
+                Incognito mode
+                <Badge variant="outline" className="text-[10px]">Pro</Badge>
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5 max-w-md">
+                Appear as "Anonymous Helper" across the feed, comments, leaderboard, and request cards. Your own view is unchanged.
+              </p>
+              {!canIncognito && (
+                <Link to="/pricing" className="text-xs text-primary hover:underline inline-block mt-1">
+                  Upgrade to Pro →
+                </Link>
+              )}
+              {godMode && (
+                <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1">God-mode: available without a subscription.</p>
+              )}
+            </div>
+          </div>
+          <Switch
+            checked={profile.incognito}
+            onCheckedChange={toggleIncognito}
+            disabled={!canIncognito || togglingIncognito}
+          />
+        </div>
+      </section>
+
+      {/* Storefront */}
+      {meId && (
+        <Storefront ownerId={meId} canManage unlocked={canStorefront} />
+      )}
 
       <form onSubmit={save} className="glass rounded-3xl p-6 md:p-8 space-y-5 shadow-soft">
         <h2 className="text-xl font-semibold">Edit your profile</h2>
@@ -130,6 +198,7 @@ function ProfilePage() {
         <Button type="submit" disabled={saving} className="bg-gradient-brand text-primary-foreground border-0 shadow-glow">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save changes"}
         </Button>
+        <p className="text-[11px] text-muted-foreground">Current tier: <span className="font-medium uppercase">{tier}</span></p>
       </form>
     </div>
   );
