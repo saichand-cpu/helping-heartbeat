@@ -53,6 +53,7 @@ function ProfilePage() {
           role: data.role ?? "both",
           skills: (data.skills ?? []).join(", "),
           languages: (data.languages ?? []).join(", "),
+          phone: (data as any).phone ?? "",
           karma_points: data.karma_points ?? 0,
           verified: data.verified ?? false,
           incognito: (data as any).incognito ?? false,
