@@ -246,7 +246,19 @@ function FeedPage() {
       <div className="space-y-4">
         {posts.map((p, i) => (
           <div key={p.id}>
-            <PostCard post={p} me={me} onLike={() => toggleLike(p)} onShare={() => share(p)} />
+            <PostCard
+              post={p}
+              me={me}
+              onLike={() => toggleLike(p)}
+              onShare={() => share(p)}
+              onDelete={async () => {
+                if (!confirm("Delete this post?")) return;
+                const { error } = await supabase.from("posts").delete().eq("id", p.id);
+                if (error) return toast.error(error.message);
+                setPosts((prev) => prev.filter((x) => x.id !== p.id));
+                toast.success("Post deleted");
+              }}
+            />
             {ads.length > 0 && (i + 1) % 6 === 0 && (
               <div className="mt-4">
                 <AdCard ad={ads[Math.floor(i / 6) % ads.length]} />
