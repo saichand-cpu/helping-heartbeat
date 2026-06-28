@@ -296,20 +296,30 @@ function PostCard({
           <Megaphone className="h-3 w-3" /> Official Announcement
         </div>
       )}
-      <div className="flex items-center gap-3 mb-3">
-        <div className="h-10 w-10 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground text-sm font-bold">
-          {post.author?.avatar_url
-            ? <img src={post.author.avatar_url} alt="" className="h-full w-full object-cover rounded-full" />
-            : (post.author?.full_name ?? "?").charAt(0).toUpperCase()}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="font-medium text-sm flex items-center gap-1 truncate">
-            {post.author?.full_name ?? "User"}
-            {post.author?.premium_tier && <VerifiedBadge tier={post.author.premium_tier} />}
+      {(() => {
+        const id = displayIdentity({ ...post.author, id: post.author_id }, me);
+        return (
+          <div className="flex items-center gap-3 mb-3">
+            <div className="h-10 w-10 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground text-sm font-bold">
+              {id.isIncognito ? (
+                <EyeOff className="h-4 w-4" />
+              ) : id.avatar_url ? (
+                <img src={id.avatar_url} alt="" className="h-full w-full object-cover rounded-full" />
+              ) : (
+                id.initial
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-medium text-sm flex items-center gap-1 truncate">
+                {id.name}
+                {id.premium_tier && <VerifiedBadge tier={id.premium_tier} />}
+                {id.isIncognito && <span className="text-[10px] uppercase tracking-wider text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">incognito</span>}
+              </div>
+              <div className="text-xs text-muted-foreground">{new Date(post.created_at).toLocaleString()}</div>
+            </div>
           </div>
-          <div className="text-xs text-muted-foreground">{new Date(post.created_at).toLocaleString()}</div>
-        </div>
-      </div>
+        );
+      })()}
       <p className="whitespace-pre-wrap text-sm leading-relaxed">{post.body}</p>
       {post.image_url && (
         <img src={post.image_url} alt="" className="mt-3 w-full rounded-2xl border border-border max-h-[480px] object-cover" />
@@ -341,7 +351,7 @@ type Comment = {
   author_id: string;
   body: string;
   created_at: string;
-  author?: { full_name: string; avatar_url: string | null; premium_tier: string | null };
+  author?: { id?: string; full_name: string; avatar_url: string | null; premium_tier: string | null; incognito?: boolean };
 };
 
 function CommentThread({ postId, me }: { postId: string; me: string | null }) {
@@ -359,7 +369,7 @@ function CommentThread({ postId, me }: { postId: string; me: string | null }) {
         .order("created_at", { ascending: true });
       const ids = Array.from(new Set((rows ?? []).map((r) => r.author_id)));
       const { data: authors } = ids.length
-        ? await supabase.from("profiles").select("id, full_name, avatar_url, premium_tier").in("id", ids)
+        ? await supabase.from("profiles").select("id, full_name, avatar_url, premium_tier, incognito").in("id", ids)
         : { data: [] as any[] };
       const map = new Map((authors ?? []).map((a: any) => [a.id, a]));
       if (cancelled) return;
