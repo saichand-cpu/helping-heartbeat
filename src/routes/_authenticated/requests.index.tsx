@@ -62,7 +62,6 @@ function RequestsBrowse() {
     }
     if (r.requester_id === meId) {
       toast.info("This is your own request");
-      navigate({ to: "/messages" });
       return;
     }
     setOffering(r.id);
@@ -70,18 +69,9 @@ function RequestsBrowse() {
       const { error: offerErr } = await supabase
         .from("request_offers")
         .insert({ request_id: r.id, helper_id: meId, message: "I'd love to help with this." });
-      // Ignore duplicate-offer unique violations; still send a message
       if (offerErr && offerErr.code !== "23505") throw offerErr;
-
-      const { error: msgErr } = await supabase.from("messages").insert({
-        sender_id: meId,
-        receiver_id: r.requester_id,
-        content: `Hi! I saw your request "${r.title}" and I'd love to help. When works for you?`,
-      });
-      if (msgErr) throw msgErr;
-
-      toast.success("Offer sent — opening chat");
-      navigate({ to: "/messages" });
+      toast.success("Offer sent — opening profile");
+      navigate({ to: "/profile/$userId", params: { userId: r.requester_id } });
     } catch (e: any) {
       toast.error(e?.message ?? "Could not send offer");
     } finally {
