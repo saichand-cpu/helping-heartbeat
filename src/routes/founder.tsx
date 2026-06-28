@@ -4,6 +4,7 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Button } from "@/components/ui/button";
 import { Heart, Users, Shield, Sparkles, Target, Eye, ArrowRight, Quote } from "lucide-react";
+import { FounderPortrait } from "@/components/site/FounderPortrait";
 
 export const Route = createFileRoute("/founder")({
   head: () => ({
@@ -61,21 +62,8 @@ function FounderPage() {
             <p className="mt-6 text-sm font-medium text-muted-foreground">— L. Saichand, Founder · Hyderabad, India</p>
           </div>
 
-          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7, delay: 0.2 }} className="relative">
-            <div className="aspect-square rounded-[2rem] glass shadow-pop p-1 rotate-3 hover:rotate-0 transition-transform duration-500">
-              <div className="h-full w-full rounded-[1.7rem] bg-gradient-brand flex items-center justify-center text-primary-foreground">
-                <div className="text-center">
-                  <div className="mx-auto h-24 w-24 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-4xl font-bold">LS</div>
-                  <div className="mt-4 text-xl font-semibold">L. Saichand</div>
-                  <div className="text-sm opacity-90">Founder, HumanLink</div>
-                  <div className="text-xs opacity-75 mt-1">Hyderabad, India</div>
-                </div>
-              </div>
-            </div>
-            <div className="absolute -bottom-4 -left-4 glass rounded-2xl px-4 py-3 shadow-soft">
-              <div className="text-xs text-muted-foreground">Believes in</div>
-              <div className="text-sm font-semibold">Kindness at scale</div>
-            </div>
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7, delay: 0.2 }}>
+            <FounderPortrait />
           </motion.div>
         </motion.div>
       </section>
