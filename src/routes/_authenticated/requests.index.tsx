@@ -155,10 +155,13 @@ function RequestsBrowse() {
                   <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {r.location || "Anywhere"}</span>
                   <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {new Date(r.created_at).toLocaleDateString()}</span>
                 </div>
+                <p className="mt-2 text-[11px] text-muted-foreground/80 italic">
+                  Phone &amp; call are unlocked only after the requester accepts your offer.
+                </p>
                 <Button
                   onClick={() => offerHelp(r)}
                   disabled={offering === r.id}
-                  className="w-full mt-4 bg-gradient-brand text-primary-foreground border-0 shadow-glow"
+                  className="w-full mt-3 bg-gradient-brand text-primary-foreground border-0 shadow-glow"
                   size="sm"
                 >
                   {offering === r.id ? (
