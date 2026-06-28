@@ -5,17 +5,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/use-role";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { VerifiedBadge } from "@/components/site/VerifiedBadge";
+import { MediaPicker } from "@/components/site/MediaPicker";
+import { ShareSheet } from "@/components/site/ShareSheet";
+import { StoriesBar } from "@/components/site/StoriesBar";
 import { toast } from "sonner";
 import {
-  Heart, MessageCircle, Share2, Send, Sparkles, Megaphone, Image as ImageIcon, ExternalLink, Loader2, Wand2, EyeOff, Trash2,
+  Heart, MessageCircle, Share2, Send, Sparkles, Megaphone, Loader2, Wand2, EyeOff, Trash2,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { writeCaption } from "@/lib/ai.functions";
 import { displayIdentity } from "@/lib/identity";
+import { resolveMediaUrl, type UploadedMedia } from "@/lib/upload";
 
 export const Route = createFileRoute("/_authenticated/feed")({
   component: FeedPage,
