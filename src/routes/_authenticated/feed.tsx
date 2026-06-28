@@ -382,7 +382,7 @@ function CommentThread({ postId, me }: { postId: string; me: string | null }) {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "post_comments", filter: `post_id=eq.${postId}` },
         async (payload) => {
           const row = payload.new as any;
-          const { data: a } = await supabase.from("profiles").select("id, full_name, avatar_url, premium_tier").eq("id", row.author_id).maybeSingle();
+          const { data: a } = await supabase.from("profiles").select("id, full_name, avatar_url, premium_tier, incognito").eq("id", row.author_id).maybeSingle();
           setItems((prev) => prev.find((c) => c.id === row.id) ? prev : [...prev, { ...row, author: a as any }]);
         })
       .subscribe();
@@ -403,20 +403,23 @@ function CommentThread({ postId, me }: { postId: string; me: string | null }) {
       {loading ? <Skeleton className="h-12" /> : items.length === 0 ? (
         <p className="text-xs text-muted-foreground">Be the first to comment.</p>
       ) : (
-        items.map((c) => (
-          <div key={c.id} className="flex gap-2 text-sm">
-            <div className="h-7 w-7 shrink-0 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground text-xs font-bold">
-              {(c.author?.full_name ?? "?").charAt(0).toUpperCase()}
-            </div>
-            <div className="flex-1 bg-muted/40 rounded-2xl px-3 py-2">
-              <div className="text-xs font-medium flex items-center gap-1">
-                {c.author?.full_name ?? "User"}
-                {c.author?.premium_tier && <VerifiedBadge tier={c.author.premium_tier} className="h-3 w-3" />}
+        items.map((c) => {
+          const id = displayIdentity({ ...c.author, id: c.author_id }, me);
+          return (
+            <div key={c.id} className="flex gap-2 text-sm">
+              <div className="h-7 w-7 shrink-0 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground text-xs font-bold">
+                {id.isIncognito ? <EyeOff className="h-3 w-3" /> : id.initial}
               </div>
-              <div className="whitespace-pre-wrap">{c.body}</div>
+              <div className="flex-1 bg-muted/40 rounded-2xl px-3 py-2">
+                <div className="text-xs font-medium flex items-center gap-1">
+                  {id.name}
+                  {id.premium_tier && <VerifiedBadge tier={id.premium_tier} className="h-3 w-3" />}
+                </div>
+                <div className="whitespace-pre-wrap">{c.body}</div>
+              </div>
             </div>
-          </div>
-        ))
+          );
+        })
       )}
       <div className="flex gap-2">
         <Input value={body} onChange={(e) => setBody(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder="Write a comment..." />
