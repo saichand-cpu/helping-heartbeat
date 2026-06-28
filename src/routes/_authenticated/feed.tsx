@@ -5,17 +5,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/use-role";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { VerifiedBadge } from "@/components/site/VerifiedBadge";
+import { MediaPicker } from "@/components/site/MediaPicker";
+import { ShareSheet } from "@/components/site/ShareSheet";
+import { StoriesBar } from "@/components/site/StoriesBar";
 import { toast } from "sonner";
 import {
-  Heart, MessageCircle, Share2, Send, Sparkles, Megaphone, Image as ImageIcon, ExternalLink, Loader2, Wand2, EyeOff, Trash2,
+  Heart, MessageCircle, Share2, Send, Sparkles, Megaphone, Loader2, Wand2, EyeOff, Trash2, ExternalLink,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { useServerFn } from "@tanstack/react-start";
 import { writeCaption } from "@/lib/ai.functions";
 import { displayIdentity } from "@/lib/identity";
+import { resolveMediaUrl, type UploadedMedia } from "@/lib/upload";
 
 export const Route = createFileRoute("/_authenticated/feed")({
   component: FeedPage,
@@ -56,9 +60,10 @@ function FeedPage() {
 
   // Composer
   const [body, setBody] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const [media, setMedia] = useState<UploadedMedia | null>(null);
   const [announce, setAnnounce] = useState(false);
   const [improving, setImproving] = useState(false);
+  const [shareFor, setShareFor] = useState<Post | null>(null);
   const captionFn = useServerFn(writeCaption);
 
   useEffect(() => {
@@ -135,7 +140,7 @@ function FeedPage() {
       .insert({
         author_id: me,
         body: body.trim(),
-        image_url: imageUrl.trim() || null,
+        image_url: media ? `feed-media:${media.path}` : null,
         is_announcement: !!(isAdmin && announce),
       })
       .select()
@@ -147,7 +152,7 @@ function FeedPage() {
       ...prev,
     ]);
     setBody("");
-    setImageUrl("");
+    setMedia(null);
     setAnnounce(false);
     toast.success("Posted");
   };
@@ -167,14 +172,7 @@ function FeedPage() {
     }
   };
 
-  const share = async (post: Post) => {
-    const url = `${window.location.origin}/feed#${post.id}`;
-    if (navigator.share) {
-      try { await navigator.share({ title: "HumanLink", text: post.body.slice(0, 80), url }); return; } catch { /* */ }
-    }
-    await navigator.clipboard.writeText(url);
-    toast.success("Link copied");
-  };
+  const share = (post: Post) => setShareFor(post);
 
   const writeWithHumi = async () => {
     setImproving(true);
@@ -191,6 +189,7 @@ function FeedPage() {
 
   return (
     <div className="space-y-5 pb-24 lg:pb-6 max-w-2xl mx-auto w-full">
+      <StoriesBar me={me} />
       <header>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Sparkles className="h-4 w-4 text-primary" /> Community feed
@@ -207,10 +206,8 @@ function FeedPage() {
           rows={3}
           className="resize-none"
         />
-        <div className="flex items-center gap-2">
-          <ImageIcon className="h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Image URL (optional)" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} className="text-sm" />
-        </div>
+        <MediaPicker value={media} onChange={setMedia} />
+
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-2">
             {isAdmin && (
@@ -278,6 +275,13 @@ function FeedPage() {
         )}
         <div ref={sentinelRef} className="h-8" />
       </div>
+      <ShareSheet
+        open={!!shareFor}
+        onOpenChange={(v) => !v && setShareFor(null)}
+        url={shareFor ? `${window.location.origin}/feed#${shareFor.id}` : ""}
+        title="HumanLink"
+        text={shareFor?.body.slice(0, 120) ?? ""}
+      />
     </div>
   );
 }
@@ -292,7 +296,15 @@ function PostCard({
   onDelete: () => void;
 }) {
   const [showComments, setShowComments] = useState(false);
+  const [resolved, setResolved] = useState<string | null>(null);
   const isOwner = me === post.author_id;
+  const isVideo = !!post.image_url && /\.(mp4|webm|mov)(\?|$)/i.test(post.image_url);
+
+  useEffect(() => {
+    let alive = true;
+    resolveMediaUrl(post.image_url).then((u) => { if (alive) setResolved(u); });
+    return () => { alive = false; };
+  }, [post.image_url]);
 
   const announcementClass = post.is_announcement
     ? "ring-2 ring-amber-400/70 shadow-[0_0_24px_-4px_rgba(245,158,11,0.6)] bg-gradient-to-br from-primary/[0.04] via-card to-amber-500/[0.04]"
@@ -339,8 +351,10 @@ function PostCard({
         ) : Header;
       })()}
       <p className="whitespace-pre-wrap text-sm leading-relaxed">{post.body}</p>
-      {post.image_url && (
-        <img src={post.image_url} alt="" className="mt-3 w-full rounded-2xl border border-border max-h-[480px] object-cover" />
+      {resolved && (
+        isVideo
+          ? <video src={resolved} controls className="mt-3 w-full rounded-2xl border border-border max-h-[480px]" />
+          : <img src={resolved} alt="" className="mt-3 w-full rounded-2xl border border-border max-h-[480px] object-cover" />
       )}
       <div className="mt-4 flex items-center gap-1 text-sm">
         <Button variant="ghost" size="sm" onClick={onLike} className={post.liked_by_me ? "text-red-500" : "text-muted-foreground"}>
