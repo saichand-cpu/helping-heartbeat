@@ -42,10 +42,12 @@ function LeaderboardPage() {
     let cancelled = false;
     (async () => {
       setRows(null);
+      const { data: u } = await supabase.auth.getUser();
+      const meId = u.user?.id ?? null;
       // Pull top profiles by karma
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("id, full_name, avatar_url, karma_points, premium_tier")
+        .select("id, full_name, avatar_url, karma_points, premium_tier, incognito")
         .order("karma_points", { ascending: false })
         .limit(100);
 
@@ -72,14 +74,18 @@ function LeaderboardPage() {
       }
 
       if (cancelled) return;
-      const enriched: Helper[] = (profiles ?? []).map((p) => ({
-        id: p.id,
-        full_name: p.full_name ?? "Anonymous",
-        avatar_url: p.avatar_url,
-        karma_points: p.karma_points ?? 0,
-        premium_tier: (p as any).premium_tier ?? null,
-        recent_helps: helpsByUser[p.id] ?? 0,
-      }));
+      const enriched: Helper[] = (profiles ?? []).map((p) => {
+        const isOwn = meId === p.id;
+        const incog = (p as any).incognito && !isOwn;
+        return {
+          id: p.id,
+          full_name: incog ? "Anonymous Helper" : (p.full_name ?? "Anonymous"),
+          avatar_url: incog ? null : p.avatar_url,
+          karma_points: p.karma_points ?? 0,
+          premium_tier: incog ? null : ((p as any).premium_tier ?? null),
+          recent_helps: helpsByUser[p.id] ?? 0,
+        };
+      });
 
       const ranked = since
         ? enriched.filter((p) => p.recent_helps > 0).sort((a, b) => b.recent_helps - a.recent_helps)

@@ -11,8 +11,11 @@ import { Switch } from "@/components/ui/switch";
 import { VerifiedBadge } from "@/components/site/VerifiedBadge";
 import { toast } from "sonner";
 import {
-  Heart, MessageCircle, Share2, Send, Sparkles, Megaphone, Image as ImageIcon, ExternalLink,
+  Heart, MessageCircle, Share2, Send, Sparkles, Megaphone, Image as ImageIcon, ExternalLink, Loader2, Wand2, EyeOff,
 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { writeCaption } from "@/lib/ai.functions";
+import { displayIdentity } from "@/lib/identity";
 
 export const Route = createFileRoute("/_authenticated/feed")({
   component: FeedPage,
@@ -25,7 +28,7 @@ type Post = {
   image_url: string | null;
   is_announcement: boolean;
   created_at: string;
-  author?: { full_name: string; avatar_url: string | null; premium_tier: string | null };
+  author?: { id?: string; full_name: string; avatar_url: string | null; premium_tier: string | null; incognito?: boolean };
   like_count: number;
   comment_count: number;
   liked_by_me: boolean;
@@ -55,6 +58,8 @@ function FeedPage() {
   const [body, setBody] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [announce, setAnnounce] = useState(false);
+  const [improving, setImproving] = useState(false);
+  const captionFn = useServerFn(writeCaption);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setMe(data.user?.id ?? null));
@@ -81,7 +86,7 @@ function FeedPage() {
     const authorIds = Array.from(new Set(rows.map((r) => r.author_id)));
     const postIds = rows.map((r) => r.id);
     const [{ data: authors }, { data: likes }, { data: comments }, { data: myLikes }] = await Promise.all([
-      supabase.from("profiles").select("id, full_name, avatar_url, premium_tier").in("id", authorIds),
+      supabase.from("profiles").select("id, full_name, avatar_url, premium_tier, incognito").in("id", authorIds),
       supabase.from("post_likes").select("post_id").in("post_id", postIds),
       supabase.from("post_comments").select("post_id").in("post_id", postIds),
       me ? supabase.from("post_likes").select("post_id").in("post_id", postIds).eq("user_id", me) : Promise.resolve({ data: [] as any[] }),
@@ -136,7 +141,7 @@ function FeedPage() {
       .select()
       .single();
     if (error) return toast.error(error.message);
-    const { data: prof } = await supabase.from("profiles").select("full_name, avatar_url, premium_tier").eq("id", me).maybeSingle();
+    const { data: prof } = await supabase.from("profiles").select("id, full_name, avatar_url, premium_tier, incognito").eq("id", me).maybeSingle();
     setPosts((prev) => [
       { ...(data as any), author: prof as any, like_count: 0, comment_count: 0, liked_by_me: false },
       ...prev,
@@ -171,6 +176,19 @@ function FeedPage() {
     toast.success("Link copied");
   };
 
+  const writeWithHumi = async () => {
+    setImproving(true);
+    try {
+      const { caption } = await captionFn({ data: { draft: body, tone: "warm" } });
+      if (caption) setBody(caption);
+      toast.success("HUMI polished your draft");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not reach HUMI");
+    } finally {
+      setImproving(false);
+    }
+  };
+
   return (
     <div className="space-y-5 pb-24 lg:pb-6 max-w-2xl mx-auto w-full">
       <header>
@@ -193,13 +211,26 @@ function FeedPage() {
           <ImageIcon className="h-4 w-4 text-muted-foreground" />
           <Input placeholder="Image URL (optional)" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} className="text-sm" />
         </div>
-        <div className="flex items-center justify-between">
-          {isAdmin ? (
-            <label className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
-              <Switch checked={announce} onCheckedChange={setAnnounce} />
-              <Megaphone className="h-3.5 w-3.5" /> Official Announcement
-            </label>
-          ) : <span />}
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <label className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
+                <Switch checked={announce} onCheckedChange={setAnnounce} />
+                <Megaphone className="h-3.5 w-3.5" /> Official
+              </label>
+            )}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={writeWithHumi}
+              disabled={improving}
+              className="border-primary/40 text-primary hover:bg-primary/5"
+            >
+              {improving ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Wand2 className="h-3.5 w-3.5 mr-1" />}
+              Write with HUMI
+            </Button>
+          </div>
           <Button
             onClick={createPost}
             disabled={!body.trim()}
@@ -265,20 +296,30 @@ function PostCard({
           <Megaphone className="h-3 w-3" /> Official Announcement
         </div>
       )}
-      <div className="flex items-center gap-3 mb-3">
-        <div className="h-10 w-10 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground text-sm font-bold">
-          {post.author?.avatar_url
-            ? <img src={post.author.avatar_url} alt="" className="h-full w-full object-cover rounded-full" />
-            : (post.author?.full_name ?? "?").charAt(0).toUpperCase()}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="font-medium text-sm flex items-center gap-1 truncate">
-            {post.author?.full_name ?? "User"}
-            {post.author?.premium_tier && <VerifiedBadge tier={post.author.premium_tier} />}
+      {(() => {
+        const id = displayIdentity({ ...post.author, id: post.author_id }, me);
+        return (
+          <div className="flex items-center gap-3 mb-3">
+            <div className="h-10 w-10 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground text-sm font-bold">
+              {id.isIncognito ? (
+                <EyeOff className="h-4 w-4" />
+              ) : id.avatar_url ? (
+                <img src={id.avatar_url} alt="" className="h-full w-full object-cover rounded-full" />
+              ) : (
+                id.initial
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-medium text-sm flex items-center gap-1 truncate">
+                {id.name}
+                {id.premium_tier && <VerifiedBadge tier={id.premium_tier} />}
+                {id.isIncognito && <span className="text-[10px] uppercase tracking-wider text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">incognito</span>}
+              </div>
+              <div className="text-xs text-muted-foreground">{new Date(post.created_at).toLocaleString()}</div>
+            </div>
           </div>
-          <div className="text-xs text-muted-foreground">{new Date(post.created_at).toLocaleString()}</div>
-        </div>
-      </div>
+        );
+      })()}
       <p className="whitespace-pre-wrap text-sm leading-relaxed">{post.body}</p>
       {post.image_url && (
         <img src={post.image_url} alt="" className="mt-3 w-full rounded-2xl border border-border max-h-[480px] object-cover" />
@@ -310,7 +351,7 @@ type Comment = {
   author_id: string;
   body: string;
   created_at: string;
-  author?: { full_name: string; avatar_url: string | null; premium_tier: string | null };
+  author?: { id?: string; full_name: string; avatar_url: string | null; premium_tier: string | null; incognito?: boolean };
 };
 
 function CommentThread({ postId, me }: { postId: string; me: string | null }) {
@@ -328,7 +369,7 @@ function CommentThread({ postId, me }: { postId: string; me: string | null }) {
         .order("created_at", { ascending: true });
       const ids = Array.from(new Set((rows ?? []).map((r) => r.author_id)));
       const { data: authors } = ids.length
-        ? await supabase.from("profiles").select("id, full_name, avatar_url, premium_tier").in("id", ids)
+        ? await supabase.from("profiles").select("id, full_name, avatar_url, premium_tier, incognito").in("id", ids)
         : { data: [] as any[] };
       const map = new Map((authors ?? []).map((a: any) => [a.id, a]));
       if (cancelled) return;
@@ -341,7 +382,7 @@ function CommentThread({ postId, me }: { postId: string; me: string | null }) {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "post_comments", filter: `post_id=eq.${postId}` },
         async (payload) => {
           const row = payload.new as any;
-          const { data: a } = await supabase.from("profiles").select("id, full_name, avatar_url, premium_tier").eq("id", row.author_id).maybeSingle();
+          const { data: a } = await supabase.from("profiles").select("id, full_name, avatar_url, premium_tier, incognito").eq("id", row.author_id).maybeSingle();
           setItems((prev) => prev.find((c) => c.id === row.id) ? prev : [...prev, { ...row, author: a as any }]);
         })
       .subscribe();
@@ -362,20 +403,23 @@ function CommentThread({ postId, me }: { postId: string; me: string | null }) {
       {loading ? <Skeleton className="h-12" /> : items.length === 0 ? (
         <p className="text-xs text-muted-foreground">Be the first to comment.</p>
       ) : (
-        items.map((c) => (
-          <div key={c.id} className="flex gap-2 text-sm">
-            <div className="h-7 w-7 shrink-0 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground text-xs font-bold">
-              {(c.author?.full_name ?? "?").charAt(0).toUpperCase()}
-            </div>
-            <div className="flex-1 bg-muted/40 rounded-2xl px-3 py-2">
-              <div className="text-xs font-medium flex items-center gap-1">
-                {c.author?.full_name ?? "User"}
-                {c.author?.premium_tier && <VerifiedBadge tier={c.author.premium_tier} className="h-3 w-3" />}
+        items.map((c) => {
+          const id = displayIdentity({ ...c.author, id: c.author_id }, me);
+          return (
+            <div key={c.id} className="flex gap-2 text-sm">
+              <div className="h-7 w-7 shrink-0 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground text-xs font-bold">
+                {id.isIncognito ? <EyeOff className="h-3 w-3" /> : id.initial}
               </div>
-              <div className="whitespace-pre-wrap">{c.body}</div>
+              <div className="flex-1 bg-muted/40 rounded-2xl px-3 py-2">
+                <div className="text-xs font-medium flex items-center gap-1">
+                  {id.name}
+                  {id.premium_tier && <VerifiedBadge tier={id.premium_tier} className="h-3 w-3" />}
+                </div>
+                <div className="whitespace-pre-wrap">{c.body}</div>
+              </div>
             </div>
-          </div>
-        ))
+          );
+        })
       )}
       <div className="flex gap-2">
         <Input value={body} onChange={(e) => setBody(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder="Write a comment..." />

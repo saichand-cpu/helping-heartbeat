@@ -327,6 +327,7 @@ export type Database = {
           created_at: string
           full_name: string
           id: string
+          incognito: boolean
           interests: string[] | null
           karma_points: number
           languages: string[] | null
@@ -346,6 +347,7 @@ export type Database = {
           created_at?: string
           full_name?: string
           id: string
+          incognito?: boolean
           interests?: string[] | null
           karma_points?: number
           languages?: string[] | null
@@ -365,6 +367,7 @@ export type Database = {
           created_at?: string
           full_name?: string
           id?: string
+          incognito?: boolean
           interests?: string[] | null
           karma_points?: number
           languages?: string[] | null
@@ -452,6 +455,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      storefront_items: {
+        Row: {
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          link_url: string | null
+          owner_id: string
+          price_cents: number
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          link_url?: string | null
+          owner_id: string
+          price_cents?: number
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          link_url?: string | null
+          owner_id?: string
+          price_cents?: number
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       time_capsules: {
         Row: {
