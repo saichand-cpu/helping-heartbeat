@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/site/Logo";
 import { Button } from "@/components/ui/button";
 import {
-  LayoutDashboard, HeartHandshake, MessageCircle, User as UserIcon, LogOut, Moon, Sun, Plus, Shield, Newspaper, Trophy, Sparkles, BarChart3,
+  LayoutDashboard, HeartHandshake, MessageCircle, User as UserIcon, LogOut, Moon, Sun, Plus, Shield, Newspaper, Trophy, Sparkles, BarChart3, Crown,
 } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { useEffect, useState } from "react";
@@ -86,6 +86,11 @@ function AuthedLayout() {
                 </Button>
               </div>
               <div className="text-xs text-muted-foreground truncate px-2">{email}</div>
+              {isAdmin && (
+                <div className="flex items-center gap-1.5 mx-2 mt-1 rounded-lg px-2 py-1 text-[10px] font-semibold uppercase tracking-wider bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                  <Crown className="h-3 w-3" /> God-mode · Pro unlocked
+                </div>
+              )}
             </div>
           </div>
         </aside>
