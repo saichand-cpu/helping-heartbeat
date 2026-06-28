@@ -312,9 +312,10 @@ function PostCard({
       )}
       {(() => {
         const id = displayIdentity({ ...post.author, id: post.author_id }, me);
-        return (
+        const clickable = !id.isIncognito && post.author_id !== me;
+        const Header = (
           <div className="flex items-center gap-3 mb-3">
-            <div className="h-10 w-10 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground text-sm font-bold">
+            <div className="h-10 w-10 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground text-sm font-bold overflow-hidden">
               {id.isIncognito ? (
                 <EyeOff className="h-4 w-4" />
               ) : id.avatar_url ? (
@@ -333,6 +334,9 @@ function PostCard({
             </div>
           </div>
         );
+        return clickable ? (
+          <Link to="/profile/$userId" params={{ userId: post.author_id }} className="block hover:opacity-90">{Header}</Link>
+        ) : Header;
       })()}
       <p className="whitespace-pre-wrap text-sm leading-relaxed">{post.body}</p>
       {post.image_url && (
