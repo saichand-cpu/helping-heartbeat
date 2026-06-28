@@ -108,6 +108,15 @@ function AuthedLayout() {
           <Outlet />
         </main>
 
+        {/* Floating Home button - global */}
+        <Link
+          to="/dashboard"
+          aria-label="Home"
+          className="fixed bottom-24 right-4 lg:bottom-6 lg:right-6 z-50 h-14 w-14 rounded-full bg-gradient-brand text-primary-foreground shadow-pop hover:shadow-glow grid place-items-center transition-transform hover:scale-105 active:scale-95"
+        >
+          <Home className="h-6 w-6" />
+        </Link>
+
         {/* mobile bottom nav */}
         <div className="lg:hidden fixed bottom-3 left-3 right-3 z-40">
           <div className="glass rounded-2xl px-2 py-2 flex overflow-x-auto gap-1 shadow-pop">
