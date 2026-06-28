@@ -172,14 +172,7 @@ function FeedPage() {
     }
   };
 
-  const share = async (post: Post) => {
-    const url = `${window.location.origin}/feed#${post.id}`;
-    if (navigator.share) {
-      try { await navigator.share({ title: "HumanLink", text: post.body.slice(0, 80), url }); return; } catch { /* */ }
-    }
-    await navigator.clipboard.writeText(url);
-    toast.success("Link copied");
-  };
+  const share = (post: Post) => setShareFor(post);
 
   const writeWithHumi = async () => {
     setImproving(true);
@@ -196,6 +189,7 @@ function FeedPage() {
 
   return (
     <div className="space-y-5 pb-24 lg:pb-6 max-w-2xl mx-auto w-full">
+      <StoriesBar me={me} />
       <header>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Sparkles className="h-4 w-4 text-primary" /> Community feed
