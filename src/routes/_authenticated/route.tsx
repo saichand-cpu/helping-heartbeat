@@ -8,6 +8,7 @@ import {
 import { useTheme } from "@/hooks/use-theme";
 import { useEffect, useState } from "react";
 import { useIsAdmin } from "@/hooks/use-role";
+import { HumiAssistant } from "@/components/site/HumiAssistant";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
