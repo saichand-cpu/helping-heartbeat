@@ -140,7 +140,7 @@ function FeedPage() {
       .insert({
         author_id: me,
         body: body.trim(),
-        image_url: imageUrl.trim() || null,
+        image_url: media ? `feed-media:${media.path}` : null,
         is_announcement: !!(isAdmin && announce),
       })
       .select()
@@ -152,7 +152,7 @@ function FeedPage() {
       ...prev,
     ]);
     setBody("");
-    setImageUrl("");
+    setMedia(null);
     setAnnounce(false);
     toast.success("Posted");
   };
