@@ -212,10 +212,8 @@ function FeedPage() {
           rows={3}
           className="resize-none"
         />
-        <div className="flex items-center gap-2">
-          <ImageIcon className="h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Image URL (optional)" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} className="text-sm" />
-        </div>
+        <MediaPicker value={media} onChange={setMedia} />
+
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-2">
             {isAdmin && (
