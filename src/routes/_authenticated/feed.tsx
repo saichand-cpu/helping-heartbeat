@@ -211,13 +211,26 @@ function FeedPage() {
           <ImageIcon className="h-4 w-4 text-muted-foreground" />
           <Input placeholder="Image URL (optional)" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} className="text-sm" />
         </div>
-        <div className="flex items-center justify-between">
-          {isAdmin ? (
-            <label className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
-              <Switch checked={announce} onCheckedChange={setAnnounce} />
-              <Megaphone className="h-3.5 w-3.5" /> Official Announcement
-            </label>
-          ) : <span />}
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <label className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
+                <Switch checked={announce} onCheckedChange={setAnnounce} />
+                <Megaphone className="h-3.5 w-3.5" /> Official
+              </label>
+            )}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={writeWithHumi}
+              disabled={improving}
+              className="border-primary/40 text-primary hover:bg-primary/5"
+            >
+              {improving ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Wand2 className="h-3.5 w-3.5 mr-1" />}
+              Write with HUMI
+            </Button>
+          </div>
           <Button
             onClick={createPost}
             disabled={!body.trim()}
