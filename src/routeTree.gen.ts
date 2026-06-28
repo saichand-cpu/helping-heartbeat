@@ -24,7 +24,9 @@ import { Route as AuthenticatedCapsulesRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAdminMetricsRouteImport } from './routes/_authenticated/admin-metrics'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedRequestsIndexRouteImport } from './routes/_authenticated/requests.index'
+import { Route as AuthenticatedAdminDashboardIndexRouteImport } from './routes/_authenticated/admin-dashboard.index'
 import { Route as AuthenticatedRequestsNewRouteImport } from './routes/_authenticated/requests.new'
+import { Route as AuthenticatedAdminDashboardMetricsRouteImport } from './routes/_authenticated/admin-dashboard.metrics'
 
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
@@ -102,10 +104,22 @@ const AuthenticatedRequestsIndexRoute =
     path: '/requests/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminDashboardIndexRoute =
+  AuthenticatedAdminDashboardIndexRouteImport.update({
+    id: '/admin-dashboard/',
+    path: '/admin-dashboard/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedRequestsNewRoute =
   AuthenticatedRequestsNewRouteImport.update({
     id: '/requests/new',
     path: '/requests/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminDashboardMetricsRoute =
+  AuthenticatedAdminDashboardMetricsRouteImport.update({
+    id: '/admin-dashboard/metrics',
+    path: '/admin-dashboard/metrics',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
@@ -123,7 +137,9 @@ export interface FileRoutesByFullPath {
   '/feed': typeof AuthenticatedFeedRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/admin-dashboard/metrics': typeof AuthenticatedAdminDashboardMetricsRoute
   '/requests/new': typeof AuthenticatedRequestsNewRoute
+  '/admin-dashboard/': typeof AuthenticatedAdminDashboardIndexRoute
   '/requests/': typeof AuthenticatedRequestsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -140,7 +156,9 @@ export interface FileRoutesByTo {
   '/feed': typeof AuthenticatedFeedRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/admin-dashboard/metrics': typeof AuthenticatedAdminDashboardMetricsRoute
   '/requests/new': typeof AuthenticatedRequestsNewRoute
+  '/admin-dashboard': typeof AuthenticatedAdminDashboardIndexRoute
   '/requests': typeof AuthenticatedRequestsIndexRoute
 }
 export interface FileRoutesById {
@@ -159,7 +177,9 @@ export interface FileRoutesById {
   '/_authenticated/feed': typeof AuthenticatedFeedRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/admin-dashboard/metrics': typeof AuthenticatedAdminDashboardMetricsRoute
   '/_authenticated/requests/new': typeof AuthenticatedRequestsNewRoute
+  '/_authenticated/admin-dashboard/': typeof AuthenticatedAdminDashboardIndexRoute
   '/_authenticated/requests/': typeof AuthenticatedRequestsIndexRoute
 }
 export interface FileRouteTypes {
@@ -178,7 +198,9 @@ export interface FileRouteTypes {
     | '/feed'
     | '/messages'
     | '/profile'
+    | '/admin-dashboard/metrics'
     | '/requests/new'
+    | '/admin-dashboard/'
     | '/requests/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -195,7 +217,9 @@ export interface FileRouteTypes {
     | '/feed'
     | '/messages'
     | '/profile'
+    | '/admin-dashboard/metrics'
     | '/requests/new'
+    | '/admin-dashboard'
     | '/requests'
   id:
     | '__root__'
@@ -213,7 +237,9 @@ export interface FileRouteTypes {
     | '/_authenticated/feed'
     | '/_authenticated/messages'
     | '/_authenticated/profile'
+    | '/_authenticated/admin-dashboard/metrics'
     | '/_authenticated/requests/new'
+    | '/_authenticated/admin-dashboard/'
     | '/_authenticated/requests/'
   fileRoutesById: FileRoutesById
 }
@@ -334,11 +360,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRequestsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin-dashboard/': {
+      id: '/_authenticated/admin-dashboard/'
+      path: '/admin-dashboard'
+      fullPath: '/admin-dashboard/'
+      preLoaderRoute: typeof AuthenticatedAdminDashboardIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/requests/new': {
       id: '/_authenticated/requests/new'
       path: '/requests/new'
       fullPath: '/requests/new'
       preLoaderRoute: typeof AuthenticatedRequestsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin-dashboard/metrics': {
+      id: '/_authenticated/admin-dashboard/metrics'
+      path: '/admin-dashboard/metrics'
+      fullPath: '/admin-dashboard/metrics'
+      preLoaderRoute: typeof AuthenticatedAdminDashboardMetricsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
   }
@@ -352,7 +392,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFeedRoute: typeof AuthenticatedFeedRoute
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedAdminDashboardMetricsRoute: typeof AuthenticatedAdminDashboardMetricsRoute
   AuthenticatedRequestsNewRoute: typeof AuthenticatedRequestsNewRoute
+  AuthenticatedAdminDashboardIndexRoute: typeof AuthenticatedAdminDashboardIndexRoute
   AuthenticatedRequestsIndexRoute: typeof AuthenticatedRequestsIndexRoute
 }
 
@@ -364,7 +406,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFeedRoute: AuthenticatedFeedRoute,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedAdminDashboardMetricsRoute:
+    AuthenticatedAdminDashboardMetricsRoute,
   AuthenticatedRequestsNewRoute: AuthenticatedRequestsNewRoute,
+  AuthenticatedAdminDashboardIndexRoute: AuthenticatedAdminDashboardIndexRoute,
   AuthenticatedRequestsIndexRoute: AuthenticatedRequestsIndexRoute,
 }
 
