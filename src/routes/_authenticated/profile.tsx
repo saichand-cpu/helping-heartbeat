@@ -198,6 +198,10 @@ function ProfilePage() {
             <Input value={profile.languages} onChange={(e) => setProfile({ ...profile, languages: e.target.value })} placeholder="English, Spanish" />
           </div>
         </div>
+        <div>
+          <Label>Phone (private — only shown after you accept a helper's offer)</Label>
+          <Input value={profile.phone} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} placeholder="+91 98765 43210" type="tel" />
+        </div>
         <Button type="submit" disabled={saving} className="bg-gradient-brand text-primary-foreground border-0 shadow-glow">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save changes"}
         </Button>
