@@ -48,8 +48,9 @@ export function StoriesBar({ me }: { me: string | null }) {
     const amap = new Map((authors ?? []).map((a: any) => [a.id, a]));
     const byAuthor = new Map<string, Bundle>();
     for (const r of rows) {
-      const b = byAuthor.get(r.author_id) ?? { author_id: r.author_id, author: amap.get(r.author_id), stories: [], hasNew: true };
-      b.stories.push(r);
+      const existing = byAuthor.get(r.author_id);
+      const b: Bundle = existing ?? { author_id: r.author_id, author: amap.get(r.author_id), stories: [], hasNew: true };
+      b.stories.push(r as StoryRow & { resolved?: string | null });
       byAuthor.set(r.author_id, b);
     }
     // Resolve signed URLs in parallel
