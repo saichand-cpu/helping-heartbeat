@@ -108,6 +108,9 @@ function AuthedLayout() {
           <Outlet />
         </main>
 
+        {/* Floating HUMI assistant */}
+        <HumiAssistant />
+
         {/* Floating Home button - global */}
         <Link
           to="/dashboard"
