@@ -348,6 +348,11 @@ function PostCard({
         <Button variant="ghost" size="sm" onClick={onShare} className="text-muted-foreground ml-auto">
           <Share2 className="h-4 w-4" />
         </Button>
+        {isOwner && (
+          <Button variant="ghost" size="sm" onClick={onDelete} className="text-muted-foreground hover:text-destructive" aria-label="Delete post">
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
       </div>
       <AnimatePresence>
         {showComments && (
