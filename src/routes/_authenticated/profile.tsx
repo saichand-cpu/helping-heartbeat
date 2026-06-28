@@ -75,8 +75,9 @@ function ProfilePage() {
       role: profile.role as never,
       skills: profile.skills.split(",").map((s) => s.trim()).filter(Boolean),
       languages: profile.languages.split(",").map((s) => s.trim()).filter(Boolean),
+      phone: profile.phone.trim() || null,
       onboarded: true,
-    }).eq("id", u.user.id);
+    } as any).eq("id", u.user.id);
     setSaving(false);
     if (error) return toast.error(error.message);
     toast.success("Profile updated");
