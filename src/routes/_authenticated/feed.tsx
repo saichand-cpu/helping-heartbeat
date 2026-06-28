@@ -13,8 +13,9 @@ import { ShareSheet } from "@/components/site/ShareSheet";
 import { StoriesBar } from "@/components/site/StoriesBar";
 import { toast } from "sonner";
 import {
-  Heart, MessageCircle, Share2, Send, Sparkles, Megaphone, Loader2, Wand2, EyeOff, Trash2,
+  Heart, MessageCircle, Share2, Send, Sparkles, Megaphone, Loader2, Wand2, EyeOff, Trash2, ExternalLink,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { useServerFn } from "@tanstack/react-start";
 import { writeCaption } from "@/lib/ai.functions";
 import { displayIdentity } from "@/lib/identity";
@@ -59,9 +60,10 @@ function FeedPage() {
 
   // Composer
   const [body, setBody] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const [media, setMedia] = useState<UploadedMedia | null>(null);
   const [announce, setAnnounce] = useState(false);
   const [improving, setImproving] = useState(false);
+  const [shareFor, setShareFor] = useState<Post | null>(null);
   const captionFn = useServerFn(writeCaption);
 
   useEffect(() => {
