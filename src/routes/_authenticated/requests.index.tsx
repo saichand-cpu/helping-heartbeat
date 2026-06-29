@@ -91,6 +91,35 @@ function RequestsBrowse() {
     })();
   }, [cat]);
 
+  // Realtime: new/updated requests
+  useEffect(() => {
+    const ch = supabase
+      .channel("requests-live")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "help_requests" }, (payload) => {
+        const r = payload.new as Request;
+        if (r.status !== "open") return;
+        if (cat !== "all" && r.category !== cat) return;
+        setItems((prev) => prev.find((x) => x.id === r.id) ? prev : [r, ...prev]);
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "help_requests" }, (payload) => {
+        const r = payload.new as Request;
+        setItems((prev) => {
+          if (r.status !== "open") return prev.filter((x) => x.id !== r.id);
+          const idx = prev.findIndex((x) => x.id === r.id);
+          if (idx < 0) return prev;
+          const copy = prev.slice();
+          copy[idx] = r;
+          return copy;
+        });
+      })
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "help_requests" }, (payload) => {
+        const r = payload.old as Request;
+        setItems((prev) => prev.filter((x) => x.id !== r.id));
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [cat]);
+
   const filtered = items.filter((r) =>
     !q || r.title.toLowerCase().includes(q.toLowerCase()) || r.description.toLowerCase().includes(q.toLowerCase())
   );
