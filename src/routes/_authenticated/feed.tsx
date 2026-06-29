@@ -152,12 +152,12 @@ function FeedPage() {
       })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "post_likes" }, (payload) => {
         const row = payload.new as any;
-        setPosts((prev) => prev.map((p) => p.id === row.post_id
-          ? { ...p, like_count: p.like_count + (p.liked_by_me && row.user_id === me ? 0 : 1) }
-          : p));
+        if (row.user_id === me) return; // self handled optimistically
+        setPosts((prev) => prev.map((p) => p.id === row.post_id ? { ...p, like_count: p.like_count + 1 } : p));
       })
       .on("postgres_changes", { event: "DELETE", schema: "public", table: "post_likes" }, (payload) => {
         const row = payload.old as any;
+        if (row?.user_id === me) return;
         setPosts((prev) => prev.map((p) => p.id === row.post_id
           ? { ...p, like_count: Math.max(0, p.like_count - 1) }
           : p));
