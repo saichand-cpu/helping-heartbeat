@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { useIsAdmin } from "@/hooks/use-role";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -38,11 +40,31 @@ function AdminMetricsPage() {
 
 function MetricsContent() {
   const fn = useServerFn(getHumiBriefing);
+  const qc = useQueryClient();
   const { data, isLoading, isFetching, refetch, error } = useQuery({
     queryKey: ["humi-briefing"],
     queryFn: () => fn({ data: {} as never }) as Promise<HumiMetrics>,
     staleTime: 60_000,
   });
+
+  // Realtime: auto-refresh metrics when key tables change
+  useEffect(() => {
+    let t: ReturnType<typeof setTimeout> | null = null;
+    const bump = () => {
+      if (t) clearTimeout(t);
+      t = setTimeout(() => qc.invalidateQueries({ queryKey: ["humi-briefing"] }), 1500);
+    };
+    const ch = supabase
+      .channel("admin-metrics-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "help_requests" }, bump)
+      .on("postgres_changes", { event: "*", schema: "public", table: "request_offers" }, bump)
+      .on("postgres_changes", { event: "*", schema: "public", table: "posts" }, bump)
+      .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, bump)
+      .subscribe();
+    return () => { if (t) clearTimeout(t); supabase.removeChannel(ch); };
+  }, [qc]);
+
+
 
   return (
     <div className="space-y-6">

@@ -133,6 +133,43 @@ function FeedPage() {
     return () => obs.disconnect();
   }, [fetchPage, loading]);
 
+  // Realtime: new posts + like changes
+  useEffect(() => {
+    const ch = supabase
+      .channel("feed-live")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "posts" }, async (payload) => {
+        const row = payload.new as any;
+        setPosts((prev) => {
+          if (prev.find((p) => p.id === row.id)) return prev;
+          return [{ ...row, like_count: 0, comment_count: 0, liked_by_me: false }, ...prev];
+        });
+        const { data: prof } = await supabase.from("profiles").select("id, full_name, avatar_url, premium_tier, incognito").eq("id", row.author_id).maybeSingle();
+        setPosts((prev) => prev.map((p) => p.id === row.id ? { ...p, author: prof as any } : p));
+      })
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "posts" }, (payload) => {
+        const row = payload.old as any;
+        setPosts((prev) => prev.filter((p) => p.id !== row.id));
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "post_likes" }, (payload) => {
+        const row = payload.new as any;
+        if (row.user_id === me) return; // self handled optimistically
+        setPosts((prev) => prev.map((p) => p.id === row.post_id ? { ...p, like_count: p.like_count + 1 } : p));
+      })
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "post_likes" }, (payload) => {
+        const row = payload.old as any;
+        if (row?.user_id === me) return;
+        setPosts((prev) => prev.map((p) => p.id === row.post_id
+          ? { ...p, like_count: Math.max(0, p.like_count - 1) }
+          : p));
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "post_comments" }, (payload) => {
+        const row = payload.new as any;
+        setPosts((prev) => prev.map((p) => p.id === row.post_id ? { ...p, comment_count: p.comment_count + 1 } : p));
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [me]);
+
   const createPost = async () => {
     if (!body.trim() || !me) return;
     const { data, error } = await supabase

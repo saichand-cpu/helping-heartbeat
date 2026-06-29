@@ -38,6 +38,25 @@ function CapsulesPage() {
   };
   useEffect(() => { load(); }, []);
 
+  useEffect(() => {
+    const ch = supabase
+      .channel("capsules-live")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "time_capsules" }, (payload) => {
+        const r = payload.new as Capsule;
+        setItems((prev) => (prev ?? []).find((x) => x.id === r.id) ? prev : [r, ...(prev ?? [])]);
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "time_capsules" }, (payload) => {
+        const r = payload.new as Capsule;
+        setItems((prev) => (prev ?? []).map((x) => x.id === r.id ? r : x));
+      })
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "time_capsules" }, (payload) => {
+        const r = payload.old as Capsule;
+        setItems((prev) => (prev ?? []).filter((x) => x.id !== r.id));
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, []);
+
   const create = async () => {
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return;
