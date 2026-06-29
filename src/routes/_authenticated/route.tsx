@@ -58,7 +58,7 @@ function AuthedLayout() {
       <div className="mx-auto max-w-7xl grid lg:grid-cols-[260px_1fr] gap-6 p-4 md:p-6">
         <aside className="hidden lg:block">
           <div className="glass rounded-3xl p-4 sticky top-6 shadow-soft">
-            <div className="px-2 py-2"><Logo /></div>
+            <div className="px-2 py-2 flex items-center justify-between"><Logo /><NotificationBell /></div>
             <nav className="mt-4 space-y-1">
               {nav.map((n) => (
                 <Link
