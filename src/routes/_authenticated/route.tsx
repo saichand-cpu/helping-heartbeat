@@ -9,6 +9,7 @@ import { useTheme } from "@/hooks/use-theme";
 import { useEffect, useState } from "react";
 import { useIsAdmin } from "@/hooks/use-role";
 import { HumiAssistant } from "@/components/site/HumiAssistant";
+import { NotificationBell } from "@/components/site/NotificationBell";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -100,6 +101,7 @@ function AuthedLayout() {
         <div className="lg:hidden glass rounded-2xl px-4 py-3 flex items-center justify-between">
           <Logo />
           <div className="flex items-center gap-1">
+            <NotificationBell />
             <Button variant="ghost" size="icon" onClick={toggle}>{theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}</Button>
             <Button variant="ghost" size="icon" onClick={signOut}><LogOut className="h-4 w-4" /></Button>
           </div>
