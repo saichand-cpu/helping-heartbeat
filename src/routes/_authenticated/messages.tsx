@@ -355,8 +355,15 @@ function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack
                     m.pending && "opacity-70",
                   )}>
                     <div className="whitespace-pre-wrap break-words">{m.content}</div>
-                    <div className={cn("text-[10px] mt-0.5 opacity-70 text-right")}>
-                      {m.pending ? "sending…" : new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    <div className={cn("text-[10px] mt-0.5 opacity-80 text-right flex items-center gap-1 justify-end")}>
+                      <span>
+                        {m.pending ? "sending…" : new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                      {mine && !m.pending && (
+                        m.read
+                          ? <CheckCheck className="h-3 w-3 text-sky-300" aria-label="Read" />
+                          : <Check className="h-3 w-3 opacity-80" aria-label="Sent" />
+                      )}
                     </div>
                   </div>
                 </motion.div>
