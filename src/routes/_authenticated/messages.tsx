@@ -195,6 +195,19 @@ function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack
   const [sending, setSending] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
 
+  // Mark all unread messages from `other` as read (server + optimistic local).
+  const markThreadRead = useCallbackRef(async (rows: Msg[]) => {
+    if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
+    const unreadIds = rows.filter((m) => m.receiver_id === me && m.sender_id === other.other_id && !m.read && !m.pending).map((m) => m.id);
+    if (unreadIds.length === 0) return;
+    setMsgs((prev) => prev.map((m) => (unreadIds.includes(m.id) ? { ...m, read: true } : m)));
+    await supabase
+      .from("messages")
+      .update({ read: true })
+      .in("id", unreadIds)
+      .eq("receiver_id", me);
+  });
+
   useEffect(() => {
     let alive = true;
     setLoading(true);
@@ -207,8 +220,10 @@ function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack
         .order("created_at", { ascending: true })
         .limit(200);
       if (!alive) return;
-      setMsgs((data ?? []) as Msg[]);
+      const rows = (data ?? []) as Msg[];
+      setMsgs(rows);
       setLoading(false);
+      markThreadRead(rows);
     })();
 
     const ch = supabase
@@ -232,11 +247,36 @@ function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack
             if (prev.find((x) => x.id === m.id)) return prev;
             return [...prev, m];
           });
+          // If the incoming message is addressed to me, mark it read immediately.
+          if (m.receiver_id === me && m.sender_id === other.other_id) {
+            markThreadRead([m]);
+          }
+        })
+      .on("postgres_changes",
+        { event: "UPDATE", schema: "public", table: "messages" },
+        (payload) => {
+          const m = payload.new as Msg;
+          const inThread =
+            (m.sender_id === me && m.receiver_id === other.other_id) ||
+            (m.sender_id === other.other_id && m.receiver_id === me);
+          if (!inThread) return;
+          setMsgs((prev) => prev.map((x) => (x.id === m.id ? { ...x, ...m } : x)));
         })
       .subscribe();
 
-    return () => { alive = false; supabase.removeChannel(ch); };
-  }, [me, other.other_id]);
+    const onVis = () => {
+      if (document.visibilityState === "visible") {
+        setMsgs((prev) => { markThreadRead(prev); return prev; });
+      }
+    };
+    document.addEventListener("visibilitychange", onVis);
+
+    return () => {
+      alive = false;
+      supabase.removeChannel(ch);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+  }, [me, other.other_id, markThreadRead]);
 
   useEffect(() => {
     const el = scrollerRef.current;
