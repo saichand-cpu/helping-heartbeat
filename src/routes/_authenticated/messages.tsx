@@ -196,7 +196,7 @@ function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack
   const scrollerRef = useRef<HTMLDivElement>(null);
 
   // Mark all unread messages from `other` as read (server + optimistic local).
-  const markThreadRead = useCallbackRef(async (rows: Msg[]) => {
+  const markThreadRead = useCallback(async (rows: Msg[]) => {
     if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
     const unreadIds = rows.filter((m) => m.receiver_id === me && m.sender_id === other.other_id && !m.read && !m.pending).map((m) => m.id);
     if (unreadIds.length === 0) return;
