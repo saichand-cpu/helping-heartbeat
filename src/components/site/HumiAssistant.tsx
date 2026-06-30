@@ -89,9 +89,15 @@ export function HumiAssistant() {
     const ctrl = new AbortController();
     abortRef.current = ctrl;
     try {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess.session?.access_token;
+      if (!token) throw new Error("Sign in to use HUMI");
       const res = await fetch("/api/humi-chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           messages: next.map((m) => ({ role: m.role, content: m.content, attachments: m.attachments })),
         }),
