@@ -57,12 +57,20 @@ function PublicProfile() {
       return;
     }
 
-    const { data: prof } = await supabase
-      .from("profiles")
-      .select("id, full_name, avatar_url, bio, location, karma_points, verified, incognito, premium_tier, skills, languages, phone")
-      .eq("id", userId)
-      .maybeSingle();
-    setProfile(prof as Profile | null);
+    const [{ data: prof }, { data: contact }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("id, full_name, avatar_url, bio, location, karma_points, verified, incognito, premium_tier, skills, languages")
+        .eq("id", userId)
+        .maybeSingle(),
+      supabase
+        .from("profile_contacts" as never)
+        .select("phone")
+        .eq("user_id", userId)
+        .maybeSingle(),
+    ]);
+    const phone = ((contact as { phone?: string } | null)?.phone) ?? null;
+    setProfile(prof ? ({ ...(prof as object), phone } as Profile) : null);
 
     if (meId) {
       // Offers where (I'm helper, target is requester) OR (I'm requester, target is helper)
