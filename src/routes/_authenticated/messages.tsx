@@ -27,6 +27,7 @@ type Msg = {
   receiver_id: string;
   content: string;
   created_at: string;
+  read?: boolean;
   pending?: boolean;
 };
 
