@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 type Attachment = { name: string; mime: string; dataUrl: string };
 type Msg = {
