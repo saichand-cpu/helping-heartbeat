@@ -206,7 +206,7 @@ function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack
       .update({ read: true })
       .in("id", unreadIds)
       .eq("receiver_id", me);
-  });
+  }, [me, other.other_id]);
 
   useEffect(() => {
     let alive = true;
