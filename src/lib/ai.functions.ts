@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const Input = z.object({ description: z.string().min(5).max(2000) });
 
@@ -11,6 +12,7 @@ type Improved = {
 };
 
 export const improveRequest = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => Input.parse(input))
   .handler(async ({ data }): Promise<Improved> => {
     const apiKey = process.env.LOVABLE_API_KEY;
@@ -61,6 +63,7 @@ const CaptionInput = z.object({
 });
 
 export const writeCaption = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => CaptionInput.parse(input))
   .handler(async ({ data }): Promise<{ caption: string }> => {
     const apiKey = process.env.LOVABLE_API_KEY;

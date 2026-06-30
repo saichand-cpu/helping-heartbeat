@@ -46,23 +46,7 @@ export function MockPaymentModal({
       return;
     }
 
-    const tier = plan.name.toLowerCase().includes("pro")
-      ? "pro"
-      : plan.name.toLowerCase().includes("plus")
-        ? "plus"
-        : "basic";
-
-    const until = new Date();
-    until.setMonth(until.getMonth() + 1);
-
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        verified: true,
-        premium_tier: tier,
-        premium_until: until.toISOString(),
-      })
-      .eq("id", u.user.id);
+    const { error } = await supabase.rpc("activate_premium" as never, { _plan_id: plan.id } as never);
 
     if (error) {
       toast.error(error.message);

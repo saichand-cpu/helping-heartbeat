@@ -353,6 +353,27 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_contacts: {
+        Row: {
+          created_at: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -366,7 +387,6 @@ export type Database = {
           languages: string[] | null
           location: string | null
           onboarded: boolean
-          phone: string | null
           premium_tier: string | null
           premium_until: string | null
           role: Database["public"]["Enums"]["user_role"]
@@ -387,7 +407,6 @@ export type Database = {
           languages?: string[] | null
           location?: string | null
           onboarded?: boolean
-          phone?: string | null
           premium_tier?: string | null
           premium_until?: string | null
           role?: Database["public"]["Enums"]["user_role"]
@@ -408,7 +427,6 @@ export type Database = {
           languages?: string[] | null
           location?: string | null
           onboarded?: boolean
-          phone?: string | null
           premium_tier?: string | null
           premium_until?: string | null
           role?: Database["public"]["Enums"]["user_role"]
@@ -632,6 +650,35 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      activate_premium: {
+        Args: { _plan_id: string }
+        Returns: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          full_name: string
+          id: string
+          incognito: boolean
+          interests: string[] | null
+          karma_points: number
+          languages: string[] | null
+          location: string | null
+          onboarded: boolean
+          premium_tier: string | null
+          premium_until: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          skills: string[] | null
+          updated_at: string
+          username: string | null
+          verified: boolean
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       contribute_to_capsule: {
         Args: { _amount: number; _capsule_id: string }
         Returns: {

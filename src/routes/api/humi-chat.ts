@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { createClient } from "@supabase/supabase-js";
 
 type Attachment = {
   name: string;
@@ -47,6 +48,25 @@ export const Route = createFileRoute("/api/humi-chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // ── Auth gate: require a valid Supabase bearer token ─────────────
+        const authHeader = request.headers.get("authorization") ?? "";
+        const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+        if (!token || token.split(".").length !== 3) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        const supabaseUrl = process.env.SUPABASE_URL;
+        const supabasePub = process.env.SUPABASE_PUBLISHABLE_KEY;
+        if (!supabaseUrl || !supabasePub) {
+          return new Response("Auth not configured", { status: 500 });
+        }
+        const sb = createClient(supabaseUrl, supabasePub, {
+          auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+        });
+        const { data: claims, error: claimsErr } = await sb.auth.getClaims(token);
+        if (claimsErr || !claims?.claims?.sub) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+
         const key = process.env.LOVABLE_API_KEY;
         if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
         let body: Body;
