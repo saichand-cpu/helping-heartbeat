@@ -71,18 +71,24 @@ function ProfilePage() {
     setSaving(true);
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return;
-    const { error } = await supabase.from("profiles").update({
-      full_name: profile.full_name,
-      bio: profile.bio,
-      location: profile.location,
-      role: profile.role as never,
-      skills: profile.skills.split(",").map((s) => s.trim()).filter(Boolean),
-      languages: profile.languages.split(",").map((s) => s.trim()).filter(Boolean),
-      phone: profile.phone.trim() || null,
-      onboarded: true,
-    } as any).eq("id", u.user.id);
+    const [{ error }, { error: contactErr }] = await Promise.all([
+      supabase.from("profiles").update({
+        full_name: profile.full_name,
+        bio: profile.bio,
+        location: profile.location,
+        role: profile.role as never,
+        skills: profile.skills.split(",").map((s) => s.trim()).filter(Boolean),
+        languages: profile.languages.split(",").map((s) => s.trim()).filter(Boolean),
+        onboarded: true,
+      } as any).eq("id", u.user.id),
+      supabase.from("profile_contacts" as never).upsert({
+        user_id: u.user.id,
+        phone: profile.phone.trim() || null,
+      } as never),
+    ]);
     setSaving(false);
     if (error) return toast.error(error.message);
+    if (contactErr) return toast.error(contactErr.message);
     toast.success("Profile updated");
   };
 
