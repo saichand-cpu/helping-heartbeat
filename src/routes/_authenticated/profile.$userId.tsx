@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
-  Award, ShieldCheck, EyeOff, MessageCircle, Phone, Lock, Loader2, ArrowLeft, MapPin, Check, X,
+  Award, ShieldCheck, EyeOff, MessageCircle, Phone, Lock, Loader2, ArrowLeft, MapPin, Check, X, UserPlus, UserCheck,
 } from "lucide-react";
+import { useFollow } from "@/hooks/use-follow";
 
 export const Route = createFileRoute("/_authenticated/profile/$userId")({
   component: PublicProfile,
@@ -176,6 +177,9 @@ function PublicProfile() {
         )}
       </motion.div>
 
+      {/* Follow + stats */}
+      <FollowBlock targetId={profile.id} />
+
       {/* Action bar */}
       <div className="glass rounded-3xl p-5 shadow-soft space-y-3">
         <div className="flex flex-wrap items-center gap-2">
@@ -194,7 +198,7 @@ function PublicProfile() {
           )}
         </div>
         <p className="text-xs text-muted-foreground">
-          Contact details (phone) stay private until {display.split(" ")[0]} accepts your offer to help on a specific request.
+          Contact details (phone) stay private until {(display ?? "this user").split(" ")[0]} accepts your offer to help on a specific request.
         </p>
       </div>
 
@@ -242,6 +246,30 @@ function PublicProfile() {
           ) : null}
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function FollowBlock({ targetId }: { targetId: string }) {
+  const { following, followers, followingCount, busy, toggle, isMe, loading } = useFollow(targetId);
+  return (
+    <div className="glass rounded-3xl p-5 shadow-soft flex flex-wrap items-center justify-between gap-3">
+      <div className="flex gap-6 text-sm">
+        <div><span className="font-bold text-base">{followers}</span> <span className="text-muted-foreground">Followers</span></div>
+        <div><span className="font-bold text-base">{followingCount}</span> <span className="text-muted-foreground">Following</span></div>
+      </div>
+      {!isMe && (
+        <Button
+          onClick={toggle}
+          disabled={busy || loading}
+          className={following
+            ? "bg-card border border-amber-400/60 text-foreground hover:bg-amber-500/10"
+            : "bg-gradient-brand text-primary-foreground border-0 shadow-glow"}
+        >
+          {following ? <UserCheck className="h-4 w-4 mr-1" /> : <UserPlus className="h-4 w-4 mr-1" />}
+          {following ? "Following" : "Follow"}
+        </Button>
+      )}
     </div>
   );
 }
