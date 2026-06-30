@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Lock, Unlock, Sparkles, Plus, Heart } from "lucide-react";
+import { Lock, Unlock, Sparkles, Plus, Heart, Camera, Loader2, Trash2 } from "lucide-react";
+import { uploadFeedMedia, resolveMediaUrl } from "@/lib/upload";
 
 export const Route = createFileRoute("/_authenticated/capsules")({
   component: CapsulesPage,
@@ -159,9 +160,12 @@ function CapsulesPage() {
                   <Progress value={pct} />
                 </div>
                 {unlocked ? (
-                  <div className="mt-4 p-4 rounded-2xl bg-gradient-to-br from-amber-400/20 to-primary/20 text-sm">
-                    <div className="font-semibold mb-1">🎉 Unlocked!</div>
-                    Unlocked on {new Date(c.unlocked_at!).toLocaleDateString()} — thank you, community.
+                  <div className="mt-4 space-y-3">
+                    <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-400/20 to-primary/20 text-sm border border-amber-400/40">
+                      <div className="font-semibold mb-1">🎉 Unlocked!</div>
+                      Unlocked on {new Date(c.unlocked_at!).toLocaleDateString()} — thank you, community.
+                    </div>
+                    <ProofGallery capsule={c} />
                   </div>
                 ) : (
                   <div className="mt-4 flex flex-wrap gap-2">
@@ -175,6 +179,108 @@ function CapsulesPage() {
               </motion.div>
             );
           })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+type Proof = { id: string; capsule_id: string; owner_id: string; image_url: string; caption: string | null; created_at: string };
+
+function ProofGallery({ capsule }: { capsule: Capsule }) {
+  const [me, setMe] = useState<string | null>(null);
+  const [proofs, setProofs] = useState<Proof[]>([]);
+  const [signed, setSigned] = useState<Record<string, string>>({});
+  const [caption, setCaption] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setMe(data.user?.id ?? null));
+  }, []);
+
+  const load = async () => {
+    const { data } = await supabase.from("capsule_proofs" as never).select("*").eq("capsule_id", capsule.id).order("created_at", { ascending: false });
+    const rows = ((data ?? []) as unknown) as Proof[];
+    setProofs(rows);
+    const map: Record<string, string> = {};
+    await Promise.all(rows.map(async (p) => {
+      const url = await resolveMediaUrl(p.image_url);
+      if (url) map[p.id] = url;
+    }));
+    setSigned(map);
+  };
+  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [capsule.id]);
+
+  const isOwner = me === capsule.owner_id;
+
+  const onFile = async (file: File) => {
+    setUploading(true);
+    try {
+      const up = await uploadFeedMedia(file);
+      const { error } = await supabase.from("capsule_proofs" as never).insert({
+        capsule_id: capsule.id,
+        owner_id: me,
+        image_url: `feed-media:${up.path}`,
+        caption: caption.trim() || null,
+      } as never);
+      if (error) throw error;
+      setCaption("");
+      toast.success("Proof of impact uploaded");
+      load();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const remove = async (id: string) => {
+    await supabase.from("capsule_proofs" as never).delete().eq("id", id);
+    setProofs((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Proof of Impact</div>
+      {proofs.length > 0 ? (
+        <div className="grid grid-cols-2 gap-2">
+          {proofs.map((p) => (
+            <div key={p.id} className="relative rounded-xl overflow-hidden border border-amber-400/30 bg-card group">
+              {signed[p.id] ? (
+                <img src={signed[p.id]} alt={p.caption ?? "proof"} className="w-full h-32 object-cover" />
+              ) : <div className="w-full h-32 bg-muted animate-pulse" />}
+              {p.caption && <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[10px] px-2 py-1 truncate">{p.caption}</div>}
+              {isOwner && (
+                <button onClick={() => remove(p.id)} className="absolute top-1 right-1 h-6 w-6 rounded-full bg-black/60 text-white grid place-items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-xs text-muted-foreground">No proof shared yet.</p>
+      )}
+      {isOwner && (
+        <div className="rounded-2xl border border-dashed border-amber-400/50 p-3 space-y-2 bg-amber-500/[0.03]">
+          <Input
+            placeholder="Caption (optional)"
+            value={caption}
+            onChange={(e) => setCaption(e.target.value)}
+            className="h-8 text-xs"
+          />
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); e.currentTarget.value = ""; }}
+          />
+          <Button size="sm" disabled={uploading} onClick={() => fileRef.current?.click()} className="bg-gradient-brand text-primary-foreground border-0 w-full">
+            {uploading ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Camera className="h-3.5 w-3.5 mr-1" />}
+            Upload proof image
+          </Button>
         </div>
       )}
     </div>
