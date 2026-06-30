@@ -79,6 +79,62 @@ export type Database = {
         }
         Relationships: []
       }
+      capsule_proofs: {
+        Row: {
+          capsule_id: string
+          caption: string | null
+          created_at: string
+          id: string
+          image_url: string
+          owner_id: string
+        }
+        Insert: {
+          capsule_id: string
+          caption?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          owner_id: string
+        }
+        Update: {
+          capsule_id?: string
+          caption?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          owner_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capsule_proofs_capsule_id_fkey"
+            columns: ["capsule_id"]
+            isOneToOne: false
+            referencedRelation: "time_capsules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      follows: {
+        Row: {
+          created_at: string
+          followed_id: string
+          follower_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          followed_id: string
+          follower_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          followed_id?: string
+          follower_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
       help_requests: {
         Row: {
           budget: number | null
