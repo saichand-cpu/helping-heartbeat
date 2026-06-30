@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MessageCircle, Send, ArrowLeft, Loader2 } from "lucide-react";
+import { MessageCircle, Send, ArrowLeft, Loader2, Check, CheckCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/messages")({
@@ -27,6 +27,7 @@ type Msg = {
   receiver_id: string;
   content: string;
   created_at: string;
+  read?: boolean;
   pending?: boolean;
 };
 
@@ -194,6 +195,19 @@ function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack
   const [sending, setSending] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
 
+  // Mark all unread messages from `other` as read (server + optimistic local).
+  const markThreadRead = useCallback(async (rows: Msg[]) => {
+    if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
+    const unreadIds = rows.filter((m) => m.receiver_id === me && m.sender_id === other.other_id && !m.read && !m.pending).map((m) => m.id);
+    if (unreadIds.length === 0) return;
+    setMsgs((prev) => prev.map((m) => (unreadIds.includes(m.id) ? { ...m, read: true } : m)));
+    await supabase
+      .from("messages")
+      .update({ read: true })
+      .in("id", unreadIds)
+      .eq("receiver_id", me);
+  }, [me, other.other_id]);
+
   useEffect(() => {
     let alive = true;
     setLoading(true);
@@ -206,8 +220,10 @@ function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack
         .order("created_at", { ascending: true })
         .limit(200);
       if (!alive) return;
-      setMsgs((data ?? []) as Msg[]);
+      const rows = (data ?? []) as Msg[];
+      setMsgs(rows);
       setLoading(false);
+      markThreadRead(rows);
     })();
 
     const ch = supabase
@@ -231,11 +247,36 @@ function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack
             if (prev.find((x) => x.id === m.id)) return prev;
             return [...prev, m];
           });
+          // If the incoming message is addressed to me, mark it read immediately.
+          if (m.receiver_id === me && m.sender_id === other.other_id) {
+            markThreadRead([m]);
+          }
+        })
+      .on("postgres_changes",
+        { event: "UPDATE", schema: "public", table: "messages" },
+        (payload) => {
+          const m = payload.new as Msg;
+          const inThread =
+            (m.sender_id === me && m.receiver_id === other.other_id) ||
+            (m.sender_id === other.other_id && m.receiver_id === me);
+          if (!inThread) return;
+          setMsgs((prev) => prev.map((x) => (x.id === m.id ? { ...x, ...m } : x)));
         })
       .subscribe();
 
-    return () => { alive = false; supabase.removeChannel(ch); };
-  }, [me, other.other_id]);
+    const onVis = () => {
+      if (document.visibilityState === "visible") {
+        setMsgs((prev) => { markThreadRead(prev); return prev; });
+      }
+    };
+    document.addEventListener("visibilitychange", onVis);
+
+    return () => {
+      alive = false;
+      supabase.removeChannel(ch);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+  }, [me, other.other_id, markThreadRead]);
 
   useEffect(() => {
     const el = scrollerRef.current;
@@ -314,8 +355,15 @@ function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack
                     m.pending && "opacity-70",
                   )}>
                     <div className="whitespace-pre-wrap break-words">{m.content}</div>
-                    <div className={cn("text-[10px] mt-0.5 opacity-70 text-right")}>
-                      {m.pending ? "sending…" : new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    <div className={cn("text-[10px] mt-0.5 opacity-80 text-right flex items-center gap-1 justify-end")}>
+                      <span>
+                        {m.pending ? "sending…" : new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                      {mine && !m.pending && (
+                        m.read
+                          ? <CheckCheck className="h-3 w-3 text-sky-300" aria-label="Read" />
+                          : <Check className="h-3 w-3 opacity-80" aria-label="Sent" />
+                      )}
                     </div>
                   </div>
                 </motion.div>
