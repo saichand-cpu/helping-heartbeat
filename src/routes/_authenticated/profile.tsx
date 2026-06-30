@@ -44,7 +44,10 @@ function ProfilePage() {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) return;
       setMeId(u.user.id);
-      const { data } = await supabase.from("profiles").select("*").eq("id", u.user.id).maybeSingle();
+      const [{ data }, { data: contact }] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", u.user.id).maybeSingle(),
+        supabase.from("profile_contacts" as never).select("phone").eq("user_id", u.user.id).maybeSingle(),
+      ]);
       if (data) {
         setProfile({
           full_name: data.full_name ?? "",
@@ -53,7 +56,7 @@ function ProfilePage() {
           role: data.role ?? "both",
           skills: (data.skills ?? []).join(", "),
           languages: (data.languages ?? []).join(", "),
-          phone: (data as any).phone ?? "",
+          phone: ((contact as { phone?: string } | null)?.phone) ?? "",
           karma_points: data.karma_points ?? 0,
           verified: data.verified ?? false,
           incognito: (data as any).incognito ?? false,
