@@ -131,8 +131,9 @@ function SuggestionCard({
   viewerId: string | null;
   onDismiss: () => void;
 }) {
-  const { isFollowing, toggle, loading } = useFollow(row.id);
+  const { following: isFollowing, toggle, busy } = useFollow(row.id);
   const id = displayIdentity(row, viewerId);
+  const loading = busy;
   return (
     <div className="w-40 shrink-0 snap-start rounded-2xl border border-border bg-card p-3 flex flex-col items-center text-center relative">
       <button
