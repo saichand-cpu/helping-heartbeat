@@ -445,6 +445,7 @@ export type Database = {
           onboarded: boolean
           premium_tier: string | null
           premium_until: string | null
+          profession: string | null
           role: Database["public"]["Enums"]["user_role"]
           skills: string[] | null
           updated_at: string
@@ -465,6 +466,7 @@ export type Database = {
           onboarded?: boolean
           premium_tier?: string | null
           premium_until?: string | null
+          profession?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           skills?: string[] | null
           updated_at?: string
@@ -485,6 +487,7 @@ export type Database = {
           onboarded?: boolean
           premium_tier?: string | null
           premium_until?: string | null
+          profession?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           skills?: string[] | null
           updated_at?: string
@@ -722,6 +725,7 @@ export type Database = {
           onboarded: boolean
           premium_tier: string | null
           premium_until: string | null
+          profession: string | null
           role: Database["public"]["Enums"]["user_role"]
           skills: string[] | null
           updated_at: string
@@ -763,6 +767,8 @@ export type Database = {
         }
         Returns: boolean
       }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
       app_role: "admin" | "user"
