@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Storefront } from "@/components/site/Storefront";
+import { ProfessionPicker } from "@/components/site/ProfessionPicker";
 import { usePremium } from "@/hooks/use-premium";
 import { Link } from "@tanstack/react-router";
 
@@ -34,6 +35,7 @@ function ProfilePage() {
     skills: "",
     languages: "",
     phone: "",
+    profession: "",
     karma_points: 0,
     verified: false,
     incognito: false,
@@ -57,9 +59,10 @@ function ProfilePage() {
           skills: (data.skills ?? []).join(", "),
           languages: (data.languages ?? []).join(", "),
           phone: ((contact as { phone?: string } | null)?.phone) ?? "",
+          profession: ((data as { profession?: string | null }).profession) ?? "",
           karma_points: data.karma_points ?? 0,
           verified: data.verified ?? false,
-          incognito: (data as any).incognito ?? false,
+          incognito: (data as { incognito?: boolean }).incognito ?? false,
         });
       }
       setLoading(false);
@@ -68,9 +71,13 @@ function ProfilePage() {
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!profile.profession.trim()) {
+      toast.error("Profession is required — pick one below.");
+      return;
+    }
     setSaving(true);
     const { data: u } = await supabase.auth.getUser();
-    if (!u.user) return;
+    if (!u?.user) return;
     const [{ error }, { error: contactErr }] = await Promise.all([
       supabase.from("profiles").update({
         full_name: profile.full_name,
@@ -79,8 +86,9 @@ function ProfilePage() {
         role: profile.role as never,
         skills: profile.skills.split(",").map((s) => s.trim()).filter(Boolean),
         languages: profile.languages.split(",").map((s) => s.trim()).filter(Boolean),
+        profession: profile.profession.trim(),
         onboarded: true,
-      } as any).eq("id", u.user.id),
+      } as never).eq("id", u.user.id),
       supabase.from("profile_contacts" as never).upsert({
         user_id: u.user.id,
         phone: profile.phone.trim() || null,
