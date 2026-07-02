@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { smartMatch } from "@/lib/ai-match.functions";
+import { UserSearch } from "@/components/site/UserSearch";
+import { SuggestedForYou } from "@/components/site/SuggestedForYou";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -71,6 +73,10 @@ function Dashboard() {
           </div>
         </div>
       </motion.div>
+
+      <UserSearch />
+
+      <SuggestedForYou />
 
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList className="glass">
