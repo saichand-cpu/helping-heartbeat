@@ -107,7 +107,7 @@ function ProfilePage() {
     }
     setTogglingIncognito(true);
     setProfile((p) => ({ ...p, incognito: next }));
-    const { error } = await supabase.from("profiles").update({ incognito: next } as any).eq("id", meId);
+    const { error } = await supabase.from("profiles").update({ incognito: next } as never).eq("id", meId);
     setTogglingIncognito(false);
     if (error) {
       setProfile((p) => ({ ...p, incognito: !next }));
@@ -216,10 +216,23 @@ function ProfilePage() {
           </div>
         </div>
         <div>
+          <Label>Profession <span className="text-destructive">*</span></Label>
+          <div className="mt-2">
+            <ProfessionPicker
+              value={profile.profession}
+              onChange={(v) => setProfile({ ...profile, profession: v })}
+            />
+          </div>
+        </div>
+        <div>
           <Label>Phone (private — only shown after you accept a helper's offer)</Label>
           <Input value={profile.phone} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} placeholder="+91 98765 43210" type="tel" />
         </div>
-        <Button type="submit" disabled={saving} className="bg-gradient-brand text-primary-foreground border-0 shadow-glow">
+        <Button
+          type="submit"
+          disabled={saving || !profile.profession.trim()}
+          className="bg-gradient-brand text-primary-foreground border-0 shadow-glow"
+        >
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save changes"}
         </Button>
         <p className="text-[11px] text-muted-foreground">Current tier: <span className="font-medium uppercase">{tier}</span></p>
