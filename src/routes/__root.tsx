@@ -14,6 +14,7 @@ import logoAsset from "../assets/humanlink-logo.jpeg.asset.json";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { GlobalErrorBoundary } from "@/components/site/GlobalErrorBoundary";
 
 function NotFoundComponent() {
   return (
@@ -135,7 +136,9 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <GlobalErrorBoundary>
+        <Outlet />
+      </GlobalErrorBoundary>
       <Toaster richColors position="top-right" />
     </QueryClientProvider>
   );
