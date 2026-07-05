@@ -20,6 +20,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { writeCaption } from "@/lib/ai.functions";
 import { displayIdentity } from "@/lib/identity";
 import { resolveMediaUrl, type UploadedMedia } from "@/lib/upload";
+import { BookmarkButton } from "@/components/site/BookmarkButton";
 
 export const Route = createFileRoute("/_authenticated/feed")({
   component: FeedPage,
@@ -400,9 +401,12 @@ function PostCard({
         <Button variant="ghost" size="sm" onClick={() => setShowComments((v) => !v)} className="text-muted-foreground">
           <MessageCircle className="h-4 w-4 mr-1" /> {post.comment_count}
         </Button>
-        <Button variant="ghost" size="sm" onClick={onShare} className="text-muted-foreground ml-auto">
-          <Share2 className="h-4 w-4" />
-        </Button>
+        <div className="ml-auto flex items-center gap-1">
+          <BookmarkButton postId={post.id} />
+          <Button variant="ghost" size="sm" onClick={onShare} className="text-muted-foreground">
+            <Share2 className="h-4 w-4" />
+          </Button>
+        </div>
         {isOwner && (
           <Button variant="ghost" size="sm" onClick={onDelete} className="text-muted-foreground hover:text-destructive" aria-label="Delete post">
             <Trash2 className="h-4 w-4" />
