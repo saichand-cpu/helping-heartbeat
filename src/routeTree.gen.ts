@@ -17,6 +17,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiHumiChatRouteImport } from './routes/api/humi-chat'
+import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated/search'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
@@ -69,6 +70,11 @@ const ApiHumiChatRoute = ApiHumiChatRouteImport.update({
   id: '/api/humi-chat',
   path: '/api/humi-chat',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedSearchRoute = AuthenticatedSearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
@@ -157,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/messages': typeof AuthenticatedMessagesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/search': typeof AuthenticatedSearchRoute
   '/api/humi-chat': typeof ApiHumiChatRoute
   '/admin-dashboard/metrics': typeof AuthenticatedAdminDashboardMetricsRoute
   '/profile/$userId': typeof AuthenticatedProfileUserIdRoute
@@ -179,6 +186,7 @@ export interface FileRoutesByTo {
   '/messages': typeof AuthenticatedMessagesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/search': typeof AuthenticatedSearchRoute
   '/api/humi-chat': typeof ApiHumiChatRoute
   '/admin-dashboard/metrics': typeof AuthenticatedAdminDashboardMetricsRoute
   '/profile/$userId': typeof AuthenticatedProfileUserIdRoute
@@ -203,6 +211,7 @@ export interface FileRoutesById {
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/_authenticated/search': typeof AuthenticatedSearchRoute
   '/api/humi-chat': typeof ApiHumiChatRoute
   '/_authenticated/admin-dashboard/metrics': typeof AuthenticatedAdminDashboardMetricsRoute
   '/_authenticated/profile/$userId': typeof AuthenticatedProfileUserIdRoute
@@ -227,6 +236,7 @@ export interface FileRouteTypes {
     | '/messages'
     | '/onboarding'
     | '/profile'
+    | '/search'
     | '/api/humi-chat'
     | '/admin-dashboard/metrics'
     | '/profile/$userId'
@@ -249,6 +259,7 @@ export interface FileRouteTypes {
     | '/messages'
     | '/onboarding'
     | '/profile'
+    | '/search'
     | '/api/humi-chat'
     | '/admin-dashboard/metrics'
     | '/profile/$userId'
@@ -272,6 +283,7 @@ export interface FileRouteTypes {
     | '/_authenticated/messages'
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
+    | '/_authenticated/search'
     | '/api/humi-chat'
     | '/_authenticated/admin-dashboard/metrics'
     | '/_authenticated/profile/$userId'
@@ -348,6 +360,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/humi-chat'
       preLoaderRoute: typeof ApiHumiChatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/search': {
+      id: '/_authenticated/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof AuthenticatedSearchRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
@@ -463,6 +482,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRouteWithChildren
+  AuthenticatedSearchRoute: typeof AuthenticatedSearchRoute
   AuthenticatedAdminDashboardMetricsRoute: typeof AuthenticatedAdminDashboardMetricsRoute
   AuthenticatedRequestsNewRoute: typeof AuthenticatedRequestsNewRoute
   AuthenticatedAdminDashboardIndexRoute: typeof AuthenticatedAdminDashboardIndexRoute
@@ -478,6 +498,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRouteWithChildren,
+  AuthenticatedSearchRoute: AuthenticatedSearchRoute,
   AuthenticatedAdminDashboardMetricsRoute:
     AuthenticatedAdminDashboardMetricsRoute,
   AuthenticatedRequestsNewRoute: AuthenticatedRequestsNewRoute,
