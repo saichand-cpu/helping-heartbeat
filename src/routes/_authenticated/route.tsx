@@ -36,6 +36,7 @@ const baseNav = [
   { to: "/dashboard" as const, label: "Dashboard", icon: LayoutDashboard },
   { to: "/feed" as const, label: "Feed", icon: Newspaper },
   { to: "/requests" as const, label: "Requests", icon: HeartHandshake },
+  { to: "/search" as const, label: "Search", icon: Search },
   { to: "/messages" as const, label: "Messages", icon: MessageCircle },
   { to: "/capsules" as const, label: "Capsules", icon: Sparkles },
   { to: "/leaderboard" as const, label: "Leaderboard", icon: Trophy },
