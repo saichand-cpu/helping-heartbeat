@@ -50,7 +50,7 @@ function MessagesPage() {
     rows.forEach((m) => {
       const other = m.sender_id === meId ? m.receiver_id : m.sender_id;
       if (!map.has(other)) {
-        map.set(other, { other_id: other, last: m.content, time: m.created_at, full_name: null, avatar_url: null, unread: 0 });
+        map.set(other, { other_id: other, last: m.content, time: m.created_at, full_name: null, avatar_url: null, profession: null, unread: 0 });
       }
     });
     return map;
