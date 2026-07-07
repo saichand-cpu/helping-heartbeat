@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Award, ShieldCheck, EyeOff } from "lucide-react";
+import { Loader2, Award, ShieldCheck, EyeOff, Handshake } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,7 +39,10 @@ function ProfilePage() {
     karma_points: 0,
     verified: false,
     incognito: false,
+    seeking_cofounder: false,
+    cofounder_pitch: "",
   });
+  const [savingCofounder, setSavingCofounder] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -63,6 +66,8 @@ function ProfilePage() {
           karma_points: data.karma_points ?? 0,
           verified: data.verified ?? false,
           incognito: (data as { incognito?: boolean }).incognito ?? false,
+          seeking_cofounder: (data as { seeking_cofounder?: boolean }).seeking_cofounder ?? false,
+          cofounder_pitch: (data as { cofounder_pitch?: string | null }).cofounder_pitch ?? "",
         });
       }
       setLoading(false);
@@ -114,6 +119,18 @@ function ProfilePage() {
       return toast.error(error.message);
     }
     toast.success(next ? "Incognito on — you'll appear as Anonymous Helper" : "Incognito off");
+  };
+
+  const saveCofounder = async (nextFlag: boolean, nextPitch: string) => {
+    if (!meId) return;
+    setSavingCofounder(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ seeking_cofounder: nextFlag, cofounder_pitch: nextPitch.trim() || null } as never)
+      .eq("id", meId);
+    setSavingCofounder(false);
+    if (error) return toast.error(error.message);
+    toast.success(nextFlag ? "You're now listed on the Co-Founder board" : "Removed from the Co-Founder board");
   };
 
   if (loading) return <div className="glass rounded-3xl h-96 animate-pulse" />;
@@ -172,6 +189,46 @@ function ProfilePage() {
           />
         </div>
       </section>
+
+      {/* Seeking co-founder */}
+      <section className="glass rounded-3xl p-5 md:p-6 shadow-soft space-y-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="h-9 w-9 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+              <Handshake className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="font-semibold">Seeking a co-founder</div>
+              <p className="text-xs text-muted-foreground mt-0.5 max-w-md">
+                Turn this on to appear in the "Find a Co-Founder" carousel on the Founder page.
+              </p>
+            </div>
+          </div>
+          <Switch
+            checked={profile.seeking_cofounder}
+            onCheckedChange={(next) => {
+              setProfile((p) => ({ ...p, seeking_cofounder: next }));
+              saveCofounder(next, profile.cofounder_pitch);
+            }}
+            disabled={savingCofounder}
+          />
+        </div>
+        {profile.seeking_cofounder && (
+          <div>
+            <Label>Your pitch (what you're building or looking for)</Label>
+            <Textarea
+              rows={3}
+              value={profile.cofounder_pitch}
+              onChange={(e) => setProfile({ ...profile, cofounder_pitch: e.target.value })}
+              onBlur={() => saveCofounder(profile.seeking_cofounder, profile.cofounder_pitch)}
+              placeholder="e.g. Building a community-first mental health app — looking for a technical partner who cares."
+              maxLength={240}
+            />
+            <p className="text-[11px] text-muted-foreground mt-1">Saved automatically. {240 - (profile.cofounder_pitch?.length ?? 0)} characters left.</p>
+          </div>
+        )}
+      </section>
+
 
       {/* Storefront */}
       {meId && (

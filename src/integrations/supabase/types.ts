@@ -463,6 +463,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           bio: string | null
+          cofounder_pitch: string | null
           created_at: string
           full_name: string
           id: string
@@ -476,6 +477,7 @@ export type Database = {
           premium_until: string | null
           profession: string | null
           role: Database["public"]["Enums"]["user_role"]
+          seeking_cofounder: boolean
           skills: string[] | null
           updated_at: string
           username: string | null
@@ -484,6 +486,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           bio?: string | null
+          cofounder_pitch?: string | null
           created_at?: string
           full_name?: string
           id: string
@@ -497,6 +500,7 @@ export type Database = {
           premium_until?: string | null
           profession?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          seeking_cofounder?: boolean
           skills?: string[] | null
           updated_at?: string
           username?: string | null
@@ -505,6 +509,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           bio?: string | null
+          cofounder_pitch?: string | null
           created_at?: string
           full_name?: string
           id?: string
@@ -518,6 +523,7 @@ export type Database = {
           premium_until?: string | null
           profession?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          seeking_cofounder?: boolean
           skills?: string[] | null
           updated_at?: string
           username?: string | null
@@ -743,6 +749,7 @@ export type Database = {
         Returns: {
           avatar_url: string | null
           bio: string | null
+          cofounder_pitch: string | null
           created_at: string
           full_name: string
           id: string
@@ -756,6 +763,7 @@ export type Database = {
           premium_until: string | null
           profession: string | null
           role: Database["public"]["Enums"]["user_role"]
+          seeking_cofounder: boolean
           skills: string[] | null
           updated_at: string
           username: string | null

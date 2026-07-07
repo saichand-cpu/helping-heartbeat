@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS seeking_cofounder boolean NOT NULL DEFAULT false; ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS cofounder_pitch text;

@@ -5,6 +5,7 @@ import { Footer } from "@/components/site/Footer";
 import { Button } from "@/components/ui/button";
 import { Heart, Users, Shield, Sparkles, Target, Eye, ArrowRight, Quote } from "lucide-react";
 import { FounderPortrait } from "@/components/site/FounderPortrait";
+import { CoFounderCarousel } from "@/components/site/CoFounderCarousel";
 
 export const Route = createFileRoute("/founder")({
   head: () => ({
@@ -67,6 +68,9 @@ function FounderPage() {
           </motion.div>
         </motion.div>
       </section>
+
+      {/* Find a Co-Founder */}
+      <CoFounderCarousel />
 
       {/* Stats */}
       <section className="mx-auto max-w-6xl px-6 -mt-12">
