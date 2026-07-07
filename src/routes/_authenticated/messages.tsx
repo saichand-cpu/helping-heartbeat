@@ -9,6 +9,9 @@ import { MessageCircle, Send, ArrowLeft, Loader2, Check, CheckCheck } from "luci
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/messages")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    user: typeof s?.user === "string" ? s.user : undefined,
+  }),
   component: MessagesPage,
 });
 
@@ -18,6 +21,7 @@ type Conversation = {
   time: string;
   full_name: string | null;
   avatar_url: string | null;
+  profession: string | null;
   unread: number;
 };
 
