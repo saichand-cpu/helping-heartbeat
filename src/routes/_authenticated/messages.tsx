@@ -9,6 +9,9 @@ import { MessageCircle, Send, ArrowLeft, Loader2, Check, CheckCheck } from "luci
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/messages")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    user: typeof s?.user === "string" ? s.user : undefined,
+  }),
   component: MessagesPage,
 });
 
@@ -18,6 +21,7 @@ type Conversation = {
   time: string;
   full_name: string | null;
   avatar_url: string | null;
+  profession: string | null;
   unread: number;
 };
 
@@ -46,7 +50,7 @@ function MessagesPage() {
     rows.forEach((m) => {
       const other = m.sender_id === meId ? m.receiver_id : m.sender_id;
       if (!map.has(other)) {
-        map.set(other, { other_id: other, last: m.content, time: m.created_at, full_name: null, avatar_url: null, unread: 0 });
+        map.set(other, { other_id: other, last: m.content, time: m.created_at, full_name: null, avatar_url: null, profession: null, unread: 0 });
       }
     });
     return map;
@@ -90,7 +94,7 @@ function MessagesPage() {
             const idx = prev.findIndex((c) => c.other_id === other);
             const next: Conversation = idx >= 0
               ? { ...prev[idx], last: m.content, time: m.created_at, unread: activeId === other ? 0 : prev[idx].unread + 1 }
-              : { other_id: other, last: m.content, time: m.created_at, full_name: null, avatar_url: null, unread: activeId === other ? 0 : 1 };
+              : { other_id: other, last: m.content, time: m.created_at, full_name: null, avatar_url: null, profession: null, unread: activeId === other ? 0 : 1 };
             const without = prev.filter((c) => c.other_id !== other);
             return [next, ...without];
           });
@@ -104,7 +108,7 @@ function MessagesPage() {
             const idx = prev.findIndex((c) => c.other_id === other);
             const next: Conversation = idx >= 0
               ? { ...prev[idx], last: m.content, time: m.created_at }
-              : { other_id: other, last: m.content, time: m.created_at, full_name: null, avatar_url: null, unread: 0 };
+              : { other_id: other, last: m.content, time: m.created_at, full_name: null, avatar_url: null, profession: null, unread: 0 };
             const without = prev.filter((c) => c.other_id !== other);
             return [next, ...without];
           });
@@ -151,9 +155,12 @@ function MessagesPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <div className="font-semibold truncate text-sm">{c.full_name || "User"}</div>
-                        <div className="text-[10px] text-muted-foreground">{new Date(c.time).toLocaleDateString()}</div>
+                        <div className="font-semibold truncate text-sm">{c?.full_name || "User"}</div>
+                        <div className="text-[10px] text-muted-foreground">{c?.time ? new Date(c.time).toLocaleDateString() : ""}</div>
                       </div>
+                      {c?.profession && (
+                        <div className="text-[10px] text-amber-500/90 truncate">{c.profession}</div>
+                      )}
                       <div className="flex items-center gap-2">
                         <div className="text-xs text-muted-foreground truncate flex-1">{c.last}</div>
                         {c.unread > 0 && (
