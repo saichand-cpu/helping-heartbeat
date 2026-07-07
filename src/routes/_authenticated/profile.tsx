@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Award, ShieldCheck, EyeOff } from "lucide-react";
+import { Loader2, Award, ShieldCheck, EyeOff, Handshake } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,7 +39,10 @@ function ProfilePage() {
     karma_points: 0,
     verified: false,
     incognito: false,
+    seeking_cofounder: false,
+    cofounder_pitch: "",
   });
+  const [savingCofounder, setSavingCofounder] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -63,6 +66,8 @@ function ProfilePage() {
           karma_points: data.karma_points ?? 0,
           verified: data.verified ?? false,
           incognito: (data as { incognito?: boolean }).incognito ?? false,
+          seeking_cofounder: (data as { seeking_cofounder?: boolean }).seeking_cofounder ?? false,
+          cofounder_pitch: (data as { cofounder_pitch?: string | null }).cofounder_pitch ?? "",
         });
       }
       setLoading(false);
