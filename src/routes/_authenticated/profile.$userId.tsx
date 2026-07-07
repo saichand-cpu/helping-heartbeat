@@ -118,17 +118,9 @@ function PublicProfile() {
     load();
   };
 
-  const startChat = async () => {
-    if (!me || !profile) return;
-    setMessaging(true);
-    const { error } = await supabase.from("messages").insert({
-      sender_id: me,
-      receiver_id: profile.id,
-      content: "Hi! Let's talk.",
-    });
-    setMessaging(false);
-    if (error) return toast.error(error.message);
-    navigate({ to: "/messages" });
+  const startChat = () => {
+    if (!profile) return;
+    navigate({ to: "/messages", search: { user: profile.id } });
   };
 
   const callNow = () => {
