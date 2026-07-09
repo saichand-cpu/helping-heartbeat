@@ -259,6 +259,12 @@ function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack
           // If the incoming message is addressed to me, mark it read immediately.
           if (m.receiver_id === me && m.sender_id === other.other_id) {
             markThreadRead([m]);
+            if (m.content?.startsWith("[call:")) {
+              toast(`📞 Incoming call from ${other?.full_name || "user"}`, {
+                description: "Tap Accept in the thread to answer.",
+                duration: 8000,
+              });
+            }
           }
         })
       .on("postgres_changes",
