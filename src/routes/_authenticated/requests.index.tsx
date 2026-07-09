@@ -8,10 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import {
-  Plus, MapPin, Clock, AlertTriangle, Search, Heart, Loader2,
+  Plus, MapPin, Clock, AlertTriangle, Search, Heart, Loader2, MessageCircle,
   GraduationCap, Stethoscope, Utensils, Car, Laptop, Users, Baby, Briefcase, Gift, Siren, Sparkles,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { LeafletMap, useGeocodedPins } from "@/components/site/LeafletMap";
 
 export const Route = createFileRoute("/_authenticated/requests/")({
   component: RequestsBrowse,
@@ -124,6 +125,10 @@ function RequestsBrowse() {
     !q || r.title.toLowerCase().includes(q.toLowerCase()) || r.description.toLowerCase().includes(q.toLowerCase())
   );
 
+  const pins = useGeocodedPins(
+    filtered.slice(0, 20).map((r) => ({ id: r.id, location: r?.location ?? null, label: r?.title })),
+  );
+
   return (
     <div className="space-y-6 pb-24 lg:pb-6">
       <div className="glass rounded-3xl p-6 shadow-soft">
@@ -150,6 +155,24 @@ function RequestsBrowse() {
           </Select>
         </div>
       </div>
+
+      {!loading && filtered.length > 0 && (
+        <div className="glass rounded-3xl p-4 shadow-soft">
+          <div className="flex items-center gap-2 mb-3 px-1">
+            <MapPin className="h-4 w-4 text-amber-400" />
+            <h2 className="text-sm font-semibold">Requests on the map</h2>
+            <span className="text-xs text-muted-foreground">· {pins?.length ?? 0} located</span>
+          </div>
+          {pins?.length ? (
+            <LeafletMap pins={pins} height={240} />
+          ) : (
+            <div className="h-[240px] rounded-2xl border border-amber-500/20 bg-black/60 grid place-items-center text-xs text-muted-foreground animate-pulse">
+              Locating requests…
+            </div>
+          )}
+        </div>
+      )}
+
 
       {loading ? (
         <div className="grid md:grid-cols-2 gap-4">
@@ -187,20 +210,31 @@ function RequestsBrowse() {
                 <p className="mt-2 text-[11px] text-muted-foreground/80 italic">
                   Phone &amp; call are unlocked only after the requester accepts your offer.
                 </p>
-                <Button
-                  onClick={() => offerHelp(r)}
-                  disabled={offering === r.id}
-                  className="w-full mt-3 bg-gradient-brand text-primary-foreground border-0 shadow-glow"
-                  size="sm"
-                >
-                  {offering === r.id ? (
-                    <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Sending…</>
-                  ) : r.requester_id === meId ? (
-                    "View your request"
-                  ) : (
-                    "Offer help"
-                  )}
-                </Button>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <Button
+                    onClick={() => offerHelp(r)}
+                    disabled={offering === r.id}
+                    className="bg-gradient-brand text-primary-foreground border-0 shadow-glow"
+                    size="sm"
+                  >
+                    {offering === r.id ? (
+                      <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Sending…</>
+                    ) : r.requester_id === meId ? (
+                      "View yours"
+                    ) : (
+                      "Offer help"
+                    )}
+                  </Button>
+                  <Button
+                    onClick={() => navigate({ to: "/messages", search: { user: r.requester_id } })}
+                    disabled={r.requester_id === meId}
+                    variant="outline"
+                    size="sm"
+                    className="border-primary/60 text-primary hover:bg-primary/10"
+                  >
+                    <MessageCircle className="h-4 w-4 mr-1" /> Message
+                  </Button>
+                </div>
               </motion.div>
             );
           })}

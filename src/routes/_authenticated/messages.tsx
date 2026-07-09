@@ -5,8 +5,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MessageCircle, Send, ArrowLeft, Loader2, Check, CheckCheck } from "lucide-react";
+import { MessageCircle, Send, ArrowLeft, Loader2, Check, CheckCheck, Phone, MapPin } from "lucide-react";
+import { LeafletMap } from "@/components/site/LeafletMap";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+
+function parseLocation(content?: string | null): { lat: number; lng: number } | null {
+  const m = content?.match(/^\[loc:(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)\]/);
+  if (!m) return null;
+  const lat = parseFloat(m[1]);
+  const lng = parseFloat(m[2]);
+  return Number.isFinite(lat) && Number.isFinite(lng) ? { lat, lng } : null;
+}
+function parseCall(content?: string | null): string | null {
+  const m = content?.match(/^\[call:([a-z]+)\]/);
+  return m ? m[1] : null;
+}
 
 export const Route = createFileRoute("/_authenticated/messages")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -257,6 +271,12 @@ function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack
           // If the incoming message is addressed to me, mark it read immediately.
           if (m.receiver_id === me && m.sender_id === other.other_id) {
             markThreadRead([m]);
+            if (m.content?.startsWith("[call:")) {
+              toast(`📞 Incoming call from ${other?.full_name || "user"}`, {
+                description: "Tap Accept in the thread to answer.",
+                duration: 8000,
+              });
+            }
           }
         })
       .on("postgres_changes",
@@ -290,8 +310,7 @@ function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack
     if (el) el.scrollTop = el.scrollHeight;
   }, [msgs.length]);
 
-  const send = async () => {
-    const content = text.trim();
+  const sendRaw = async (content: string) => {
     if (!content || sending) return;
     setSending(true);
     const optimistic: Msg = {
@@ -303,7 +322,6 @@ function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack
       pending: true,
     };
     setMsgs((prev) => [...prev, optimistic]);
-    setText("");
     const { data, error } = await supabase
       .from("messages")
       .insert({ sender_id: me, receiver_id: other.other_id, content })
@@ -311,7 +329,7 @@ function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack
       .single();
     if (error) {
       setMsgs((prev) => prev.filter((m) => m.id !== optimistic.id));
-      setText(content);
+      toast.error(error.message || "Failed to send");
     } else if (data) {
       setMsgs((prev) => {
         const without = prev.filter((m) => m.id !== optimistic.id && m.id !== (data as Msg).id);
@@ -321,19 +339,72 @@ function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack
     setSending(false);
   };
 
+  const send = async () => {
+    const content = text.trim();
+    if (!content) return;
+    setText("");
+    await sendRaw(content);
+  };
+
+  const startCall = async () => {
+    const kind = window.confirm("Start a voice call with " + (other?.full_name || "this user") + "?\n\nPress OK for Voice, Cancel to skip.")
+      ? "voice"
+      : null;
+    if (!kind) return;
+    await sendRaw(`[call:${kind}] Incoming ${kind} call — tap to answer.`);
+    toast.success("Call invite sent");
+  };
+
+  const [sharingLoc, setSharingLoc] = useState(false);
+  const shareLocation = () => {
+    if (!("geolocation" in navigator)) {
+      toast.error("Geolocation not available");
+      return;
+    }
+    setSharingLoc(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const lat = pos?.coords?.latitude;
+        const lng = pos?.coords?.longitude;
+        setSharingLoc(false);
+        if (typeof lat !== "number" || typeof lng !== "number") {
+          toast.error("Could not read location");
+          return;
+        }
+        await sendRaw(`[loc:${lat.toFixed(6)},${lng.toFixed(6)}] My current location`);
+      },
+      (err) => {
+        setSharingLoc(false);
+        toast.error(err?.message || "Location permission denied");
+      },
+      { enableHighAccuracy: true, timeout: 8000 },
+    );
+  };
+
+
   return (
     <div className="flex flex-col min-h-0 h-full">
-      <header className="px-4 py-3 border-b border-border/40 flex items-center gap-3">
+      <header className="px-4 py-3 border-b border-amber-500/30 flex items-center gap-3 bg-black/40">
         <Button variant="ghost" size="icon" className="md:hidden" onClick={onBack}><ArrowLeft className="h-4 w-4" /></Button>
         <div className="h-9 w-9 rounded-full bg-gradient-brand grid place-items-center text-primary-foreground text-sm font-bold overflow-hidden">
           {other.avatar_url ? <img src={other.avatar_url} alt="" className="h-full w-full object-cover" /> : (other.full_name || "U").charAt(0)}
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="font-semibold text-sm truncate">{other.full_name || "User"}</div>
           <div className="text-[10px] text-emerald-500 flex items-center gap-1">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live
           </div>
         </div>
+        <Button
+          type="button"
+          onClick={startCall}
+          size="icon"
+          className="h-9 w-9 rounded-full bg-primary text-primary-foreground shadow-[0_0_16px_rgba(59,130,246,0.6)] hover:scale-105 transition-transform shrink-0"
+          aria-label="Start call"
+          title="Start voice/video call"
+        >
+          <Phone className="h-4 w-4" />
+        </Button>
       </header>
 
       <div ref={scrollerRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-2 bg-gradient-to-b from-transparent to-accent/10">
@@ -347,6 +418,8 @@ function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack
           <AnimatePresence initial={false}>
             {msgs.map((m) => {
               const mine = m.sender_id === me;
+              const loc = parseLocation(m?.content);
+              const call = parseCall(m?.content);
               return (
                 <motion.div
                   key={m.id}
@@ -361,7 +434,36 @@ function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack
                       : "bg-card border border-border rounded-bl-sm",
                     m.pending && "opacity-70",
                   )}>
-                    <div className="whitespace-pre-wrap break-words">{m.content}</div>
+                    {loc ? (
+                      <a
+                        href={`https://www.google.com/maps?q=${loc.lat},${loc.lng}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block space-y-2"
+                      >
+                        <div className="flex items-center gap-1 text-xs opacity-90">
+                          <MapPin className="h-3 w-3" /> Shared location
+                        </div>
+                        <div className="w-[220px] max-w-full">
+                          <LeafletMap pins={[{ id: m.id, lat: loc.lat, lng: loc.lng }]} height={140} interactive={false} zoom={13} />
+                        </div>
+                        <div className="text-[10px] opacity-80">
+                          {loc.lat.toFixed(4)}, {loc.lng.toFixed(4)} — tap to open
+                        </div>
+                      </a>
+                    ) : call ? (
+                      <div className="flex items-center gap-2">
+                        <span className="grid place-items-center h-8 w-8 rounded-full bg-primary/20 text-primary">
+                          <Phone className="h-4 w-4" />
+                        </span>
+                        <div>
+                          <div className="font-semibold">{mine ? "You started" : "Incoming"} {call} call</div>
+                          <div className="text-[10px] opacity-80">Tap to answer · WebRTC not yet wired</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="whitespace-pre-wrap break-words">{m.content}</div>
+                    )}
                     <div className={cn("text-[10px] mt-0.5 opacity-80 text-right flex items-center gap-1 justify-end")}>
                       <span>
                         {m.pending ? "sending…" : new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -382,8 +484,20 @@ function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack
 
       <form
         onSubmit={(e) => { e.preventDefault(); send(); }}
-        className="border-t border-border/40 p-3 flex items-center gap-2 bg-background/60 backdrop-blur"
+        className="border-t border-amber-500/30 p-3 flex items-center gap-2 bg-black/50 backdrop-blur"
       >
+        <Button
+          type="button"
+          onClick={shareLocation}
+          disabled={sharingLoc || sending}
+          size="icon"
+          variant="outline"
+          className="h-10 w-10 shrink-0 border-amber-500/40 text-amber-400 hover:bg-amber-500/10"
+          aria-label="Share location"
+          title="Share your current location"
+        >
+          {sharingLoc ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
+        </Button>
         <Input
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -399,6 +513,7 @@ function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack
           {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
         </Button>
       </form>
+
     </div>
   );
 }
