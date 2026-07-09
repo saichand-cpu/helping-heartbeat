@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import {
-  Plus, MapPin, Clock, AlertTriangle, Search, Heart, Loader2, MessageCircle,
+  Plus, MapPin, Clock, AlertTriangle, Search, Heart, MessageCircle, Phone, PhoneCall,
   GraduationCap, Stethoscope, Utensils, Car, Laptop, Users, Baby, Briefcase, Gift, Siren, Sparkles,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
