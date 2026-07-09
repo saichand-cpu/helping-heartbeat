@@ -49,37 +49,17 @@ function RequestsBrowse() {
   const [cat, setCat] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const [meId, setMeId] = useState<string | null>(null);
-  const [offering, setOffering] = useState<string | null>(null);
+  const [phones, setPhones] = useState<Record<string, string | null>>({});
   const navigate = useNavigate();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setMeId(data.user?.id ?? null));
   }, []);
 
-  const offerHelp = async (r: Request) => {
-    if (!meId) {
-      toast.error("Please sign in to offer help");
-      return;
-    }
-    if (r.requester_id === meId) {
-      toast.info("This is your own request");
-      return;
-    }
-    setOffering(r.id);
-    try {
-      const { error: offerErr } = await supabase
-        .from("request_offers")
-        .insert({ request_id: r.id, helper_id: meId, message: "I'd love to help with this." });
-      if (offerErr && offerErr.code !== "23505") throw offerErr;
-      toast.success("Offer sent — opening profile");
-      navigate({ to: "/profile/$userId", params: { userId: r.requester_id } });
-    } catch (e: any) {
-      toast.error(e?.message ?? "Could not send offer");
-    } finally {
-      setOffering(null);
-    }
+  const startCall = (r: Request) => {
+    if (r?.requester_id === meId) return;
+    navigate({ to: "/messages", search: { user: r.requester_id, call: "voice" } as never });
   };
-
 
   useEffect(() => {
     (async () => {
@@ -87,10 +67,19 @@ function RequestsBrowse() {
       let query = supabase.from("help_requests").select("*").eq("status", "open").order("created_at", { ascending: false }).limit(50);
       if (cat !== "all") query = query.eq("category", cat as never);
       const { data } = await query;
-      setItems((data as Request[] | null) ?? []);
+      const list = (data as Request[] | null) ?? [];
+      setItems(list);
       setLoading(false);
+      const ids = Array.from(new Set(list.map((r) => r.requester_id)));
+      if (ids.length) {
+        const { data: profs } = await supabase.from("profiles").select("id, phone").in("id", ids);
+        const map: Record<string, string | null> = {};
+        (profs ?? []).forEach((p: { id: string; phone: string | null }) => { map[p.id] = p?.phone ?? null; });
+        setPhones(map);
+      }
     })();
   }, [cat]);
+
 
   // Realtime: new/updated requests
   useEffect(() => {
