@@ -156,6 +156,24 @@ function RequestsBrowse() {
         </div>
       </div>
 
+      {!loading && filtered.length > 0 && (
+        <div className="glass rounded-3xl p-4 shadow-soft">
+          <div className="flex items-center gap-2 mb-3 px-1">
+            <MapPin className="h-4 w-4 text-amber-400" />
+            <h2 className="text-sm font-semibold">Requests on the map</h2>
+            <span className="text-xs text-muted-foreground">· {pins?.length ?? 0} located</span>
+          </div>
+          {pins?.length ? (
+            <LeafletMap pins={pins} height={240} />
+          ) : (
+            <div className="h-[240px] rounded-2xl border border-amber-500/20 bg-black/60 grid place-items-center text-xs text-muted-foreground animate-pulse">
+              Locating requests…
+            </div>
+          )}
+        </div>
+      )}
+
+
       {loading ? (
         <div className="grid md:grid-cols-2 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
