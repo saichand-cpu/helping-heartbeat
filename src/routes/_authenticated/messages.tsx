@@ -292,8 +292,7 @@ function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack
     if (el) el.scrollTop = el.scrollHeight;
   }, [msgs.length]);
 
-  const send = async () => {
-    const content = text.trim();
+  const sendRaw = async (content: string) => {
     if (!content || sending) return;
     setSending(true);
     const optimistic: Msg = {
@@ -305,7 +304,6 @@ function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack
       pending: true,
     };
     setMsgs((prev) => [...prev, optimistic]);
-    setText("");
     const { data, error } = await supabase
       .from("messages")
       .insert({ sender_id: me, receiver_id: other.other_id, content })
@@ -313,7 +311,7 @@ function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack
       .single();
     if (error) {
       setMsgs((prev) => prev.filter((m) => m.id !== optimistic.id));
-      setText(content);
+      toast.error(error.message || "Failed to send");
     } else if (data) {
       setMsgs((prev) => {
         const without = prev.filter((m) => m.id !== optimistic.id && m.id !== (data as Msg).id);
@@ -322,6 +320,49 @@ function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack
     }
     setSending(false);
   };
+
+  const send = async () => {
+    const content = text.trim();
+    if (!content) return;
+    setText("");
+    await sendRaw(content);
+  };
+
+  const startCall = async () => {
+    const kind = window.confirm("Start a voice call with " + (other?.full_name || "this user") + "?\n\nPress OK for Voice, Cancel to skip.")
+      ? "voice"
+      : null;
+    if (!kind) return;
+    await sendRaw(`[call:${kind}] Incoming ${kind} call — tap to answer.`);
+    toast.success("Call invite sent");
+  };
+
+  const [sharingLoc, setSharingLoc] = useState(false);
+  const shareLocation = () => {
+    if (!("geolocation" in navigator)) {
+      toast.error("Geolocation not available");
+      return;
+    }
+    setSharingLoc(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const lat = pos?.coords?.latitude;
+        const lng = pos?.coords?.longitude;
+        setSharingLoc(false);
+        if (typeof lat !== "number" || typeof lng !== "number") {
+          toast.error("Could not read location");
+          return;
+        }
+        await sendRaw(`[loc:${lat.toFixed(6)},${lng.toFixed(6)}] My current location`);
+      },
+      (err) => {
+        setSharingLoc(false);
+        toast.error(err?.message || "Location permission denied");
+      },
+      { enableHighAccuracy: true, timeout: 8000 },
+    );
+  };
+
 
   return (
     <div className="flex flex-col min-h-0 h-full">
