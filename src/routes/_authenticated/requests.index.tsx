@@ -125,6 +125,10 @@ function RequestsBrowse() {
     !q || r.title.toLowerCase().includes(q.toLowerCase()) || r.description.toLowerCase().includes(q.toLowerCase())
   );
 
+  const pins = useGeocodedPins(
+    filtered.slice(0, 20).map((r) => ({ id: r.id, location: r?.location ?? null, label: r?.title })),
+  );
+
   return (
     <div className="space-y-6 pb-24 lg:pb-6">
       <div className="glass rounded-3xl p-6 shadow-soft">
