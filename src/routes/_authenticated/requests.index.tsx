@@ -196,33 +196,35 @@ function RequestsBrowse() {
                   <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {r.location || "Anywhere"}</span>
                   <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {new Date(r.created_at).toLocaleDateString()}</span>
                 </div>
-                <p className="mt-2 text-[11px] text-muted-foreground/80 italic">
-                  Phone &amp; call are unlocked only after the requester accepts your offer.
-                </p>
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  <Button
-                    onClick={() => offerHelp(r)}
-                    disabled={offering === r.id}
-                    className="bg-gradient-brand text-primary-foreground border-0 shadow-glow"
-                    size="sm"
-                  >
-                    {offering === r.id ? (
-                      <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Sending…</>
-                    ) : r.requester_id === meId ? (
-                      "View yours"
-                    ) : (
-                      "Offer help"
-                    )}
-                  </Button>
+                <div className="mt-3 grid grid-cols-3 gap-2 rounded-2xl border border-amber-500/25 bg-black p-2">
                   <Button
                     onClick={() => navigate({ to: "/messages", search: { user: r.requester_id } })}
                     disabled={r.requester_id === meId}
-                    variant="outline"
                     size="sm"
-                    className="border-primary/60 text-primary hover:bg-primary/10"
+                    className="bg-gradient-brand text-primary-foreground border-0 shadow-glow"
                   >
-                    <MessageCircle className="h-4 w-4 mr-1" /> Message
+                    <MessageCircle className="h-4 w-4 mr-1" /> Text
                   </Button>
+                  <Button
+                    onClick={() => startCall(r)}
+                    disabled={r.requester_id === meId}
+                    size="sm"
+                    variant="outline"
+                    className="border-amber-400/70 text-amber-300 hover:bg-amber-500/10 shadow-[0_0_18px_-6px_rgba(251,191,36,0.7)]"
+                  >
+                    <PhoneCall className="h-4 w-4 mr-1" /> Call
+                  </Button>
+                  {phones?.[r.requester_id] ? (
+                    <Button asChild size="sm" variant="outline" className="border-white/15 bg-black text-white hover:bg-white/5">
+                      <a href={`tel:${phones?.[r.requester_id] ?? ""}`}>
+                        <Phone className="h-4 w-4 mr-1" /> Phone
+                      </a>
+                    </Button>
+                  ) : (
+                    <Button size="sm" variant="outline" disabled className="border-white/10 bg-black/60 text-muted-foreground">
+                      <Phone className="h-4 w-4 mr-1" /> Phone
+                    </Button>
+                  )}
                 </div>
               </motion.div>
             );
