@@ -5,7 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MessageCircle, Send, ArrowLeft, Loader2, Check, CheckCheck } from "lucide-react";
+import { MessageCircle, Send, ArrowLeft, Loader2, Check, CheckCheck, Phone, MapPin } from "lucide-react";
+import { LeafletMap } from "@/components/site/LeafletMap";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/messages")({
