@@ -10,6 +10,18 @@ import { LeafletMap } from "@/components/site/LeafletMap";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
+function parseLocation(content?: string | null): { lat: number; lng: number } | null {
+  const m = content?.match(/^\[loc:(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)\]/);
+  if (!m) return null;
+  const lat = parseFloat(m[1]);
+  const lng = parseFloat(m[2]);
+  return Number.isFinite(lat) && Number.isFinite(lng) ? { lat, lng } : null;
+}
+function parseCall(content?: string | null): string | null {
+  const m = content?.match(/^\[call:([a-z]+)\]/);
+  return m ? m[1] : null;
+}
+
 export const Route = createFileRoute("/_authenticated/messages")({
   validateSearch: (s: Record<string, unknown>) => ({
     user: typeof s?.user === "string" ? s.user : undefined,
