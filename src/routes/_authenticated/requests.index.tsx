@@ -192,20 +192,31 @@ function RequestsBrowse() {
                 <p className="mt-2 text-[11px] text-muted-foreground/80 italic">
                   Phone &amp; call are unlocked only after the requester accepts your offer.
                 </p>
-                <Button
-                  onClick={() => offerHelp(r)}
-                  disabled={offering === r.id}
-                  className="w-full mt-3 bg-gradient-brand text-primary-foreground border-0 shadow-glow"
-                  size="sm"
-                >
-                  {offering === r.id ? (
-                    <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Sending…</>
-                  ) : r.requester_id === meId ? (
-                    "View your request"
-                  ) : (
-                    "Offer help"
-                  )}
-                </Button>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <Button
+                    onClick={() => offerHelp(r)}
+                    disabled={offering === r.id}
+                    className="bg-gradient-brand text-primary-foreground border-0 shadow-glow"
+                    size="sm"
+                  >
+                    {offering === r.id ? (
+                      <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Sending…</>
+                    ) : r.requester_id === meId ? (
+                      "View yours"
+                    ) : (
+                      "Offer help"
+                    )}
+                  </Button>
+                  <Button
+                    onClick={() => navigate({ to: "/messages", search: { user: r.requester_id } })}
+                    disabled={r.requester_id === meId}
+                    variant="outline"
+                    size="sm"
+                    className="border-primary/60 text-primary hover:bg-primary/10"
+                  >
+                    <MessageCircle className="h-4 w-4 mr-1" /> Message
+                  </Button>
+                </div>
               </motion.div>
             );
           })}
