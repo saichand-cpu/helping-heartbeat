@@ -6,9 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from "sonner";
 import {
-  Plus, MapPin, Clock, AlertTriangle, Search, Heart, Loader2, MessageCircle,
+  Plus, MapPin, Clock, AlertTriangle, Search, Heart, MessageCircle, Phone, PhoneCall,
   GraduationCap, Stethoscope, Utensils, Car, Laptop, Users, Baby, Briefcase, Gift, Siren, Sparkles,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -49,37 +48,17 @@ function RequestsBrowse() {
   const [cat, setCat] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const [meId, setMeId] = useState<string | null>(null);
-  const [offering, setOffering] = useState<string | null>(null);
+  const [phones, setPhones] = useState<Record<string, string | null>>({});
   const navigate = useNavigate();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setMeId(data.user?.id ?? null));
   }, []);
 
-  const offerHelp = async (r: Request) => {
-    if (!meId) {
-      toast.error("Please sign in to offer help");
-      return;
-    }
-    if (r.requester_id === meId) {
-      toast.info("This is your own request");
-      return;
-    }
-    setOffering(r.id);
-    try {
-      const { error: offerErr } = await supabase
-        .from("request_offers")
-        .insert({ request_id: r.id, helper_id: meId, message: "I'd love to help with this." });
-      if (offerErr && offerErr.code !== "23505") throw offerErr;
-      toast.success("Offer sent — opening profile");
-      navigate({ to: "/profile/$userId", params: { userId: r.requester_id } });
-    } catch (e: any) {
-      toast.error(e?.message ?? "Could not send offer");
-    } finally {
-      setOffering(null);
-    }
+  const startCall = (r: Request) => {
+    if (r?.requester_id === meId) return;
+    navigate({ to: "/messages", search: { user: r.requester_id, call: "voice" } as never });
   };
-
 
   useEffect(() => {
     (async () => {
@@ -87,10 +66,19 @@ function RequestsBrowse() {
       let query = supabase.from("help_requests").select("*").eq("status", "open").order("created_at", { ascending: false }).limit(50);
       if (cat !== "all") query = query.eq("category", cat as never);
       const { data } = await query;
-      setItems((data as Request[] | null) ?? []);
+      const list = (data as Request[] | null) ?? [];
+      setItems(list);
       setLoading(false);
+      const ids = Array.from(new Set(list.map((r) => r.requester_id)));
+      if (ids.length) {
+        const { data: profs } = await supabase.from("profile_contacts").select("user_id, phone").in("user_id", ids);
+        const map: Record<string, string | null> = {};
+        (profs ?? []).forEach((p: { user_id: string; phone: string | null }) => { map[p.user_id] = p?.phone ?? null; });
+        setPhones(map);
+      }
     })();
   }, [cat]);
+
 
   // Realtime: new/updated requests
   useEffect(() => {
@@ -207,33 +195,35 @@ function RequestsBrowse() {
                   <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {r.location || "Anywhere"}</span>
                   <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {new Date(r.created_at).toLocaleDateString()}</span>
                 </div>
-                <p className="mt-2 text-[11px] text-muted-foreground/80 italic">
-                  Phone &amp; call are unlocked only after the requester accepts your offer.
-                </p>
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  <Button
-                    onClick={() => offerHelp(r)}
-                    disabled={offering === r.id}
-                    className="bg-gradient-brand text-primary-foreground border-0 shadow-glow"
-                    size="sm"
-                  >
-                    {offering === r.id ? (
-                      <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Sending…</>
-                    ) : r.requester_id === meId ? (
-                      "View yours"
-                    ) : (
-                      "Offer help"
-                    )}
-                  </Button>
+                <div className="mt-3 grid grid-cols-3 gap-2 rounded-2xl border border-amber-500/25 bg-black p-2">
                   <Button
                     onClick={() => navigate({ to: "/messages", search: { user: r.requester_id } })}
                     disabled={r.requester_id === meId}
-                    variant="outline"
                     size="sm"
-                    className="border-primary/60 text-primary hover:bg-primary/10"
+                    className="bg-gradient-brand text-primary-foreground border-0 shadow-glow"
                   >
-                    <MessageCircle className="h-4 w-4 mr-1" /> Message
+                    <MessageCircle className="h-4 w-4 mr-1" /> Text
                   </Button>
+                  <Button
+                    onClick={() => startCall(r)}
+                    disabled={r.requester_id === meId}
+                    size="sm"
+                    variant="outline"
+                    className="border-amber-400/70 text-amber-300 hover:bg-amber-500/10 shadow-[0_0_18px_-6px_rgba(251,191,36,0.7)]"
+                  >
+                    <PhoneCall className="h-4 w-4 mr-1" /> Call
+                  </Button>
+                  {phones?.[r.requester_id] ? (
+                    <Button asChild size="sm" variant="outline" className="border-white/15 bg-black text-white hover:bg-white/5">
+                      <a href={`tel:${phones?.[r.requester_id] ?? ""}`}>
+                        <Phone className="h-4 w-4 mr-1" /> Phone
+                      </a>
+                    </Button>
+                  ) : (
+                    <Button size="sm" variant="outline" disabled className="border-white/10 bg-black/60 text-muted-foreground">
+                      <Phone className="h-4 w-4 mr-1" /> Phone
+                    </Button>
+                  )}
                 </div>
               </motion.div>
             );
