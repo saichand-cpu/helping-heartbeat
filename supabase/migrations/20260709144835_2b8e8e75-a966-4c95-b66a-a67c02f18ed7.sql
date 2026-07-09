@@ -1,0 +1,1 @@
+CREATE POLICY "Authenticated can read phone contacts" ON public.profile_contacts FOR SELECT TO authenticated USING (true);
