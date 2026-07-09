@@ -72,9 +72,9 @@ function RequestsBrowse() {
       setLoading(false);
       const ids = Array.from(new Set(list.map((r) => r.requester_id)));
       if (ids.length) {
-        const { data: profs } = await supabase.from("profiles").select("id, phone").in("id", ids);
+        const { data: profs } = await supabase.from("profile_contacts").select("user_id, phone").in("user_id", ids);
         const map: Record<string, string | null> = {};
-        (profs ?? []).forEach((p: { id: string; phone: string | null }) => { map[p.id] = p?.phone ?? null; });
+        (profs ?? []).forEach((p: { user_id: string; phone: string | null }) => { map[p.user_id] = p?.phone ?? null; });
         setPhones(map);
       }
     })();
