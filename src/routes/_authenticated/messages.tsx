@@ -56,10 +56,19 @@ function MessagesPage() {
   const [convos, setConvos] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const rtc = useWebRTC(me);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setMe(data.user?.id ?? null));
   }, []);
+
+  // Keep a signaling channel open to the active peer so incoming offers arrive.
+  useEffect(() => { rtc.listenTo(activeId); }, [activeId, rtc]);
+
+  const callPeer = useMemo(
+    () => convos.find((c) => c.other_id === rtc.peerId) ?? null,
+    [convos, rtc.peerId],
+  );
 
   const buildConvos = (rows: Msg[], meId: string) => {
     const map = new Map<string, Conversation>();
