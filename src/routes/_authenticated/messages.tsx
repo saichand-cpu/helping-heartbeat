@@ -205,7 +205,7 @@ function MessagesPage() {
         {/* Thread pane */}
         <section className={cn("flex flex-col min-h-0", !activeId && "hidden md:flex")}>
           {activeConvo && me ? (
-            <Thread me={me} other={activeConvo} onBack={() => setActiveId(null)} />
+            <Thread me={me} other={activeConvo} onBack={() => setActiveId(null)} onStartCall={() => rtc.startCall(activeConvo.other_id)} />
           ) : (
             <div className="flex-1 grid place-items-center text-sm text-muted-foreground p-8 text-center">
               <div>
@@ -216,11 +216,22 @@ function MessagesPage() {
           )}
         </section>
       </div>
+
+      <CallOverlay
+        status={rtc.status}
+        peerName={callPeer?.full_name ?? null}
+        peerAvatar={callPeer?.avatar_url ?? null}
+        muted={rtc.muted}
+        onAccept={() => rtc.acceptCall().catch((e) => toast.error(e?.message || "Mic permission denied"))}
+        onDecline={rtc.declineCall}
+        onHangup={rtc.hangup}
+        onToggleMute={rtc.toggleMute}
+      />
     </div>
   );
 }
 
-function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack: () => void }) {
+function Thread({ me, other, onBack, onStartCall }: { me: string; other: Conversation; onBack: () => void; onStartCall: () => void }) {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
