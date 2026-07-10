@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MessageCircle, Send, ArrowLeft, Loader2, Check, CheckCheck, Phone, MapPin } from "lucide-react";
 import { LeafletMap } from "@/components/site/LeafletMap";
+import { CallOverlay } from "@/components/site/CallOverlay";
+import { useWebRTC } from "@/hooks/use-webrtc";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -54,10 +56,19 @@ function MessagesPage() {
   const [convos, setConvos] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const rtc = useWebRTC(me);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setMe(data.user?.id ?? null));
   }, []);
+
+  // Keep a signaling channel open to the active peer so incoming offers arrive.
+  useEffect(() => { rtc.listenTo(activeId); }, [activeId, rtc]);
+
+  const callPeer = useMemo(
+    () => convos.find((c) => c.other_id === rtc.peerId) ?? null,
+    [convos, rtc.peerId],
+  );
 
   const buildConvos = (rows: Msg[], meId: string) => {
     const map = new Map<string, Conversation>();
@@ -194,7 +205,7 @@ function MessagesPage() {
         {/* Thread pane */}
         <section className={cn("flex flex-col min-h-0", !activeId && "hidden md:flex")}>
           {activeConvo && me ? (
-            <Thread me={me} other={activeConvo} onBack={() => setActiveId(null)} />
+            <Thread me={me} other={activeConvo} onBack={() => setActiveId(null)} onStartCall={() => rtc.startCall(activeConvo.other_id)} />
           ) : (
             <div className="flex-1 grid place-items-center text-sm text-muted-foreground p-8 text-center">
               <div>
@@ -205,11 +216,22 @@ function MessagesPage() {
           )}
         </section>
       </div>
+
+      <CallOverlay
+        status={rtc.status}
+        peerName={callPeer?.full_name ?? null}
+        peerAvatar={callPeer?.avatar_url ?? null}
+        muted={rtc.muted}
+        onAccept={() => rtc.acceptCall().catch((e) => toast.error(e?.message || "Mic permission denied"))}
+        onDecline={rtc.declineCall}
+        onHangup={rtc.hangup}
+        onToggleMute={rtc.toggleMute}
+      />
     </div>
   );
 }
 
-function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack: () => void }) {
+function Thread({ me, other, onBack, onStartCall }: { me: string; other: Conversation; onBack: () => void; onStartCall: () => void }) {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
@@ -347,12 +369,12 @@ function Thread({ me, other, onBack }: { me: string; other: Conversation; onBack
   };
 
   const startCall = async () => {
-    const kind = window.confirm("Start a voice call with " + (other?.full_name || "this user") + "?\n\nPress OK for Voice, Cancel to skip.")
-      ? "voice"
-      : null;
-    if (!kind) return;
-    await sendRaw(`[call:${kind}] Incoming ${kind} call — tap to answer.`);
-    toast.success("Call invite sent");
+    try {
+      onStartCall();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Could not start call";
+      toast.error(msg);
+    }
   };
 
   const [sharingLoc, setSharingLoc] = useState(false);

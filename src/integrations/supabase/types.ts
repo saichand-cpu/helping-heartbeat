@@ -164,6 +164,33 @@ export type Database = {
         }
         Relationships: []
       }
+      geocode_cache: {
+        Row: {
+          created_at: string
+          hit: boolean
+          last_used_at: string
+          lat: number | null
+          lng: number | null
+          query: string
+        }
+        Insert: {
+          created_at?: string
+          hit?: boolean
+          last_used_at?: string
+          lat?: number | null
+          lng?: number | null
+          query: string
+        }
+        Update: {
+          created_at?: string
+          hit?: boolean
+          last_used_at?: string
+          lat?: number | null
+          lng?: number | null
+          query?: string
+        }
+        Relationships: []
+      }
       help_requests: {
         Row: {
           budget: number | null
