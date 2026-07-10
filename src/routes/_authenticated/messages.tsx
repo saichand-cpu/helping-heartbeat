@@ -369,12 +369,12 @@ function Thread({ me, other, onBack, onStartCall }: { me: string; other: Convers
   };
 
   const startCall = async () => {
-    const kind = window.confirm("Start a voice call with " + (other?.full_name || "this user") + "?\n\nPress OK for Voice, Cancel to skip.")
-      ? "voice"
-      : null;
-    if (!kind) return;
-    await sendRaw(`[call:${kind}] Incoming ${kind} call — tap to answer.`);
-    toast.success("Call invite sent");
+    try {
+      onStartCall();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Could not start call";
+      toast.error(msg);
+    }
   };
 
   const [sharingLoc, setSharingLoc] = useState(false);
