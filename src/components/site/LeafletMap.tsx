@@ -63,6 +63,7 @@ export function LeafletMap({ pins, className, height = 260, center, zoom, intera
     const markers: L.Marker[] = [];
     (pins ?? []).forEach((p) => {
       if (typeof p?.lat !== "number" || typeof p?.lng !== "number") return;
+      if (Number.isNaN(p.lat) || Number.isNaN(p.lng)) return;
       const m = L.marker([p.lat, p.lng], { icon: DefaultIcon }).addTo(map);
       if (p.label) m.bindPopup(p.label);
       markers.push(m);
@@ -87,39 +88,118 @@ export function LeafletMap({ pins, className, height = 260, center, zoom, intera
   );
 }
 
-// Geocode a free-text location via Nominatim, with localStorage caching.
-const GEOCODE_KEY = "hl:geocode:v1";
-type GeoCache = Record<string, { lat: number; lng: number } | null>;
+// ---------- Geocoding ----------
+// Two-layer cache: in-memory (Map) for the session + localStorage for persistence.
+// Supports raw coordinate strings ("12.97, 77.59"), "lat:..,lng:.." forms, and free-text place names.
+// Falls back gracefully on network / rate-limit errors and negatively caches misses to avoid retry storms.
+
+const GEOCODE_KEY = "hl:geocode:v2";
+const CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
+const NEG_TTL_MS = 1000 * 60 * 60 * 24;         // 1 day for misses
+
+type GeoHit = { lat: number; lng: number } | null;
+type GeoEntry = { v: GeoHit; t: number };
+type GeoCache = Record<string, GeoEntry>;
+
+const memCache = new Map<string, GeoHit>();
+const inflight = new Map<string, Promise<GeoHit>>();
 
 function readCache(): GeoCache {
-  try { return JSON.parse(localStorage.getItem(GEOCODE_KEY) || "{}"); } catch { return {}; }
+  try { return JSON.parse(localStorage.getItem(GEOCODE_KEY) || "{}") as GeoCache; } catch { return {}; }
 }
 function writeCache(c: GeoCache) {
-  try { localStorage.setItem(GEOCODE_KEY, JSON.stringify(c)); } catch { /* noop */ }
+  try { localStorage.setItem(GEOCODE_KEY, JSON.stringify(c)); } catch { /* quota / private mode */ }
 }
 
-export async function geocodeLocation(q: string): Promise<{ lat: number; lng: number } | null> {
-  const key = q?.trim().toLowerCase();
-  if (!key) return null;
-  const cache = readCache();
-  if (key in cache) return cache[key];
+function normalizeKey(q: string): string {
+  return q.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+// Detect explicit coordinate strings. Accepts:
+//   "12.9716, 77.5946"    "12.9716 77.5946"    "lat:12.97,lng:77.59"    "(12.97,77.59)"
+function parseCoords(raw: string): GeoHit {
+  if (!raw) return null;
+  const cleaned = raw.replace(/lat[:=]|lng[:=]|lon[:=]|[()°]/gi, " ");
+  const match = cleaned.match(/(-?\d{1,3}(?:\.\d+)?)\s*[, ]\s*(-?\d{1,3}(?:\.\d+)?)/);
+  if (!match) return null;
+  const lat = parseFloat(match[1]);
+  const lng = parseFloat(match[2]);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+  return { lat, lng };
+}
+
+async function nominatimLookup(q: string, signal?: AbortSignal): Promise<GeoHit> {
   try {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(key)}`,
-      { headers: { "Accept-Language": "en" } },
+      `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`,
+      { headers: { "Accept-Language": "en" }, signal },
     );
+    if (!res.ok) return null;
     const arr = await res.json();
     const hit = Array.isArray(arr) && arr[0] ? { lat: parseFloat(arr[0].lat), lng: parseFloat(arr[0].lon) } : null;
-    cache[key] = hit;
-    writeCache(cache);
-    return hit;
+    if (hit && Number.isFinite(hit.lat) && Number.isFinite(hit.lng)) return hit;
+    return null;
   } catch {
     return null;
   }
 }
 
+export async function geocodeLocation(q: string): Promise<GeoHit> {
+  const key = normalizeKey(q ?? "");
+  if (!key) return null;
+
+  // 1. Explicit coordinates — no network needed.
+  const coords = parseCoords(key);
+  if (coords) return coords;
+
+  // 2. In-memory cache.
+  if (memCache.has(key)) return memCache.get(key) ?? null;
+
+  // 3. Persistent cache with TTL (distinct hit vs. miss expiry).
+  const cache = readCache();
+  const entry = cache?.[key];
+  if (entry && typeof entry.t === "number") {
+    const ttl = entry.v ? CACHE_TTL_MS : NEG_TTL_MS;
+    if (Date.now() - entry.t < ttl) {
+      memCache.set(key, entry.v);
+      return entry.v;
+    }
+  }
+
+  // 4. Deduplicate concurrent lookups for the same key.
+  const existing = inflight.get(key);
+  if (existing) return existing;
+
+  const p = (async (): Promise<GeoHit> => {
+    // Primary lookup, then a coarser fallback using the first comma-separated segment
+    // (helps "Some Society, Koramangala, Bengaluru" → "Bengaluru" when the full string 404s).
+    let hit = await nominatimLookup(key);
+    if (!hit) {
+      const parts = key.split(",").map((s) => s.trim()).filter(Boolean);
+      const fallback = parts.length > 1 ? parts[parts.length - 1] : null;
+      if (fallback && fallback !== key) {
+        await new Promise((r) => setTimeout(r, 300)); // respect Nominatim policy
+        hit = await nominatimLookup(fallback);
+      }
+    }
+    const next = readCache();
+    next[key] = { v: hit, t: Date.now() };
+    writeCache(next);
+    memCache.set(key, hit);
+    return hit;
+  })().finally(() => { inflight.delete(key); });
+
+  inflight.set(key, p);
+  return p;
+}
+
 export function useGeocodedPins(locations: { id: string; location: string | null; label?: string }[]) {
   const [pins, setPins] = useState<MapPin[]>([]);
+  const sig = useMemo(
+    () => (locations ?? []).map((l) => `${l?.id}|${l?.location ?? ""}|${l?.label ?? ""}`).join("~"),
+    [locations],
+  );
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -128,13 +208,18 @@ export function useGeocodedPins(locations: { id: string; location: string | null
         if (!l?.location) continue;
         const geo = await geocodeLocation(l.location);
         if (!alive) return;
-        if (geo) results.push({ id: l.id, lat: geo.lat, lng: geo.lng, label: l.label ?? l.location });
-        // gentle rate-limit for Nominatim policy
-        await new Promise((r) => setTimeout(r, 250));
+        if (geo) {
+          results.push({ id: l.id, lat: geo.lat, lng: geo.lng, label: l.label ?? l.location });
+          // Stream partial results so pins appear as they resolve.
+          setPins(results.slice());
+        }
+        // Gentle rate-limit for uncached lookups only (cached hits resolve synchronously-ish).
+        await new Promise((r) => setTimeout(r, 120));
       }
       if (alive) setPins(results);
     })();
     return () => { alive = false; };
-  }, [JSON.stringify(locations)]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sig]);
   return pins;
 }
