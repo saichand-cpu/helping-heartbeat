@@ -181,7 +181,11 @@ function RequestsBrowse() {
             const Icon = CATEGORY_ICONS[r.category] ?? Heart;
             return (
               <motion.div key={r.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
-                className="group rounded-3xl border border-border bg-card p-6 hover:shadow-pop hover:-translate-y-0.5 transition-all">
+                onClick={() => navigate({ to: "/profile/$userId", params: { userId: r.requester_id } })}
+                role="link"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate({ to: "/profile/$userId", params: { userId: r.requester_id } }); } }}
+                className="group cursor-pointer rounded-3xl border border-border bg-card p-6 hover:shadow-pop hover:-translate-y-0.5 transition-all">
                 <div className="flex items-start justify-between gap-3">
                   <div className="h-11 w-11 rounded-xl bg-accent grid place-items-center text-primary"><Icon className="h-5 w-5" /></div>
                   <Badge className={URGENCY_STYLE[r.urgency] + " border-0"}>
@@ -195,9 +199,9 @@ function RequestsBrowse() {
                   <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {r.location || "Anywhere"}</span>
                   <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {new Date(r.created_at).toLocaleDateString()}</span>
                 </div>
-                <div className="mt-3 grid grid-cols-3 gap-2 rounded-2xl border border-amber-500/25 bg-black p-2">
+                <div className="mt-3 grid grid-cols-3 gap-2 rounded-2xl border border-amber-500/25 bg-black p-2" onClick={(e) => e.stopPropagation()}>
                   <Button
-                    onClick={() => navigate({ to: "/messages", search: { user: r.requester_id } })}
+                    onClick={(e) => { e.stopPropagation(); navigate({ to: "/messages", search: { user: r.requester_id } }); }}
                     disabled={r.requester_id === meId}
                     size="sm"
                     className="bg-gradient-brand text-primary-foreground border-0 shadow-glow"
@@ -205,7 +209,7 @@ function RequestsBrowse() {
                     <MessageCircle className="h-4 w-4 mr-1" /> Text
                   </Button>
                   <Button
-                    onClick={() => startCall(r)}
+                    onClick={(e) => { e.stopPropagation(); startCall(r); }}
                     disabled={r.requester_id === meId}
                     size="sm"
                     variant="outline"
@@ -215,7 +219,7 @@ function RequestsBrowse() {
                   </Button>
                   {phones?.[r.requester_id] ? (
                     <Button asChild size="sm" variant="outline" className="border-white/15 bg-black text-white hover:bg-white/5">
-                      <a href={`tel:${phones?.[r.requester_id] ?? ""}`}>
+                      <a href={`tel:${phones?.[r.requester_id] ?? ""}`} onClick={(e) => e.stopPropagation()}>
                         <Phone className="h-4 w-4 mr-1" /> Phone
                       </a>
                     </Button>
