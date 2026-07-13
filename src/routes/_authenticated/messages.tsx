@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -175,12 +175,25 @@ function MessagesPage() {
                       activeId === c.other_id && "bg-accent/60",
                     )}
                   >
-                    <div className="h-11 w-11 rounded-full bg-gradient-brand grid place-items-center text-primary-foreground font-bold overflow-hidden shrink-0">
+                    <Link
+                      to="/profile/$userId"
+                      params={{ userId: c.other_id }}
+                      onClick={(e) => e.stopPropagation()}
+                      className="h-11 w-11 rounded-full bg-gradient-brand grid place-items-center text-primary-foreground font-bold overflow-hidden shrink-0 hover:ring-2 hover:ring-primary/60 transition"
+                      aria-label="Open profile"
+                    >
                       {c.avatar_url ? <img src={c.avatar_url} alt="" className="h-full w-full object-cover" /> : (c.full_name || "U").charAt(0)}
-                    </div>
+                    </Link>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <div className="font-semibold truncate text-sm">{c?.full_name || "User"}</div>
+                        <Link
+                          to="/profile/$userId"
+                          params={{ userId: c.other_id }}
+                          onClick={(e) => e.stopPropagation()}
+                          className="font-semibold truncate text-sm hover:text-primary transition-colors"
+                        >
+                          {c?.full_name || "User"}
+                        </Link>
                         <div className="text-[10px] text-muted-foreground">{c?.time ? new Date(c.time).toLocaleDateString() : ""}</div>
                       </div>
                       {c?.profession && (
@@ -408,11 +421,11 @@ function Thread({ me, other, onBack, onStartCall }: { me: string; other: Convers
     <div className="flex flex-col min-h-0 h-full">
       <header className="px-4 py-3 border-b border-amber-500/30 flex items-center gap-3 bg-black/40">
         <Button variant="ghost" size="icon" className="md:hidden" onClick={onBack}><ArrowLeft className="h-4 w-4" /></Button>
-        <div className="h-9 w-9 rounded-full bg-gradient-brand grid place-items-center text-primary-foreground text-sm font-bold overflow-hidden">
+        <Link to="/profile/$userId" params={{ userId: other.other_id }} className="h-9 w-9 rounded-full bg-gradient-brand grid place-items-center text-primary-foreground text-sm font-bold overflow-hidden hover:ring-2 hover:ring-primary/60 transition" aria-label="Open profile">
           {other.avatar_url ? <img src={other.avatar_url} alt="" className="h-full w-full object-cover" /> : (other.full_name || "U").charAt(0)}
-        </div>
+        </Link>
         <div className="min-w-0 flex-1">
-          <div className="font-semibold text-sm truncate">{other.full_name || "User"}</div>
+          <Link to="/profile/$userId" params={{ userId: other.other_id }} className="font-semibold text-sm truncate hover:text-primary transition-colors block">{other.full_name || "User"}</Link>
           <div className="text-[10px] text-emerald-500 flex items-center gap-1">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live
           </div>
