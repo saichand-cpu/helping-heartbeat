@@ -175,12 +175,25 @@ function MessagesPage() {
                       activeId === c.other_id && "bg-accent/60",
                     )}
                   >
-                    <div className="h-11 w-11 rounded-full bg-gradient-brand grid place-items-center text-primary-foreground font-bold overflow-hidden shrink-0">
+                    <Link
+                      to="/profile/$userId"
+                      params={{ userId: c.other_id }}
+                      onClick={(e) => e.stopPropagation()}
+                      className="h-11 w-11 rounded-full bg-gradient-brand grid place-items-center text-primary-foreground font-bold overflow-hidden shrink-0 hover:ring-2 hover:ring-primary/60 transition"
+                      aria-label="Open profile"
+                    >
                       {c.avatar_url ? <img src={c.avatar_url} alt="" className="h-full w-full object-cover" /> : (c.full_name || "U").charAt(0)}
-                    </div>
+                    </Link>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <div className="font-semibold truncate text-sm">{c?.full_name || "User"}</div>
+                        <Link
+                          to="/profile/$userId"
+                          params={{ userId: c.other_id }}
+                          onClick={(e) => e.stopPropagation()}
+                          className="font-semibold truncate text-sm hover:text-primary transition-colors"
+                        >
+                          {c?.full_name || "User"}
+                        </Link>
                         <div className="text-[10px] text-muted-foreground">{c?.time ? new Date(c.time).toLocaleDateString() : ""}</div>
                       </div>
                       {c?.profession && (
