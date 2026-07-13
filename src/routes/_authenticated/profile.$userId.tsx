@@ -175,8 +175,13 @@ function PublicProfile() {
       {/* Action bar */}
       <div className="glass rounded-3xl p-5 shadow-soft space-y-3">
         <div className="flex flex-wrap items-center gap-2">
-          <Button onClick={startChat} disabled={messaging} className="bg-gradient-brand text-primary-foreground border-0 shadow-glow">
-            {messaging ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <MessageCircle className="h-4 w-4 mr-1" />}
+          <Button
+            onClick={startChat}
+            disabled={messaging}
+            size="lg"
+            className="h-12 px-6 text-base font-semibold bg-[hsl(220_90%_56%)] hover:bg-[hsl(220_90%_50%)] text-white border-0 shadow-[0_0_24px_-4px_hsl(220_90%_56%/0.7)] hover:shadow-[0_0_32px_-4px_hsl(220_90%_56%/0.9)] transition-all"
+          >
+            {messaging ? <Loader2 className="h-5 w-5 mr-2 animate-spin" /> : <MessageCircle className="h-5 w-5 mr-2" />}
             Message
           </Button>
           {hasAcceptedOffer && profile.phone ? (
