@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Crown, Compass } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
