@@ -175,8 +175,13 @@ function PublicProfile() {
       {/* Action bar */}
       <div className="glass rounded-3xl p-5 shadow-soft space-y-3">
         <div className="flex flex-wrap items-center gap-2">
-          <Button onClick={startChat} disabled={messaging} className="bg-gradient-brand text-primary-foreground border-0 shadow-glow">
-            {messaging ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <MessageCircle className="h-4 w-4 mr-1" />}
+          <Button
+            onClick={startChat}
+            disabled={messaging}
+            size="lg"
+            className="h-12 px-6 text-base font-semibold bg-[hsl(220_90%_56%)] hover:bg-[hsl(220_90%_50%)] text-white border-0 shadow-[0_0_24px_-4px_hsl(220_90%_56%/0.7)] hover:shadow-[0_0_32px_-4px_hsl(220_90%_56%/0.9)] transition-all"
+          >
+            {messaging ? <Loader2 className="h-5 w-5 mr-2 animate-spin" /> : <MessageCircle className="h-5 w-5 mr-2" />}
             Message
           </Button>
           {hasAcceptedOffer && profile.phone ? (
@@ -245,18 +250,32 @@ function PublicProfile() {
 function FollowBlock({ targetId }: { targetId: string }) {
   const { following, followers, followingCount, busy, toggle, isMe, loading } = useFollow(targetId);
   return (
-    <div className="glass rounded-3xl p-5 shadow-soft flex flex-wrap items-center justify-between gap-3">
-      <div className="flex gap-6 text-sm">
-        <div><span className="font-bold text-base">{followers}</span> <span className="text-muted-foreground">Followers</span></div>
-        <div><span className="font-bold text-base">{followingCount}</span> <span className="text-muted-foreground">Following</span></div>
+    <div className="rounded-3xl bg-black border border-[hsl(45_90%_55%)]/40 p-5 shadow-pop flex flex-wrap items-center justify-between gap-4">
+      <div className="grid grid-cols-2 gap-3 flex-1 min-w-[240px]">
+        <div className="rounded-2xl border border-[hsl(45_90%_55%)]/30 bg-white/[0.02] px-4 py-3 text-center">
+          <div className="text-2xl md:text-3xl font-black text-[hsl(220_95%_70%)] tabular-nums">
+            {followers.toLocaleString()}
+          </div>
+          <div className="text-[11px] uppercase tracking-[0.15em] text-[hsl(45_90%_60%)] mt-0.5 font-semibold">
+            Followers
+          </div>
+        </div>
+        <div className="rounded-2xl border border-[hsl(45_90%_55%)]/30 bg-white/[0.02] px-4 py-3 text-center">
+          <div className="text-2xl md:text-3xl font-black text-[hsl(220_95%_70%)] tabular-nums">
+            {followingCount.toLocaleString()}
+          </div>
+          <div className="text-[11px] uppercase tracking-[0.15em] text-[hsl(45_90%_60%)] mt-0.5 font-semibold">
+            Following
+          </div>
+        </div>
       </div>
       {!isMe && (
         <Button
           onClick={toggle}
           disabled={busy || loading}
           className={following
-            ? "bg-card border border-amber-400/60 text-foreground hover:bg-amber-500/10"
-            : "bg-gradient-brand text-primary-foreground border-0 shadow-glow"}
+            ? "bg-black border border-[hsl(45_90%_55%)]/60 text-white hover:bg-[hsl(45_90%_55%)]/10"
+            : "bg-[hsl(220_90%_56%)] hover:bg-[hsl(220_90%_50%)] text-white border-0 shadow-[0_0_20px_-4px_hsl(220_90%_56%/0.7)]"}
         >
           {following ? <UserCheck className="h-4 w-4 mr-1" /> : <UserPlus className="h-4 w-4 mr-1" />}
           {following ? "Following" : "Follow"}
