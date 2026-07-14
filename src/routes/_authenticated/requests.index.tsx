@@ -56,7 +56,10 @@ function RequestsBrowse() {
   const [loading, setLoading] = useState(true);
   const [meId, setMeId] = useState<string | null>(null);
   const [phones, setPhones] = useState<Record<string, string | null>>({});
+  const [confirmDel, setConfirmDel] = useState<{ id: string; title: string; admin: boolean } | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
+  const { isAdmin } = useIsAdmin();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setMeId(data.user?.id ?? null));
@@ -65,6 +68,17 @@ function RequestsBrowse() {
   const startCall = (r: Request) => {
     if (r?.requester_id === meId) return;
     navigate({ to: "/messages", search: { user: r.requester_id, call: "voice" } as never });
+  };
+
+  const confirmDelete = async () => {
+    if (!confirmDel) return;
+    setDeleting(true);
+    const { error } = await supabase.from("help_requests").delete().eq("id", confirmDel.id);
+    setDeleting(false);
+    if (error) return toast.error(error.message);
+    toast.success(confirmDel.admin ? "Request archived" : "Request removed");
+    setItems((prev) => prev.filter((x) => x.id !== confirmDel.id));
+    setConfirmDel(null);
   };
 
   useEffect(() => {
