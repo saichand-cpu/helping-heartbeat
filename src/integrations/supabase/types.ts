@@ -599,7 +599,7 @@ export type Database = {
           created_at: string
           id: string
           rating: number
-          request_id: string
+          request_id: string | null
           reviewee_id: string
           reviewer_id: string
         }
@@ -608,7 +608,7 @@ export type Database = {
           created_at?: string
           id?: string
           rating: number
-          request_id: string
+          request_id?: string | null
           reviewee_id: string
           reviewer_id: string
         }
@@ -617,7 +617,7 @@ export type Database = {
           created_at?: string
           id?: string
           rating?: number
-          request_id?: string
+          request_id?: string | null
           reviewee_id?: string
           reviewer_id?: string
         }
