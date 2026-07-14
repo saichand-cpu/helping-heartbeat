@@ -7,11 +7,18 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Plus, MapPin, Clock, AlertTriangle, Search, Heart, MessageCircle, Phone, PhoneCall,
   GraduationCap, Stethoscope, Utensils, Car, Laptop, Users, Baby, Briefcase, Gift, Siren, Sparkles,
+  Trash2, ShieldAlert,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { toast } from "sonner";
 import { LeafletMap, useGeocodedPins } from "@/components/site/LeafletMap";
+import { useIsAdmin } from "@/hooks/use-role";
 
 export const Route = createFileRoute("/_authenticated/requests/")({
   component: RequestsBrowse,
