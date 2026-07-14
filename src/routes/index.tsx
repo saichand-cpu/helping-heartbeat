@@ -418,7 +418,8 @@ function LeadershipVoice() {
           <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[hsl(45_90%_55%)]">Leadership Voice</span>
           <span className="h-px w-10 bg-[hsl(45_90%_55%)]" aria-hidden />
         </div>
-        <h2 className="mt-4 text-4xl md:text-5xl font-bold">A message from our CEO</h2>
+        <h2 className="mt-4 text-4xl md:text-5xl font-bold">The people behind HumanLink</h2>
+        <p className="mt-3 text-muted-foreground">One belief, two operators — building the kindness network in the open.</p>
       </div>
 
       <motion.div
@@ -428,22 +429,48 @@ function LeadershipVoice() {
         variants={fadeUp}
         className="relative rounded-[2rem] p-[1.5px] bg-gradient-to-br from-[hsl(45_90%_55%)] via-[hsl(45_70%_35%)] to-[hsl(45_90%_55%)] shadow-pop"
       >
-        <div className="rounded-[2rem] bg-black p-8 md:p-12">
-          <div className="grid gap-10 lg:grid-cols-2">
-            {/* CEO Story */}
-            <div className="relative">
+        <div className="rounded-[2rem] bg-black p-6 md:p-10">
+          <div className="grid gap-8 lg:grid-cols-2">
+            {/* Founder */}
+            <div className="relative rounded-2xl border border-[hsl(45_90%_55%)]/40 bg-white/[0.02] p-6 md:p-7">
+              <div className="flex items-center gap-3">
+                <div className="h-11 w-11 rounded-xl grid place-items-center bg-[hsl(220_90%_56%)]/15 border border-[hsl(220_90%_56%)]/40">
+                  <Heart className="h-5 w-5 text-[hsl(220_95%_65%)]" />
+                </div>
+                <div>
+                  <div className="text-xs uppercase tracking-widest text-[hsl(45_90%_55%)]">Founder</div>
+                  <div className="text-sm text-white/70">Where the belief began</div>
+                </div>
+              </div>
+              <Quote className="mt-6 h-8 w-8 text-[hsl(45_90%_55%)]/60" />
+              <p className="mt-3 text-base md:text-lg leading-relaxed text-white/85">
+                "Humanity becomes stronger when people help each other. HumanLink began the day that belief turned into action — a place where a stranger's kindness is only one tap away, and every completed act of help is a signal that the world can still be tender."
+              </p>
+              <div className="mt-6 flex items-center gap-3">
+                <div className="h-12 w-12 rounded-full grid place-items-center bg-gradient-to-br from-[hsl(220_90%_56%)] to-[hsl(220_95%_65%)] text-white font-bold shadow-glow">
+                  LS
+                </div>
+                <div>
+                  <div className="text-base font-semibold text-[hsl(220_95%_70%)]">— L. Saichand</div>
+                  <div className="text-xs text-white/60">Founder · HumanLink</div>
+                </div>
+              </div>
+            </div>
+
+            {/* CEO */}
+            <div className="relative rounded-2xl border border-[hsl(45_90%_55%)]/40 bg-white/[0.02] p-6 md:p-7">
               <div className="flex items-center gap-3">
                 <div className="h-11 w-11 rounded-xl grid place-items-center bg-[hsl(220_90%_56%)]/15 border border-[hsl(220_90%_56%)]/40">
                   <Crown className="h-5 w-5 text-[hsl(220_95%_65%)]" />
                 </div>
                 <div>
-                  <div className="text-xs uppercase tracking-widest text-[hsl(45_90%_55%)]">CEO Story</div>
-                  <div className="text-sm text-white/70">Building direct human connection</div>
+                  <div className="text-xs uppercase tracking-widest text-[hsl(45_90%_55%)]">Chief Executive Officer</div>
+                  <div className="text-sm text-white/70">Scaling the network with trust</div>
                 </div>
               </div>
               <Quote className="mt-6 h-8 w-8 text-[hsl(45_90%_55%)]/60" />
               <p className="mt-3 text-base md:text-lg leading-relaxed text-white/85">
-                "HumanLink began with a simple belief: that local human connection is the ultimate source of security and progress. As we scale past our first 1,000 active users, my focus is on engineering a platform where technology disappears into the background, leaving only pure, direct, and real-time collaboration. By removing arbitrary gateways and accept-request steps, we are giving our community direct access to the tools they need to build, help, and thrive together."
+                "Scaling a global network requires a balance of hyper-fast engineering and rock-solid platform trust. We are removing every unnecessary gateway between people who need help and people ready to give it — direct, real-time, and safe by design."
               </p>
               <div className="mt-6 flex items-center gap-3">
                 <div className="h-12 w-12 rounded-full grid place-items-center bg-gradient-to-br from-[hsl(220_90%_56%)] to-[hsl(220_95%_65%)] text-white font-bold shadow-glow">
@@ -455,33 +482,20 @@ function LeadershipVoice() {
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Divider */}
-            <div className="hidden lg:block absolute left-1/2 top-12 bottom-12 w-px bg-gradient-to-b from-transparent via-[hsl(45_90%_55%)]/60 to-transparent" aria-hidden />
-
-            {/* Vision */}
-            <div>
-              <div className="flex items-center gap-3">
-                <div className="h-11 w-11 rounded-xl grid place-items-center bg-[hsl(220_90%_56%)]/15 border border-[hsl(220_90%_56%)]/40">
-                  <Compass className="h-5 w-5 text-[hsl(220_95%_65%)]" />
-                </div>
-                <div>
-                  <div className="text-xs uppercase tracking-widest text-[hsl(45_90%_55%)]">Our Vision</div>
-                  <div className="text-sm text-white/70">Zero-latency peer-to-peer</div>
-                </div>
-              </div>
-              <div className="mt-6 rounded-2xl border border-[hsl(45_90%_55%)]/30 bg-white/[0.02] p-6">
-                <p className="text-base md:text-lg leading-relaxed text-white/85">
-                  "Our vision is to build the world's most trusted, zero-latency peer-to-peer ecosystem. We are fusing the visual energy of social discovery with deep functional utilities — combining real-time text, dynamic calling triggers, and interactive location maps. We are designing a future where anyone, anywhere, can find a trusted partner or launch a local service instantly and securely."
-                </p>
-              </div>
-              <div className="mt-6 flex flex-wrap gap-2">
-                {["Real-time chat", "Voice & video", "Live maps", "Trusted profiles"].map((t) => (
-                  <span key={t} className="text-xs px-3 py-1 rounded-full border border-[hsl(45_90%_55%)]/40 text-[hsl(45_90%_65%)] bg-[hsl(45_90%_55%)]/[0.06]">
-                    {t}
-                  </span>
-                ))}
-              </div>
+          {/* Vision footer */}
+          <div className="mt-8 rounded-2xl border border-[hsl(45_90%_55%)]/30 bg-white/[0.02] p-5 md:p-6 flex flex-wrap items-center gap-3">
+            <Compass className="h-5 w-5 text-[hsl(220_95%_65%)] shrink-0" />
+            <p className="text-sm text-white/80 flex-1 min-w-[240px]">
+              Our vision: the world's most trusted, zero-latency peer-to-peer help network — real-time chat, live calling, and interactive maps in one canvas.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {["Real-time chat", "Voice calls", "Live maps", "Trusted profiles"].map((t) => (
+                <span key={t} className="text-xs px-3 py-1 rounded-full border border-[hsl(45_90%_55%)]/40 text-[hsl(45_90%_65%)] bg-[hsl(45_90%_55%)]/[0.06]">
+                  {t}
+                </span>
+              ))}
             </div>
           </div>
         </div>
