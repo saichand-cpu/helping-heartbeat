@@ -209,10 +209,26 @@ function RequestsBrowse() {
                 className="group cursor-pointer rounded-3xl border border-border bg-card p-6 hover:shadow-pop hover:-translate-y-0.5 transition-all">
                 <div className="flex items-start justify-between gap-3">
                   <div className="h-11 w-11 rounded-xl bg-accent grid place-items-center text-primary"><Icon className="h-5 w-5" /></div>
-                  <Badge className={URGENCY_STYLE[r.urgency] + " border-0"}>
-                    {r.urgency === "emergency" && <AlertTriangle className="h-3 w-3 mr-1" />}
-                    {r.urgency}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge className={URGENCY_STYLE[r.urgency] + " border-0"}>
+                      {r.urgency === "emergency" && <AlertTriangle className="h-3 w-3 mr-1" />}
+                      {r.urgency}
+                    </Badge>
+                    {(r.requester_id === meId || isAdmin) && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={(e) => { e.stopPropagation(); setConfirmDel({ id: r.id, title: r.title, admin: r.requester_id !== meId }); }}
+                        aria-label={r.requester_id === meId ? "Remove request" : "Admin archive"}
+                        title={r.requester_id === meId ? "Remove request" : "Admin archive"}
+                        className={r.requester_id === meId
+                          ? "h-8 w-8 rounded-lg text-red-500 hover:text-red-400 hover:bg-red-500/10"
+                          : "h-8 w-8 rounded-lg text-amber-400 hover:text-amber-300 hover:bg-amber-500/10"}
+                      >
+                        {r.requester_id === meId ? <Trash2 className="h-4 w-4" /> : <ShieldAlert className="h-4 w-4" />}
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 <h3 className="mt-4 font-semibold text-lg leading-snug">{r.title}</h3>
                 <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{r.description}</p>
