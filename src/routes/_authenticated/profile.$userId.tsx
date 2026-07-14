@@ -3,10 +3,12 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
   Award, ShieldCheck, EyeOff, MessageCircle, Phone, Lock, Loader2, ArrowLeft, MapPin, Check, X, UserPlus, UserCheck,
+  Star, Send, Trash2,
 } from "lucide-react";
 import { useFollow } from "@/hooks/use-follow";
 
@@ -243,6 +245,226 @@ function PublicProfile() {
           ) : null}
         </div>
       ) : null}
+      <ReviewsSection targetId={profile.id} targetName={display} me={me} />
+    </div>
+  );
+}
+
+type ReviewRow = {
+  id: string;
+  reviewer_id: string;
+  reviewee_id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  request_id: string | null;
+  reviewer_name?: string | null;
+  reviewer_avatar?: string | null;
+};
+
+function ReviewsSection({ targetId, targetName, me }: { targetId: string; targetName: string; me: string | null }) {
+  const [rows, setRows] = useState<ReviewRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const hydrate = async (list: ReviewRow[]) => {
+    const ids = Array.from(new Set(list.map((r) => r.reviewer_id)));
+    if (!ids.length) return list;
+    const { data } = await supabase.from("profiles").select("id, full_name, avatar_url").in("id", ids);
+    const map = new Map((data ?? []).map((p) => [p.id, p]));
+    return list.map((r) => {
+      const p = map.get(r.reviewer_id);
+      return { ...r, reviewer_name: p?.full_name ?? null, reviewer_avatar: p?.avatar_url ?? null };
+    });
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      const { data } = await supabase
+        .from("reviews")
+        .select("id, reviewer_id, reviewee_id, rating, comment, created_at, request_id")
+        .eq("reviewee_id", targetId)
+        .order("created_at", { ascending: false })
+        .limit(100);
+      const hydrated = await hydrate((data as ReviewRow[]) ?? []);
+      if (!cancelled) { setRows(hydrated); setLoading(false); }
+    })();
+    return () => { cancelled = true; };
+  }, [targetId]);
+
+  useEffect(() => {
+    const ch = supabase
+      .channel(`reviews:${targetId}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "reviews", filter: `reviewee_id=eq.${targetId}` }, async (payload) => {
+        const r = payload.new as ReviewRow;
+        const [hydrated] = await hydrate([r]);
+        setRows((prev) => prev.find((x) => x.id === r.id) ? prev : [hydrated, ...prev]);
+      })
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "reviews", filter: `reviewee_id=eq.${targetId}` }, (payload) => {
+        const r = payload.old as ReviewRow;
+        setRows((prev) => prev.filter((x) => x.id !== r.id));
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [targetId]);
+
+  const submit = async () => {
+    if (!me) return toast.error("Sign in to leave a review");
+    if (me === targetId) return toast.error("You can't review yourself");
+    const text = comment.trim();
+    if (!text) return toast.error("Write a short review first");
+    setSubmitting(true);
+    const optimisticId = `tmp-${Date.now()}`;
+    const optimistic: ReviewRow = {
+      id: optimisticId, reviewer_id: me, reviewee_id: targetId,
+      rating, comment: text, created_at: new Date().toISOString(), request_id: null,
+    };
+    const [hydrated] = await hydrate([optimistic]);
+    setRows((prev) => [hydrated, ...prev]);
+    const { data, error } = await supabase
+      .from("reviews")
+      .insert({ reviewee_id: targetId, reviewer_id: me, rating, comment: text } as never)
+      .select("id, reviewer_id, reviewee_id, rating, comment, created_at, request_id")
+      .single();
+    setSubmitting(false);
+    if (error || !data) {
+      setRows((prev) => prev.filter((x) => x.id !== optimisticId));
+      return toast.error(error?.message || "Could not post review");
+    }
+    setComment("");
+    setRating(5);
+    setRows((prev) => {
+      const without = prev.filter((x) => x.id !== optimisticId && x.id !== (data as ReviewRow).id);
+      return [{ ...(data as ReviewRow), reviewer_name: hydrated.reviewer_name, reviewer_avatar: hydrated.reviewer_avatar }, ...without];
+    });
+    toast.success("Review posted");
+  };
+
+  const remove = async (id: string) => {
+    const prev = rows;
+    setRows((r) => r.filter((x) => x.id !== id));
+    const { error } = await supabase.from("reviews").delete().eq("id", id);
+    if (error) { setRows(prev); toast.error(error.message); }
+  };
+
+  const avg = rows.length ? (rows.reduce((a, r) => a + (r.rating || 0), 0) / rows.length).toFixed(1) : "—";
+
+  return (
+    <div className="rounded-3xl bg-black border border-[hsl(45_90%_55%)]/40 p-5 md:p-6 shadow-pop">
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div className="flex items-center gap-2">
+          <Star className="h-5 w-5 text-[hsl(45_90%_60%)] fill-[hsl(45_90%_60%)]" />
+          <h2 className="text-lg font-bold text-white">User Reviews</h2>
+        </div>
+        <div className="text-sm text-white/70">
+          <span className="text-white font-semibold tabular-nums">{avg}</span> · {rows.length} review{rows.length === 1 ? "" : "s"}
+        </div>
+      </div>
+
+      {me && me !== targetId && (
+        <div className="rounded-2xl border border-[hsl(45_90%_55%)]/30 bg-white/[0.02] p-4 mb-5 space-y-3">
+          <div className="flex items-center gap-1">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setRating(n)}
+                aria-label={`Rate ${n} star${n === 1 ? "" : "s"}`}
+                className="p-1 hover:scale-110 transition-transform"
+              >
+                <Star className={`h-5 w-5 ${n <= rating ? "fill-[hsl(45_90%_60%)] text-[hsl(45_90%_60%)]" : "text-white/30"}`} />
+              </button>
+            ))}
+            <span className="text-xs text-white/60 ml-2">{rating}/5</span>
+          </div>
+          <Textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder={`Share your experience with ${targetName.split(" ")[0]}…`}
+            rows={3}
+            maxLength={800}
+            className="bg-black/60 border-white/10 text-white placeholder:text-white/40"
+          />
+          <div className="flex justify-end">
+            <Button
+              onClick={submit}
+              disabled={submitting || !comment.trim()}
+              className="bg-[hsl(220_90%_56%)] hover:bg-[hsl(220_90%_50%)] text-white border-0 shadow-[0_0_20px_-4px_hsl(220_90%_56%/0.7)]"
+            >
+              {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+              Post review
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="space-y-2">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="h-20 rounded-2xl bg-white/[0.03] animate-pulse" />
+          ))}
+        </div>
+      ) : rows.length === 0 ? (
+        <div className="py-10 text-center text-sm text-white/60">
+          No reviews yet — be the first to share how {targetName.split(" ")[0]} helped you.
+        </div>
+      ) : (
+        <ul className="space-y-3">
+          {rows.map((r) => (
+            <li key={r.id} className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+              <div className="flex items-start gap-3">
+                <Link
+                  to="/profile/$userId"
+                  params={{ userId: r.reviewer_id }}
+                  className="h-10 w-10 rounded-full bg-gradient-to-br from-[hsl(220_90%_56%)] to-[hsl(220_95%_65%)] grid place-items-center text-white text-sm font-bold overflow-hidden shrink-0 hover:ring-2 hover:ring-[hsl(220_90%_56%)]/60 transition"
+                >
+                  {r.reviewer_avatar ? (
+                    <img src={r.reviewer_avatar} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    (r.reviewer_name || "U").charAt(0).toUpperCase()
+                  )}
+                </Link>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <Link
+                      to="/profile/$userId"
+                      params={{ userId: r.reviewer_id }}
+                      className="text-sm font-semibold text-[hsl(220_95%_70%)] hover:underline truncate"
+                    >
+                      {r.reviewer_name || "User"}
+                    </Link>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star key={i} className={`h-3.5 w-3.5 ${i < (r.rating || 0) ? "fill-[hsl(45_90%_60%)] text-[hsl(45_90%_60%)]" : "text-white/20"}`} />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="text-[11px] text-white/50 mt-0.5">
+                    {new Date(r.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+                  </div>
+                  {r.comment && (
+                    <p className="text-sm text-white/85 mt-2 whitespace-pre-wrap break-words">{r.comment}</p>
+                  )}
+                </div>
+                {me === r.reviewer_id && (
+                  <button
+                    onClick={() => remove(r.id)}
+                    className="text-white/40 hover:text-red-400 transition"
+                    aria-label="Delete review"
+                    title="Delete"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

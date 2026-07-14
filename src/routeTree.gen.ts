@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
-import { Route as FounderRouteImport } from './routes/founder'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -40,11 +39,6 @@ const PricingRoute = PricingRouteImport.update({
 const LeaderboardRoute = LeaderboardRouteImport.update({
   id: '/leaderboard',
   path: '/leaderboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FounderRoute = FounderRouteImport.update({
-  id: '/founder',
-  path: '/founder',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -152,7 +146,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
-  '/founder': typeof FounderRoute
   '/leaderboard': typeof LeaderboardRoute
   '/pricing': typeof PricingRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -175,7 +168,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
-  '/founder': typeof FounderRoute
   '/leaderboard': typeof LeaderboardRoute
   '/pricing': typeof PricingRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -200,7 +192,6 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
-  '/founder': typeof FounderRoute
   '/leaderboard': typeof LeaderboardRoute
   '/pricing': typeof PricingRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
@@ -225,7 +216,6 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
-    | '/founder'
     | '/leaderboard'
     | '/pricing'
     | '/admin'
@@ -248,7 +238,6 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
-    | '/founder'
     | '/leaderboard'
     | '/pricing'
     | '/admin'
@@ -272,7 +261,6 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/about'
     | '/auth'
-    | '/founder'
     | '/leaderboard'
     | '/pricing'
     | '/_authenticated/admin'
@@ -297,7 +285,6 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
-  FounderRoute: typeof FounderRoute
   LeaderboardRoute: typeof LeaderboardRoute
   PricingRoute: typeof PricingRoute
   ApiHumiChatRoute: typeof ApiHumiChatRoute
@@ -317,13 +304,6 @@ declare module '@tanstack/react-router' {
       path: '/leaderboard'
       fullPath: '/leaderboard'
       preLoaderRoute: typeof LeaderboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/founder': {
-      id: '/founder'
-      path: '/founder'
-      fullPath: '/founder'
-      preLoaderRoute: typeof FounderRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -514,7 +494,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
-  FounderRoute: FounderRoute,
   LeaderboardRoute: LeaderboardRoute,
   PricingRoute: PricingRoute,
   ApiHumiChatRoute: ApiHumiChatRoute,
