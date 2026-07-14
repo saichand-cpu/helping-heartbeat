@@ -19,7 +19,8 @@ type SignalPayload =
   | { kind: "hangup"; from: string };
 
 function channelName(a: string, b: string) {
-  return `rtc:${[a, b].sort().join(":")}`;
+  // call_room:<sorted-pair> — deterministic per 1:1 chat, matches Realtime spec.
+  return `call_room:${[a, b].sort().join("_")}`;
 }
 
 export function useWebRTC(me: string | null) {
