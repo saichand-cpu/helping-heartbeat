@@ -11,6 +11,7 @@ import {
   Star, Send, Trash2,
 } from "lucide-react";
 import { useFollow } from "@/hooks/use-follow";
+import { ProfileMediaGrid } from "@/components/site/ProfileMediaGrid";
 
 export const Route = createFileRoute("/_authenticated/profile/$userId")({
   component: PublicProfile,
