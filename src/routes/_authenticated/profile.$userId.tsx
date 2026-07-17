@@ -131,11 +131,20 @@ function PublicProfile() {
     window.location.href = `tel:${profile.phone}`;
   };
 
-  if (loading) return <div className="glass rounded-3xl h-96 animate-pulse" />;
+  if (loading) return (
+    <div className="max-w-3xl mx-auto space-y-4">
+      <div className="rounded-3xl bg-black border border-[hsl(45_90%_55%)]/40 h-56 animate-pulse" />
+      <div className="rounded-3xl bg-black border border-[hsl(45_90%_55%)]/40 h-40 animate-pulse" />
+    </div>
+  );
   if (!profile) return (
-    <div className="glass rounded-3xl p-12 text-center">
-      <p className="text-muted-foreground">Profile not found.</p>
-      <Link to="/requests"><Button variant="ghost" className="mt-3"><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button></Link>
+    <div className="max-w-3xl mx-auto">
+      <div className="rounded-3xl bg-black border border-[hsl(45_90%_55%)]/40 p-12 text-center shadow-pop">
+        <div className="h-24 w-24 mx-auto rounded-full bg-white/[0.04] border border-[hsl(45_90%_55%)]/30 grid place-items-center text-white/40 text-3xl mb-4">?</div>
+        <h2 className="text-xl font-bold text-white mb-1">User Profile Not Found</h2>
+        <p className="text-sm text-white/60 mb-5">This account may have been removed or the link is broken.</p>
+        <Link to="/requests"><Button variant="outline" className="border-[hsl(45_90%_55%)]/40 text-white hover:bg-white/5"><ArrowLeft className="h-4 w-4 mr-1" /> Back to requests</Button></Link>
+      </div>
     </div>
   );
 
