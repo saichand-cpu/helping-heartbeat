@@ -142,29 +142,101 @@ function ProfilePage() {
     toast.success(nextFlag ? "You're now listed on the Co-Founder board" : "Removed from the Co-Founder board");
   };
 
+  const changeAvatar = async (file: File | null) => {
+    if (!file || !meId) return;
+    setUploadingAvatar(true);
+    try {
+      const media = await uploadFeedMedia(file);
+      const signed = await signFeedMedia(media.path, 60 * 60 * 24 * 365);
+      const { error } = await supabase.from("profiles").update({ avatar_url: signed } as never).eq("id", meId);
+      if (error) throw error;
+      setProfile((p) => ({ ...p, avatar_url: signed }));
+      toast.success("Profile picture updated");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Upload failed");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
   if (loading) return <div className="glass rounded-3xl h-96 animate-pulse" />;
+
+  const initial = (profile.full_name || "?").charAt(0).toUpperCase();
 
   return (
     <div className="max-w-3xl mx-auto pb-24 lg:pb-6 space-y-6">
-      <div className="rounded-3xl bg-gradient-brand p-6 md:p-8 text-primary-foreground shadow-pop relative overflow-hidden">
-        <div className="absolute -bottom-10 -right-10 h-48 w-48 rounded-full bg-white/20 blur-3xl" />
-        <div className="relative flex items-center gap-4">
-          <div className="h-20 w-20 rounded-2xl bg-white/20 backdrop-blur grid place-items-center text-3xl font-bold">
-            {profile.full_name.charAt(0) || "?"}
+      {/* Instagram-style header */}
+      <div className="rounded-3xl bg-black border border-[hsl(45_90%_55%)]/40 p-5 md:p-6 shadow-pop">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 sm:gap-8">
+          <div className="relative group shrink-0">
+            <div className="h-24 w-24 md:h-28 md:w-28 rounded-full overflow-hidden bg-gradient-to-br from-[hsl(220_90%_56%)] to-[hsl(220_95%_65%)] grid place-items-center text-white text-3xl font-bold ring-2 ring-[hsl(45_90%_55%)]/50">
+              {profile.avatar_url ? (
+                <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+              ) : initial}
+            </div>
+            <button
+              type="button"
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={uploadingAvatar}
+              className="absolute inset-0 rounded-full bg-black/60 opacity-0 group-hover:opacity-100 transition grid place-items-center text-white"
+              aria-label="Change profile picture"
+            >
+              {uploadingAvatar ? <Loader2 className="h-5 w-5 animate-spin" /> : <Camera className="h-5 w-5" />}
+            </button>
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => changeAvatar(e.target.files?.[0] ?? null)}
+            />
           </div>
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold">{profile.full_name || "Your profile"}</h1>
-            <div className="flex flex-wrap items-center gap-2 mt-2">
-              <Badge variant="secondary" className="gap-1"><Award className="h-3 w-3" /> {profile.karma_points} karma</Badge>
-              {profile.verified && <Badge variant="secondary" className="gap-1"><ShieldCheck className="h-3 w-3" /> Verified</Badge>}
-              <Badge variant="secondary">{profile.role}</Badge>
-              {profile.incognito && (
-                <Badge variant="secondary" className="gap-1"><EyeOff className="h-3 w-3" /> Incognito</Badge>
+          <div className="flex-1 min-w-0 w-full">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <h1 className="text-2xl md:text-3xl font-bold text-white truncate">{profile.full_name || "Your profile"}</h1>
+              {profile.verified && <ShieldCheck className="h-5 w-5 text-[hsl(220_95%_70%)]" />}
+            </div>
+            <div className="grid grid-cols-3 gap-2 mt-4 max-w-md">
+              {[
+                { n: postCount, l: "Posts" },
+                { n: follow.followers, l: "Followers" },
+                { n: follow.followingCount, l: "Following" },
+              ].map((s) => (
+                <div key={s.l} className="text-center">
+                  <div className="text-xl md:text-2xl font-black text-white tabular-nums">{s.n.toLocaleString()}</div>
+                  <div className="text-[10px] uppercase tracking-[0.15em] text-[hsl(45_90%_60%)] mt-0.5 font-semibold">{s.l}</div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 space-y-1 text-sm text-white/85">
+              {profile.location && (
+                <div className="inline-flex items-center gap-1 text-white/70">
+                  <MapPin className="h-3.5 w-3.5" /> {profile.location}
+                </div>
               )}
+              {profile.bio && <p className="whitespace-pre-wrap break-words">{profile.bio}</p>}
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                <Badge variant="secondary" className="gap-1"><Award className="h-3 w-3" /> {profile.karma_points} karma</Badge>
+                <Badge variant="secondary">{profile.role}</Badge>
+                {profile.incognito && (
+                  <Badge variant="secondary" className="gap-1"><EyeOff className="h-3 w-3" /> Incognito</Badge>
+                )}
+              </div>
+            </div>
+            <div className="mt-4">
+              <Button
+                type="button"
+                onClick={() => document.getElementById("edit-profile-form")?.scrollIntoView({ behavior: "smooth" })}
+                className="bg-[hsl(220_90%_56%)] hover:bg-[hsl(220_90%_50%)] text-white border-0 shadow-[0_0_20px_-4px_hsl(220_90%_56%/0.7)]"
+              >
+                Edit Bio
+              </Button>
             </div>
           </div>
         </div>
       </div>
+
+      {meId && <ProfileMediaGrid userId={meId} isOwner onCountChange={setPostCount} />}
 
       {/* Privacy: Incognito mode */}
       <section className="glass rounded-3xl p-5 md:p-6 shadow-soft">
