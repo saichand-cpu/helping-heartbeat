@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Award, ShieldCheck, EyeOff, Handshake } from "lucide-react";
+import { Loader2, Award, ShieldCheck, EyeOff, Handshake, Camera, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,8 +12,11 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Storefront } from "@/components/site/Storefront";
 import { ProfessionPicker } from "@/components/site/ProfessionPicker";
+import { ProfileMediaGrid } from "@/components/site/ProfileMediaGrid";
 import { usePremium } from "@/hooks/use-premium";
 import { Link } from "@tanstack/react-router";
+import { useFollow } from "@/hooks/use-follow";
+import { uploadFeedMedia, signFeedMedia } from "@/lib/upload";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
