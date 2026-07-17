@@ -255,6 +255,7 @@ function PublicProfile() {
           ) : null}
         </div>
       ) : null}
+      <ProfileMediaGrid userId={profile.id} isOwner={false} />
       <ReviewsSection targetId={profile.id} targetName={display} me={me} />
     </div>
   );
