@@ -76,6 +76,7 @@ function ProfilePage() {
           incognito: (data as { incognito?: boolean }).incognito ?? false,
           seeking_cofounder: (data as { seeking_cofounder?: boolean }).seeking_cofounder ?? false,
           cofounder_pitch: (data as { cofounder_pitch?: string | null }).cofounder_pitch ?? "",
+          avatar_url: (data as { avatar_url?: string | null }).avatar_url ?? "",
         });
       }
       setLoading(false);
