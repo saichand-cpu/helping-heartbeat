@@ -316,7 +316,7 @@ function ProfilePage() {
         <Storefront ownerId={meId} canManage unlocked={canStorefront} />
       )}
 
-      <form onSubmit={save} className="glass rounded-3xl p-6 md:p-8 space-y-5 shadow-soft">
+      <form id="edit-profile-form" onSubmit={save} className="glass rounded-3xl p-6 md:p-8 space-y-5 shadow-soft">
         <h2 className="text-xl font-semibold">Edit your profile</h2>
         <div className="grid md:grid-cols-2 gap-4">
           <div>
