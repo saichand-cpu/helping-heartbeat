@@ -44,8 +44,13 @@ function ProfilePage() {
     incognito: false,
     seeking_cofounder: false,
     cofounder_pitch: "",
+    avatar_url: "" as string | null | "",
   });
   const [savingCofounder, setSavingCofounder] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [postCount, setPostCount] = useState(0);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const follow = useFollow(meId);
 
   useEffect(() => {
     (async () => {
