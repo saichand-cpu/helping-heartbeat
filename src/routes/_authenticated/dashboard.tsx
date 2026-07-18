@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { smartMatch } from "@/lib/ai-match.functions";
 import { UserSearch } from "@/components/site/UserSearch";
 import { SuggestedForYou } from "@/components/site/SuggestedForYou";
+import { NotificationOptIn } from "@/components/site/NotificationOptIn";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -73,6 +74,8 @@ function Dashboard() {
           </div>
         </div>
       </motion.div>
+
+      <NotificationOptIn />
 
       <UserSearch />
 
