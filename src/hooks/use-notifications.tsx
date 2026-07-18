@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./use-auth";
 import { toast } from "sonner";
+import { notifySystem } from "./use-system-notifications";
 
 export type Notification = {
   id: string;
@@ -49,6 +50,7 @@ export function useNotifications() {
           const n = payload.new as Notification;
           setItems((prev) => (prev.find((x) => x.id === n.id) ? prev : [n, ...prev]));
           toast(n.title, { description: n.body ?? undefined });
+          notifySystem(n.title, { body: n.body ?? undefined, tag: `notif:${n.id}` });
         },
       )
       .on(
