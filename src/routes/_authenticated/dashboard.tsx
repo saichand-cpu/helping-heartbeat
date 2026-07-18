@@ -75,6 +75,8 @@ function Dashboard() {
         </div>
       </motion.div>
 
+      <NotificationOptIn />
+
       <UserSearch />
 
       <SuggestedForYou />
