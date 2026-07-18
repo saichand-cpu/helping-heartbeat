@@ -1,0 +1,26 @@
+{
+  "name": "HumanLink — Connecting People Through Kindness",
+  "short_name": "HumanLink",
+  "description": "Instantly connect with people who need help — or people ready to help you.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#0b1220",
+  "categories": ["social", "lifestyle", "productivity"],
+  "icons": [
+    {
+      "src": "/__l5e/assets-v1/292f435f-b711-4584-99b5-1bd62bcc5359/humanlink-logo.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/__l5e/assets-v1/292f435f-b711-4584-99b5-1bd62bcc5359/humanlink-logo.jpeg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}
