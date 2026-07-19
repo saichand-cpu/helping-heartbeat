@@ -17,6 +17,8 @@ import { usePremium } from "@/hooks/use-premium";
 import { Link } from "@tanstack/react-router";
 import { useFollow } from "@/hooks/use-follow";
 import { uploadFeedMedia, signFeedMedia } from "@/lib/upload";
+import { AccountTypeSelector } from "@/components/site/AccountTypeSelector";
+import { isNgo, type AccountType, type OrgType } from "@/lib/org-types";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
@@ -45,6 +47,10 @@ function ProfilePage() {
     seeking_cofounder: false,
     cofounder_pitch: "",
     avatar_url: "" as string | null | "",
+    account_type: "individual" as AccountType,
+    org_type: null as OrgType | null,
+    fundraising_link: "",
+    operational_hours: "",
   });
   const [savingCofounder, setSavingCofounder] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -77,6 +83,10 @@ function ProfilePage() {
           seeking_cofounder: (data as { seeking_cofounder?: boolean }).seeking_cofounder ?? false,
           cofounder_pitch: (data as { cofounder_pitch?: string | null }).cofounder_pitch ?? "",
           avatar_url: (data as { avatar_url?: string | null }).avatar_url ?? "",
+          account_type: (((data as { account_type?: string }).account_type as AccountType) ?? "individual"),
+          org_type: (((data as { org_type?: string | null }).org_type as OrgType | null) ?? null),
+          fundraising_link: ((data as { fundraising_link?: string | null }).fundraising_link) ?? "",
+          operational_hours: ((data as { operational_hours?: string | null }).operational_hours) ?? "",
         });
       }
       setLoading(false);
@@ -101,6 +111,10 @@ function ProfilePage() {
         skills: profile.skills.split(",").map((s) => s.trim()).filter(Boolean),
         languages: profile.languages.split(",").map((s) => s.trim()).filter(Boolean),
         profession: profile.profession.trim(),
+        account_type: profile.account_type,
+        org_type: profile.account_type === "business" ? profile.org_type : null,
+        fundraising_link: profile.fundraising_link.trim() || null,
+        operational_hours: profile.operational_hours.trim() || null,
         onboarded: true,
       } as never).eq("id", u.user.id),
       supabase.from("profile_contacts" as never).upsert({
@@ -318,9 +332,26 @@ function ProfilePage() {
 
       <form id="edit-profile-form" onSubmit={save} className="glass rounded-3xl p-6 md:p-8 space-y-5 shadow-soft">
         <h2 className="text-xl font-semibold">Edit your profile</h2>
+
+        <div>
+          <Label>Account type</Label>
+          <div className="mt-2">
+            <AccountTypeSelector
+              accountType={profile.account_type}
+              orgType={profile.org_type}
+              onAccountTypeChange={(v) => setProfile({ ...profile, account_type: v })}
+              onOrgTypeChange={(v) => setProfile({ ...profile, org_type: v })}
+            />
+          </div>
+        </div>
+
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <Label>Full name</Label>
+            <Label>
+              {profile.account_type === "business"
+                ? isNgo(profile.org_type) ? "Organization name" : "Business name"
+                : "Full name"}
+            </Label>
             <Input value={profile.full_name} onChange={(e) => setProfile({ ...profile, full_name: e.target.value })} />
           </div>
           <div>
@@ -328,6 +359,29 @@ function ProfilePage() {
             <Input value={profile.location} onChange={(e) => setProfile({ ...profile, location: e.target.value })} placeholder="City, country" />
           </div>
         </div>
+
+        {profile.account_type === "business" && (
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label>{isNgo(profile.org_type) ? "Operational hours" : "Work hours"}</Label>
+              <Input
+                value={profile.operational_hours}
+                onChange={(e) => setProfile({ ...profile, operational_hours: e.target.value })}
+                placeholder="Mon–Fri, 9am–6pm"
+              />
+            </div>
+            {isNgo(profile.org_type) && (
+              <div>
+                <Label>Fundraising / donation link</Label>
+                <Input
+                  value={profile.fundraising_link}
+                  onChange={(e) => setProfile({ ...profile, fundraising_link: e.target.value })}
+                  placeholder="upi://pay?pa=ngo@bank  or  https://donate.example.org"
+                />
+              </div>
+            )}
+          </div>
+        )}
         <div>
           <Label>Bio</Label>
           <Textarea rows={3} value={profile.bio} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} placeholder="Tell the community a bit about you." />

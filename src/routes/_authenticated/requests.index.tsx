@@ -18,6 +18,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { LeafletMap, useGeocodedPins } from "@/components/site/LeafletMap";
+import { pinKindFor } from "@/lib/org-types";
 import { useIsAdmin } from "@/hooks/use-role";
 
 export const Route = createFileRoute("/_authenticated/requests/")({
@@ -53,9 +54,11 @@ function RequestsBrowse() {
   const [items, setItems] = useState<Request[]>([]);
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string>("all");
+  const [seg, setSeg] = useState<"all" | "ngo" | "business" | "personal">("all");
   const [loading, setLoading] = useState(true);
   const [meId, setMeId] = useState<string | null>(null);
   const [phones, setPhones] = useState<Record<string, string | null>>({});
+  const [orgs, setOrgs] = useState<Record<string, { account_type: string | null; org_type: string | null }>>({});
   const [confirmDel, setConfirmDel] = useState<{ id: string; title: string; admin: boolean } | null>(null);
   const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
@@ -92,10 +95,18 @@ function RequestsBrowse() {
       setLoading(false);
       const ids = Array.from(new Set(list.map((r) => r.requester_id)));
       if (ids.length) {
-        const { data: profs } = await supabase.from("profile_contacts").select("user_id, phone").in("user_id", ids);
-        const map: Record<string, string | null> = {};
-        (profs ?? []).forEach((p: { user_id: string; phone: string | null }) => { map[p.user_id] = p?.phone ?? null; });
-        setPhones(map);
+        const [{ data: profs }, { data: orgRows }] = await Promise.all([
+          supabase.from("profile_contacts").select("user_id, phone").in("user_id", ids),
+          supabase.from("profiles").select("id, account_type, org_type").in("id", ids),
+        ]);
+        const pmap: Record<string, string | null> = {};
+        (profs ?? []).forEach((p: { user_id: string; phone: string | null }) => { pmap[p.user_id] = p?.phone ?? null; });
+        setPhones(pmap);
+        const omap: Record<string, { account_type: string | null; org_type: string | null }> = {};
+        (orgRows ?? []).forEach((o: { id: string; account_type: string | null; org_type: string | null }) => {
+          omap[o.id] = { account_type: o?.account_type ?? null, org_type: o?.org_type ?? null };
+        });
+        setOrgs(omap);
       }
     })();
   }, [cat]);
@@ -130,12 +141,21 @@ function RequestsBrowse() {
     return () => { supabase.removeChannel(ch); };
   }, [cat]);
 
-  const filtered = items.filter((r) =>
-    !q || r.title.toLowerCase().includes(q.toLowerCase()) || r.description.toLowerCase().includes(q.toLowerCase())
-  );
+  const filtered = items.filter((r) => {
+    if (q && !(r.title.toLowerCase().includes(q.toLowerCase()) || r.description.toLowerCase().includes(q.toLowerCase()))) return false;
+    if (seg !== "all") {
+      const o = orgs[r.requester_id];
+      const kind = pinKindFor(o?.account_type, o?.org_type);
+      if (kind !== seg) return false;
+    }
+    return true;
+  });
 
   const pins = useGeocodedPins(
-    filtered.slice(0, 20).map((r) => ({ id: r.id, location: r?.location ?? null, label: r?.title })),
+    filtered.slice(0, 20).map((r) => {
+      const o = orgs[r.requester_id];
+      return { id: r.id, location: r?.location ?? null, label: r?.title, kind: pinKindFor(o?.account_type, o?.org_type) };
+    }),
   );
 
   return (
@@ -163,7 +183,34 @@ function RequestsBrowse() {
             </SelectContent>
           </Select>
         </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {([
+            { v: "all", label: "All causes", dot: "bg-white/40" },
+            { v: "ngo", label: "♥ NGOs & Community", dot: "bg-emerald-500" },
+            { v: "business", label: "★ Businesses", dot: "bg-amber-500" },
+            { v: "personal", label: "• People", dot: "bg-blue-500" },
+          ] as const).map(({ v, label, dot }) => {
+            const active = seg === v;
+            return (
+              <button
+                key={v}
+                type="button"
+                onClick={() => setSeg(v)}
+                className={
+                  "text-xs font-semibold px-3 py-1.5 rounded-full border transition-all inline-flex items-center gap-1.5 " +
+                  (active
+                    ? "bg-gradient-brand text-primary-foreground border-transparent shadow-glow"
+                    : "border-border bg-card hover:bg-accent text-muted-foreground")
+                }
+              >
+                <span className={"h-2 w-2 rounded-full " + dot} />
+                {label}
+              </button>
+            );
+          })}
+        </div>
       </div>
+
 
       {!loading && filtered.length > 0 && (
         <div className="glass rounded-3xl p-4 shadow-soft">
