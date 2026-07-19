@@ -47,6 +47,10 @@ function ProfilePage() {
     seeking_cofounder: false,
     cofounder_pitch: "",
     avatar_url: "" as string | null | "",
+    account_type: "individual" as AccountType,
+    org_type: null as OrgType | null,
+    fundraising_link: "",
+    operational_hours: "",
   });
   const [savingCofounder, setSavingCofounder] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
