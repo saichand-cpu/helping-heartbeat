@@ -168,33 +168,30 @@ function MessagesPage() {
             <ul>
               {convos.map((c) => (
                 <li key={c.other_id}>
-                  <button
-                    onClick={() => { setActiveId(c.other_id); setConvos((prev) => prev.map((x) => x.other_id === c.other_id ? { ...x, unread: 0 } : x)); }}
+                  <div
                     className={cn(
-                      "w-full text-left px-4 py-3 flex gap-3 items-center hover:bg-accent/40 transition-colors border-b border-border/30",
+                      "w-full px-4 py-3 flex gap-3 items-center hover:bg-accent/40 transition-colors border-b border-border/30",
                       activeId === c.other_id && "bg-accent/60",
                     )}
                   >
                     <Link
                       to="/profile/$userId"
                       params={{ userId: c.other_id }}
-                      onClick={(e) => e.stopPropagation()}
                       className="h-11 w-11 rounded-full bg-gradient-brand grid place-items-center text-primary-foreground font-bold overflow-hidden shrink-0 hover:ring-2 hover:ring-primary/60 transition"
                       aria-label="Open profile"
                     >
                       {c.avatar_url ? <img src={c.avatar_url} alt="" className="h-full w-full object-cover" /> : (c.full_name || "U").charAt(0)}
                     </Link>
-                    <div className="flex-1 min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => { setActiveId(c.other_id); setConvos((prev) => prev.map((x) => x.other_id === c.other_id ? { ...x, unread: 0 } : x)); }}
+                      className="flex-1 min-w-0 text-left"
+                    >
                       <div className="flex items-center justify-between gap-2">
-                        <Link
-                          to="/profile/$userId"
-                          params={{ userId: c.other_id }}
-                          onClick={(e) => e.stopPropagation()}
-                          className="font-semibold truncate text-sm hover:text-primary transition-colors"
-                        >
+                        <span className="font-semibold truncate text-sm hover:text-primary transition-colors">
                           {c?.full_name || "User"}
-                        </Link>
-                        <div className="text-[10px] text-muted-foreground">{c?.time ? new Date(c.time).toLocaleDateString() : ""}</div>
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">{c?.time ? new Date(c.time).toLocaleDateString() : ""}</span>
                       </div>
                       {c?.profession && (
                         <div className="text-[10px] text-amber-500/90 truncate">{c.profession}</div>
@@ -207,8 +204,8 @@ function MessagesPage() {
                           </span>
                         )}
                       </div>
-                    </div>
-                  </button>
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>
