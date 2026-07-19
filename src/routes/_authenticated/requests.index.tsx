@@ -141,12 +141,21 @@ function RequestsBrowse() {
     return () => { supabase.removeChannel(ch); };
   }, [cat]);
 
-  const filtered = items.filter((r) =>
-    !q || r.title.toLowerCase().includes(q.toLowerCase()) || r.description.toLowerCase().includes(q.toLowerCase())
-  );
+  const filtered = items.filter((r) => {
+    if (q && !(r.title.toLowerCase().includes(q.toLowerCase()) || r.description.toLowerCase().includes(q.toLowerCase()))) return false;
+    if (seg !== "all") {
+      const o = orgs[r.requester_id];
+      const kind = pinKindFor(o?.account_type, o?.org_type);
+      if (kind !== seg) return false;
+    }
+    return true;
+  });
 
   const pins = useGeocodedPins(
-    filtered.slice(0, 20).map((r) => ({ id: r.id, location: r?.location ?? null, label: r?.title })),
+    filtered.slice(0, 20).map((r) => {
+      const o = orgs[r.requester_id];
+      return { id: r.id, location: r?.location ?? null, label: r?.title, kind: pinKindFor(o?.account_type, o?.org_type) };
+    }),
   );
 
   return (
