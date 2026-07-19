@@ -183,7 +183,34 @@ function RequestsBrowse() {
             </SelectContent>
           </Select>
         </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {([
+            { v: "all", label: "All causes", dot: "bg-white/40" },
+            { v: "ngo", label: "♥ NGOs & Community", dot: "bg-emerald-500" },
+            { v: "business", label: "★ Businesses", dot: "bg-amber-500" },
+            { v: "personal", label: "• People", dot: "bg-blue-500" },
+          ] as const).map(({ v, label, dot }) => {
+            const active = seg === v;
+            return (
+              <button
+                key={v}
+                type="button"
+                onClick={() => setSeg(v)}
+                className={
+                  "text-xs font-semibold px-3 py-1.5 rounded-full border transition-all inline-flex items-center gap-1.5 " +
+                  (active
+                    ? "bg-gradient-brand text-primary-foreground border-transparent shadow-glow"
+                    : "border-border bg-card hover:bg-accent text-muted-foreground")
+                }
+              >
+                <span className={"h-2 w-2 rounded-full " + dot} />
+                {label}
+              </button>
+            );
+          })}
+        </div>
       </div>
+
 
       {!loading && filtered.length > 0 && (
         <div className="glass rounded-3xl p-4 shadow-soft">
