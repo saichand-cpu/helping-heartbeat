@@ -68,7 +68,7 @@ function PublicProfile() {
     const [{ data: prof }, { data: contact }] = await Promise.all([
       supabase
         .from("profiles")
-        .select("id, full_name, avatar_url, bio, location, karma_points, verified, incognito, premium_tier, skills, languages")
+        .select("id, full_name, avatar_url, bio, location, karma_points, verified, incognito, premium_tier, skills, languages, account_type, org_type, fundraising_link, operational_hours")
         .eq("id", userId)
         .maybeSingle(),
       supabase
