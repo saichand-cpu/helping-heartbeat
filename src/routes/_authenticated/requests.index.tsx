@@ -95,10 +95,18 @@ function RequestsBrowse() {
       setLoading(false);
       const ids = Array.from(new Set(list.map((r) => r.requester_id)));
       if (ids.length) {
-        const { data: profs } = await supabase.from("profile_contacts").select("user_id, phone").in("user_id", ids);
-        const map: Record<string, string | null> = {};
-        (profs ?? []).forEach((p: { user_id: string; phone: string | null }) => { map[p.user_id] = p?.phone ?? null; });
-        setPhones(map);
+        const [{ data: profs }, { data: orgRows }] = await Promise.all([
+          supabase.from("profile_contacts").select("user_id, phone").in("user_id", ids),
+          supabase.from("profiles").select("id, account_type, org_type").in("id", ids),
+        ]);
+        const pmap: Record<string, string | null> = {};
+        (profs ?? []).forEach((p: { user_id: string; phone: string | null }) => { pmap[p.user_id] = p?.phone ?? null; });
+        setPhones(pmap);
+        const omap: Record<string, { account_type: string | null; org_type: string | null }> = {};
+        (orgRows ?? []).forEach((o: { id: string; account_type: string | null; org_type: string | null }) => {
+          omap[o.id] = { account_type: o?.account_type ?? null, org_type: o?.org_type ?? null };
+        });
+        setOrgs(omap);
       }
     })();
   }, [cat]);
