@@ -141,10 +141,10 @@ export async function geocodeLocation(q: string): Promise<GeoHit> {
   return p;
 }
 
-export function useGeocodedPins(locations: { id: string; location: string | null; label?: string }[]) {
+export function useGeocodedPins(locations: { id: string; location: string | null; label?: string; kind?: PinKind }[]) {
   const [pins, setPins] = useState<MapPin[]>([]);
   const sig = useMemo(
-    () => (locations ?? []).map((l) => `${l?.id}|${l?.location ?? ""}|${l?.label ?? ""}`).join("~"),
+    () => (locations ?? []).map((l) => `${l?.id}|${l?.location ?? ""}|${l?.label ?? ""}|${l?.kind ?? ""}`).join("~"),
     [locations],
   );
   useEffect(() => {
@@ -156,7 +156,7 @@ export function useGeocodedPins(locations: { id: string; location: string | null
         const geo = await geocodeLocation(l.location);
         if (!alive) return;
         if (geo) {
-          results.push({ id: l.id, lat: geo.lat, lng: geo.lng, label: l.label ?? l.location });
+          results.push({ id: l.id, lat: geo.lat, lng: geo.lng, label: l.label ?? l.location, kind: l.kind });
           setPins(results.slice());
         }
       }
