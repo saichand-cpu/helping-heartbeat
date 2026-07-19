@@ -54,9 +54,11 @@ function RequestsBrowse() {
   const [items, setItems] = useState<Request[]>([]);
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string>("all");
+  const [seg, setSeg] = useState<"all" | "ngo" | "business" | "personal">("all");
   const [loading, setLoading] = useState(true);
   const [meId, setMeId] = useState<string | null>(null);
   const [phones, setPhones] = useState<Record<string, string | null>>({});
+  const [orgs, setOrgs] = useState<Record<string, { account_type: string | null; org_type: string | null }>>({});
   const [confirmDel, setConfirmDel] = useState<{ id: string; title: string; admin: boolean } | null>(null);
   const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
