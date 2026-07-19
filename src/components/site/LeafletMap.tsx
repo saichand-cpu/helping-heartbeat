@@ -2,6 +2,7 @@ import { useMemo, useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { geocodeAddress } from "@/lib/geocode.functions";
+import { PIN_HEX } from "@/lib/org-types";
 
 const DefaultIcon = L.icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -13,7 +14,29 @@ const DefaultIcon = L.icon({
   shadowSize: [41, 41],
 });
 
-export type MapPin = { id: string; lat: number; lng: number; label?: string };
+export type PinKind = "ngo" | "business" | "personal";
+
+function coloredPin(kind: PinKind) {
+  const hex = PIN_HEX[kind] ?? PIN_HEX.personal;
+  const glyph = kind === "ngo" ? "♥" : kind === "business" ? "★" : "•";
+  const html = `
+    <div style="position:relative;width:30px;height:40px;">
+      <div style="
+        position:absolute;inset:0;
+        background:${hex};
+        clip-path:path('M15 0 C6 0 0 7 0 15 C0 26 15 40 15 40 C15 40 30 26 30 15 C30 7 24 0 15 0 Z');
+        box-shadow:0 4px 12px ${hex}66, 0 0 0 2px #fff;
+      "></div>
+      <div style="
+        position:absolute;top:6px;left:0;right:0;text-align:center;
+        color:#fff;font-weight:900;font-size:14px;line-height:1;
+        text-shadow:0 1px 2px rgba(0,0,0,0.5);
+      ">${glyph}</div>
+    </div>`;
+  return L.divIcon({ html, className: "", iconSize: [30, 40], iconAnchor: [15, 40], popupAnchor: [0, -34] });
+}
+
+export type MapPin = { id: string; lat: number; lng: number; label?: string; kind?: PinKind };
 
 type Props = {
   pins: MapPin[];
