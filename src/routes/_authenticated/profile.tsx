@@ -111,6 +111,10 @@ function ProfilePage() {
         skills: profile.skills.split(",").map((s) => s.trim()).filter(Boolean),
         languages: profile.languages.split(",").map((s) => s.trim()).filter(Boolean),
         profession: profile.profession.trim(),
+        account_type: profile.account_type,
+        org_type: profile.account_type === "business" ? profile.org_type : null,
+        fundraising_link: profile.fundraising_link.trim() || null,
+        operational_hours: profile.operational_hours.trim() || null,
         onboarded: true,
       } as never).eq("id", u.user.id),
       supabase.from("profile_contacts" as never).upsert({
