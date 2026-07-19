@@ -155,6 +155,34 @@ function PublicProfile() {
 
   const display = profile.incognito ? "Anonymous Helper" : profile.full_name;
   const initial = (display || "?").charAt(0).toUpperCase();
+  const orgMeta = getOrgMeta(profile?.org_type);
+  const isOrgNgo = isNgo(profile?.org_type);
+  const isBusiness = profile?.account_type === "business";
+
+  const volunteer = async () => {
+    if (!me) return toast.error("Sign in to volunteer");
+    setMessaging(true);
+    const body = `Hi! I am interested in volunteering for your community programs.`;
+    const { error } = await supabase.from("messages").insert({
+      sender_id: me,
+      receiver_id: profile.id,
+      content: body,
+    } as never);
+    setMessaging(false);
+    if (error) return toast.error(error.message);
+    navigate({ to: "/messages", search: { user: profile.id } });
+  };
+
+  const [showDonate, setShowDonate] = useState(false);
+  const copyLink = async () => {
+    if (!profile?.fundraising_link) return;
+    try {
+      await navigator.clipboard?.writeText(profile.fundraising_link);
+      toast.success("Donation link copied");
+    } catch {
+      toast.error("Could not copy — long-press to copy manually");
+    }
+  };
 
   return (
     <div className="max-w-3xl mx-auto pb-24 lg:pb-6 space-y-6">
@@ -163,25 +191,53 @@ function PublicProfile() {
       </button>
 
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-        className="rounded-3xl bg-gradient-brand p-6 md:p-8 text-primary-foreground shadow-pop relative overflow-hidden">
+        className={
+          "rounded-3xl p-6 md:p-8 text-primary-foreground shadow-pop relative overflow-hidden " +
+          (isOrgNgo
+            ? "bg-gradient-to-br from-emerald-700 via-emerald-600 to-emerald-800 border-2 border-emerald-400/60 shadow-[0_0_40px_-8px_rgba(16,185,129,0.7)]"
+            : "bg-gradient-brand")
+        }>
         <div className="absolute -bottom-10 -right-10 h-48 w-48 rounded-full bg-white/20 blur-3xl" />
         <div className="relative flex items-center gap-4">
-          <div className="h-20 w-20 rounded-2xl bg-white/20 backdrop-blur grid place-items-center text-3xl font-bold overflow-hidden">
+          <div className={
+            "h-20 w-20 rounded-2xl bg-white/20 backdrop-blur grid place-items-center text-3xl font-bold overflow-hidden " +
+            (isOrgNgo ? "ring-4 ring-emerald-300/80 shadow-[0_0_24px_-4px_rgba(16,185,129,0.9)]" : "")
+          }>
             {profile.incognito ? <EyeOff className="h-8 w-8" /> :
               profile.avatar_url ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" /> : initial}
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl md:text-3xl font-bold truncate">{display}</h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl md:text-3xl font-bold truncate">{display}</h1>
+              {isOrgNgo && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400 text-emerald-950 text-[10px] font-black uppercase tracking-wider px-2 py-1 shadow-[0_0_12px_rgba(16,185,129,0.9)]">
+                  <HandHeart className="h-3 w-3" /> NGO
+                </span>
+              )}
+              {isBusiness && !isOrgNgo && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 text-amber-950 text-[10px] font-black uppercase tracking-wider px-2 py-1 shadow-[0_0_12px_rgba(245,158,11,0.9)]">
+                  <ShieldCheck className="h-3 w-3" /> Pro
+                </span>
+              )}
+            </div>
+            {orgMeta && !profile.incognito && (
+              <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-black/25 backdrop-blur px-2.5 py-1 text-[11px] font-semibold text-white/95 border border-white/20">
+                {orgMeta.short} • {orgMeta.label}
+              </div>
+            )}
             <div className="flex flex-wrap items-center gap-2 mt-2">
-              <Badge variant="secondary" className="gap-1"><Award className="h-3 w-3" /> {profile.karma_points} karma</Badge>
-              {profile.verified && <Badge variant="secondary" className="gap-1"><ShieldCheck className="h-3 w-3" /> Verified</Badge>}
-              {profile.location && !profile.incognito && (
+              <Badge variant="secondary" className="gap-1"><Award className="h-3 w-3" /> {profile?.karma_points ?? 0} karma</Badge>
+              {profile?.verified && <Badge variant="secondary" className="gap-1"><ShieldCheck className="h-3 w-3" /> Verified</Badge>}
+              {profile?.location && !profile.incognito && (
                 <Badge variant="secondary" className="gap-1"><MapPin className="h-3 w-3" /> {profile.location}</Badge>
+              )}
+              {profile?.operational_hours && !profile.incognito && (
+                <Badge variant="secondary" className="gap-1"><Clock className="h-3 w-3" /> {profile.operational_hours}</Badge>
               )}
             </div>
           </div>
         </div>
-        {profile.bio && !profile.incognito && (
+        {profile?.bio && !profile.incognito && (
           <p className="relative mt-4 text-sm text-primary-foreground/90 max-w-prose">{profile.bio}</p>
         )}
       </motion.div>
@@ -201,7 +257,29 @@ function PublicProfile() {
             {messaging ? <Loader2 className="h-5 w-5 mr-2 animate-spin" /> : <MessageCircle className="h-5 w-5 mr-2" />}
             Message
           </Button>
-          {hasAcceptedOffer && profile.phone ? (
+
+          {isOrgNgo && (
+            <>
+              <Button
+                onClick={volunteer}
+                disabled={messaging}
+                size="lg"
+                className="h-12 px-5 text-base font-semibold bg-emerald-500 hover:bg-emerald-600 text-white border-0 shadow-[0_0_24px_-4px_rgba(16,185,129,0.8)]"
+              >
+                <HandHeart className="h-5 w-5 mr-2" /> Volunteer
+              </Button>
+              <Button
+                onClick={() => setShowDonate((s) => !s)}
+                size="lg"
+                variant="outline"
+                className="h-12 px-5 text-base font-semibold border-[hsl(220_90%_56%)]/60 text-[hsl(220_95%_70%)] hover:bg-[hsl(220_90%_56%)]/10"
+              >
+                <Heart className="h-5 w-5 mr-2" /> Support Cause
+              </Button>
+            </>
+          )}
+
+          {hasAcceptedOffer && profile?.phone ? (
             <Button onClick={callNow} variant="outline" className="border-primary/40 text-primary">
               <Phone className="h-4 w-4 mr-1" /> Call {profile.phone}
             </Button>
@@ -211,6 +289,34 @@ function PublicProfile() {
             </Button>
           )}
         </div>
+
+        {showDonate && isOrgNgo && (
+          <div className="rounded-2xl border border-emerald-500/40 bg-emerald-500/5 p-4 space-y-2">
+            <div className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
+              Verified fundraising details
+            </div>
+            {profile?.fundraising_link ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <a
+                  href={profile.fundraising_link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex-1 min-w-[220px] truncate rounded-xl bg-black/30 border border-white/10 px-3 py-2 text-sm text-[hsl(220_95%_75%)] hover:underline"
+                >
+                  {profile.fundraising_link}
+                </a>
+                <Button size="sm" variant="outline" onClick={copyLink} className="border-emerald-500/40">
+                  <Copy className="h-3.5 w-3.5 mr-1" /> Copy
+                </Button>
+              </div>
+            ) : (
+              <p className="text-sm text-white/70">
+                This NGO hasn't added a public donation link yet. Message them directly to offer support.
+              </p>
+            )}
+          </div>
+        )}
+
         <p className="text-xs text-muted-foreground">
           Contact details (phone) stay private until {(display ?? "this user").split(" ")[0]} accepts your offer to help on a specific request.
         </p>
