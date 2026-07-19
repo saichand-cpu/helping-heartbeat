@@ -488,11 +488,13 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_type: string
           avatar_url: string | null
           bio: string | null
           cofounder_pitch: string | null
           created_at: string
           full_name: string
+          fundraising_link: string | null
           id: string
           incognito: boolean
           interests: string[] | null
@@ -500,6 +502,8 @@ export type Database = {
           languages: string[] | null
           location: string | null
           onboarded: boolean
+          operational_hours: string | null
+          org_type: string | null
           premium_tier: string | null
           premium_until: string | null
           profession: string | null
@@ -511,11 +515,13 @@ export type Database = {
           verified: boolean
         }
         Insert: {
+          account_type?: string
           avatar_url?: string | null
           bio?: string | null
           cofounder_pitch?: string | null
           created_at?: string
           full_name?: string
+          fundraising_link?: string | null
           id: string
           incognito?: boolean
           interests?: string[] | null
@@ -523,6 +529,8 @@ export type Database = {
           languages?: string[] | null
           location?: string | null
           onboarded?: boolean
+          operational_hours?: string | null
+          org_type?: string | null
           premium_tier?: string | null
           premium_until?: string | null
           profession?: string | null
@@ -534,11 +542,13 @@ export type Database = {
           verified?: boolean
         }
         Update: {
+          account_type?: string
           avatar_url?: string | null
           bio?: string | null
           cofounder_pitch?: string | null
           created_at?: string
           full_name?: string
+          fundraising_link?: string | null
           id?: string
           incognito?: boolean
           interests?: string[] | null
@@ -546,6 +556,8 @@ export type Database = {
           languages?: string[] | null
           location?: string | null
           onboarded?: boolean
+          operational_hours?: string | null
+          org_type?: string | null
           premium_tier?: string | null
           premium_until?: string | null
           profession?: string | null
@@ -774,11 +786,13 @@ export type Database = {
       activate_premium: {
         Args: { _plan_id: string }
         Returns: {
+          account_type: string
           avatar_url: string | null
           bio: string | null
           cofounder_pitch: string | null
           created_at: string
           full_name: string
+          fundraising_link: string | null
           id: string
           incognito: boolean
           interests: string[] | null
@@ -786,6 +800,8 @@ export type Database = {
           languages: string[] | null
           location: string | null
           onboarded: boolean
+          operational_hours: string | null
+          org_type: string | null
           premium_tier: string | null
           premium_until: string | null
           profession: string | null
