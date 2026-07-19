@@ -83,6 +83,10 @@ function ProfilePage() {
           seeking_cofounder: (data as { seeking_cofounder?: boolean }).seeking_cofounder ?? false,
           cofounder_pitch: (data as { cofounder_pitch?: string | null }).cofounder_pitch ?? "",
           avatar_url: (data as { avatar_url?: string | null }).avatar_url ?? "",
+          account_type: (((data as { account_type?: string }).account_type as AccountType) ?? "individual"),
+          org_type: (((data as { org_type?: string | null }).org_type as OrgType | null) ?? null),
+          fundraising_link: ((data as { fundraising_link?: string | null }).fundraising_link) ?? "",
+          operational_hours: ((data as { operational_hours?: string | null }).operational_hours) ?? "",
         });
       }
       setLoading(false);
