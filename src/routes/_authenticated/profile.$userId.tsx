@@ -30,6 +30,10 @@ type Profile = {
   skills: string[] | null;
   languages: string[] | null;
   phone: string | null;
+  account_type: string | null;
+  org_type: string | null;
+  fundraising_link: string | null;
+  operational_hours: string | null;
 };
 
 type SharedOffer = {
