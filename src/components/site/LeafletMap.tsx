@@ -82,7 +82,8 @@ export function LeafletMap({ pins, className, height = 260, center, zoom, intera
     (pins ?? []).forEach((p) => {
       if (typeof p?.lat !== "number" || typeof p?.lng !== "number") return;
       if (Number.isNaN(p.lat) || Number.isNaN(p.lng)) return;
-      const m = L.marker([p.lat, p.lng], { icon: DefaultIcon }).addTo(map);
+      const icon = p.kind ? coloredPin(p.kind) : DefaultIcon;
+      const m = L.marker([p.lat, p.lng], { icon }).addTo(map);
       if (p.label) m.bindPopup(p.label);
       markers.push(m);
     });
