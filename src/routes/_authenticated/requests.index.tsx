@@ -18,6 +18,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { LeafletMap, useGeocodedPins } from "@/components/site/LeafletMap";
+import { pinKindFor } from "@/lib/org-types";
 import { useIsAdmin } from "@/hooks/use-role";
 
 export const Route = createFileRoute("/_authenticated/requests/")({
