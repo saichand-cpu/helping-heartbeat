@@ -17,6 +17,8 @@ import { usePremium } from "@/hooks/use-premium";
 import { Link } from "@tanstack/react-router";
 import { useFollow } from "@/hooks/use-follow";
 import { uploadFeedMedia, signFeedMedia } from "@/lib/upload";
+import { AccountTypeSelector } from "@/components/site/AccountTypeSelector";
+import { isNgo, type AccountType, type OrgType } from "@/lib/org-types";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
