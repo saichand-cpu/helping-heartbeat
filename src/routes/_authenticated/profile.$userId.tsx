@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
   Award, ShieldCheck, EyeOff, MessageCircle, Phone, Lock, Loader2, ArrowLeft, MapPin, Check, X, UserPlus, UserCheck,
-  Star, Send, Trash2, HandHeart, Heart, Clock, Copy,
+  Star, Send, Trash2, HandHeart, Heart, Clock, Copy, Globe, Briefcase, Building2,
 } from "lucide-react";
 import { useFollow } from "@/hooks/use-follow";
 import { ProfileMediaGrid } from "@/components/site/ProfileMediaGrid";
@@ -35,6 +35,8 @@ type Profile = {
   org_type: string | null;
   fundraising_link: string | null;
   operational_hours: string | null;
+  profession: string | null;
+  website_url: string | null;
 };
 
 type SharedOffer = {
@@ -69,7 +71,7 @@ function PublicProfile() {
     const [{ data: prof }, { data: contact }] = await Promise.all([
       supabase
         .from("profiles")
-        .select("id, full_name, avatar_url, bio, location, karma_points, verified, incognito, premium_tier, skills, languages, account_type, org_type, fundraising_link, operational_hours")
+        .select("id, full_name, avatar_url, bio, location, karma_points, verified, incognito, premium_tier, skills, languages, account_type, org_type, fundraising_link, operational_hours, profession, website_url")
         .eq("id", userId)
         .maybeSingle(),
       supabase
