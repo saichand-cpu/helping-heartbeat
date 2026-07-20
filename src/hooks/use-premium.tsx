@@ -3,9 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./use-auth";
 import { useIsAdmin } from "./use-role";
 
-export type Tier = "free" | "basic" | "plus" | "pro";
+export type Tier = "free" | "basic" | "ngo" | "plus" | "pro";
 
-const RANK: Record<Tier, number> = { free: 0, basic: 1, plus: 2, pro: 3 };
+const RANK: Record<Tier, number> = { free: 0, basic: 1, ngo: 2, plus: 2, pro: 3 };
 
 /**
  * God-mode aware premium status.
@@ -18,6 +18,13 @@ export function usePremium() {
   const [tier, setTier] = useState<Tier>("free");
   const [verified, setVerified] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    const bump = () => setRefreshKey((k) => k + 1);
+    window.addEventListener("humanlink:premium-updated", bump);
+    return () => window.removeEventListener("humanlink:premium-updated", bump);
+  }, []);
 
   useEffect(() => {
     if (authLoading) return;
@@ -40,7 +47,7 @@ export function usePremium() {
         setLoading(false);
       });
     return () => { cancelled = true; };
-  }, [user, authLoading]);
+  }, [user, authLoading, refreshKey]);
 
   const effectiveTier: Tier = isAdmin ? "pro" : tier;
   const effectiveVerified = isAdmin || verified;
