@@ -379,8 +379,39 @@ function PublicProfile() {
           ) : null}
         </div>
       ) : null}
-      <ProfileMediaGrid userId={profile.id} isOwner={false} />
-      <ReviewsSection targetId={profile.id} targetName={display} me={me} />
+
+      {isBusiness && !profile.incognito && (
+        <div className="rounded-3xl bg-black border border-amber-400/40 p-5 shadow-[0_0_28px_-8px_rgba(245,158,11,0.55)] space-y-2">
+          <div className="flex items-center gap-2 mb-1">
+            <Building2 className="h-4 w-4 text-amber-400" />
+            <h2 className="text-sm font-black uppercase tracking-wider text-amber-300">Business Details</h2>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-2 text-sm text-white/90">
+            <div className="flex items-center gap-2"><Briefcase className="h-4 w-4 text-amber-400/80" /> {profile.profession || "Service Provider"}</div>
+            <div className="flex items-center gap-2"><Clock className="h-4 w-4 text-amber-400/80" /> {profile.operational_hours || "9 AM - 6 PM"}</div>
+            {profile.website_url && (
+              <a href={profile.website_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-amber-300 hover:underline sm:col-span-2 truncate">
+                <Globe className="h-4 w-4" /> {profile.website_url}
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+
+      {isBusiness ? (
+        <>
+          <ReviewsSection targetId={profile.id} targetName={display} me={me} />
+          <div>
+            <div className="text-xs font-black uppercase tracking-[0.2em] text-amber-400 mb-2 px-1">Work Portfolio</div>
+            <ProfileMediaGrid userId={profile.id} isOwner={false} />
+          </div>
+        </>
+      ) : (
+        <>
+          <ProfileMediaGrid userId={profile.id} isOwner={false} />
+          <ReviewsSection targetId={profile.id} targetName={display} me={me} />
+        </>
+      )}
     </div>
   );
 }
