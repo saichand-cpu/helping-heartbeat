@@ -203,7 +203,11 @@ function PublicProfile() {
         <div className="relative flex items-center gap-4">
           <div className={
             "h-20 w-20 rounded-2xl bg-white/20 backdrop-blur grid place-items-center text-3xl font-bold overflow-hidden " +
-            (isOrgNgo ? "ring-4 ring-emerald-300/80 shadow-[0_0_24px_-4px_rgba(16,185,129,0.9)]" : "")
+            (isOrgNgo
+              ? "ring-4 ring-emerald-300/80 shadow-[0_0_24px_-4px_rgba(16,185,129,0.9)]"
+              : isBusiness
+                ? "ring-4 ring-amber-300/90 shadow-[0_0_28px_-2px_rgba(245,158,11,0.95)] outline outline-2 outline-offset-2 outline-amber-400/70"
+                : "")
           }>
             {profile.incognito ? <EyeOff className="h-8 w-8" /> :
               profile.avatar_url ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" /> : initial}
@@ -222,6 +226,11 @@ function PublicProfile() {
                 </span>
               )}
             </div>
+            {isBusiness && profile?.profession && !profile.incognito && (
+              <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-amber-400/95 text-amber-950 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide shadow-[0_0_14px_-2px_rgba(245,158,11,0.8)]">
+                <Briefcase className="h-3 w-3" /> {profile.profession}
+              </div>
+            )}
             {orgMeta && !profile.incognito && (
               <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-black/25 backdrop-blur px-2.5 py-1 text-[11px] font-semibold text-white/95 border border-white/20">
                 {orgMeta.short} • {orgMeta.label}
@@ -233,8 +242,10 @@ function PublicProfile() {
               {profile?.location && !profile.incognito && (
                 <Badge variant="secondary" className="gap-1"><MapPin className="h-3 w-3" /> {profile.location}</Badge>
               )}
-              {profile?.operational_hours && !profile.incognito && (
-                <Badge variant="secondary" className="gap-1"><Clock className="h-3 w-3" /> {profile.operational_hours}</Badge>
+              {isBusiness && !profile.incognito && (
+                <Badge variant="secondary" className="gap-1">
+                  <Clock className="h-3 w-3" /> {profile?.operational_hours || "9 AM - 6 PM"}
+                </Badge>
               )}
             </div>
           </div>
