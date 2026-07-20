@@ -376,11 +376,21 @@ function ProfilePage() {
               <Input
                 value={profile.operational_hours}
                 onChange={(e) => setProfile({ ...profile, operational_hours: e.target.value })}
-                placeholder="Mon–Fri, 9am–6pm"
+                placeholder="9 AM - 6 PM"
+              />
+              <p className="text-[11px] text-muted-foreground mt-1">Defaults to 9 AM - 6 PM if left blank.</p>
+            </div>
+            <div>
+              <Label>Website URL</Label>
+              <Input
+                value={profile.website_url}
+                onChange={(e) => setProfile({ ...profile, website_url: e.target.value })}
+                placeholder="https://your-business.example"
+                type="url"
               />
             </div>
             {isNgo(profile.org_type) && (
-              <div>
+              <div className="md:col-span-2">
                 <Label>Fundraising / donation link</Label>
                 <Input
                   value={profile.fundraising_link}
