@@ -51,6 +51,7 @@ function ProfilePage() {
     org_type: null as OrgType | null,
     fundraising_link: "",
     operational_hours: "",
+    website_url: "",
   });
   const [savingCofounder, setSavingCofounder] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -87,6 +88,7 @@ function ProfilePage() {
           org_type: (((data as { org_type?: string | null }).org_type as OrgType | null) ?? null),
           fundraising_link: ((data as { fundraising_link?: string | null }).fundraising_link) ?? "",
           operational_hours: ((data as { operational_hours?: string | null }).operational_hours) ?? "",
+          website_url: ((data as { website_url?: string | null }).website_url) ?? "",
         });
       }
       setLoading(false);
@@ -102,6 +104,11 @@ function ProfilePage() {
     setSaving(true);
     const { data: u } = await supabase.auth.getUser();
     if (!u?.user) return;
+    // Default work hours for freshly-flipped Business accounts.
+    const effectiveHours =
+      profile.account_type === "business" && !profile.operational_hours.trim()
+        ? "9 AM - 6 PM"
+        : profile.operational_hours.trim() || null;
     const [{ error }, { error: contactErr }] = await Promise.all([
       supabase.from("profiles").update({
         full_name: profile.full_name,
@@ -114,7 +121,9 @@ function ProfilePage() {
         account_type: profile.account_type,
         org_type: profile.account_type === "business" ? profile.org_type : null,
         fundraising_link: profile.fundraising_link.trim() || null,
-        operational_hours: profile.operational_hours.trim() || null,
+        operational_hours: effectiveHours,
+        website_url:
+          profile.account_type === "business" ? (profile.website_url.trim() || null) : null,
         onboarded: true,
       } as never).eq("id", u.user.id),
       supabase.from("profile_contacts" as never).upsert({
@@ -367,11 +376,21 @@ function ProfilePage() {
               <Input
                 value={profile.operational_hours}
                 onChange={(e) => setProfile({ ...profile, operational_hours: e.target.value })}
-                placeholder="Mon–Fri, 9am–6pm"
+                placeholder="9 AM - 6 PM"
+              />
+              <p className="text-[11px] text-muted-foreground mt-1">Defaults to 9 AM - 6 PM if left blank.</p>
+            </div>
+            <div>
+              <Label>Website URL</Label>
+              <Input
+                value={profile.website_url}
+                onChange={(e) => setProfile({ ...profile, website_url: e.target.value })}
+                placeholder="https://your-business.example"
+                type="url"
               />
             </div>
             {isNgo(profile.org_type) && (
-              <div>
+              <div className="md:col-span-2">
                 <Label>Fundraising / donation link</Label>
                 <Input
                   value={profile.fundraising_link}

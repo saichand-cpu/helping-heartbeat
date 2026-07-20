@@ -513,6 +513,7 @@ export type Database = {
           updated_at: string
           username: string | null
           verified: boolean
+          website_url: string | null
         }
         Insert: {
           account_type?: string
@@ -540,6 +541,7 @@ export type Database = {
           updated_at?: string
           username?: string | null
           verified?: boolean
+          website_url?: string | null
         }
         Update: {
           account_type?: string
@@ -567,6 +569,7 @@ export type Database = {
           updated_at?: string
           username?: string | null
           verified?: boolean
+          website_url?: string | null
         }
         Relationships: []
       }
@@ -811,6 +814,7 @@ export type Database = {
           updated_at: string
           username: string | null
           verified: boolean
+          website_url: string | null
         }
         SetofOptions: {
           from: "*"

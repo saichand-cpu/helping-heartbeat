@@ -15,12 +15,23 @@ export function AccountTypeSelector({
 }) {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid sm:grid-cols-2 gap-3">
         {[
-          { v: "individual" as const, label: "Individual", Icon: UserIcon, hint: "Personal account" },
-          { v: "business" as const, label: "Business / Org", Icon: Building2, hint: "Team, NGO, service" },
+          {
+            v: "individual" as const,
+            label: "Personal Account",
+            Icon: UserIcon,
+            hint: "Connect with neighbors, request help, and browse local posts.",
+          },
+          {
+            v: "business" as const,
+            label: "Business Account",
+            Icon: Building2,
+            hint: "Showcase professional services, build a portfolio, and attract local clients.",
+          },
         ].map(({ v, label, Icon, hint }) => {
           const active = accountType === v;
+          const isBusiness = v === "business";
           return (
             <button
               key={v}
@@ -30,16 +41,27 @@ export function AccountTypeSelector({
                 if (v === "individual") onOrgTypeChange(null);
               }}
               className={cn(
-                "text-left rounded-2xl border p-3 transition-all",
+                "text-left rounded-2xl border p-4 transition-all min-h-[112px]",
                 active
-                  ? "border-transparent bg-gradient-brand text-primary-foreground shadow-glow"
+                  ? isBusiness
+                    ? "border-amber-500 bg-amber-500/10 shadow-[0_0_22px_-4px_rgba(245,158,11,0.55)]"
+                    : "border-transparent bg-gradient-brand text-primary-foreground shadow-glow"
                   : "border-border bg-card hover:border-primary/40 hover:bg-accent",
               )}
             >
               <div className="flex items-center gap-2 font-semibold text-sm">
-                <Icon className="h-4 w-4" /> {label}
+                <Icon className={cn("h-4 w-4", active && isBusiness && "text-amber-500")} /> {label}
               </div>
-              <div className={cn("text-[11px] mt-0.5", active ? "text-primary-foreground/85" : "text-muted-foreground")}>
+              <div
+                className={cn(
+                  "text-[12px] mt-1 leading-relaxed",
+                  active
+                    ? isBusiness
+                      ? "text-foreground/80"
+                      : "text-primary-foreground/85"
+                    : "text-muted-foreground",
+                )}
+              >
                 {hint}
               </div>
             </button>

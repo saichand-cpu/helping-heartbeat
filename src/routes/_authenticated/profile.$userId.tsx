@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
   Award, ShieldCheck, EyeOff, MessageCircle, Phone, Lock, Loader2, ArrowLeft, MapPin, Check, X, UserPlus, UserCheck,
-  Star, Send, Trash2, HandHeart, Heart, Clock, Copy,
+  Star, Send, Trash2, HandHeart, Heart, Clock, Copy, Globe, Briefcase, Building2,
 } from "lucide-react";
 import { useFollow } from "@/hooks/use-follow";
 import { ProfileMediaGrid } from "@/components/site/ProfileMediaGrid";
@@ -35,6 +35,8 @@ type Profile = {
   org_type: string | null;
   fundraising_link: string | null;
   operational_hours: string | null;
+  profession: string | null;
+  website_url: string | null;
 };
 
 type SharedOffer = {
@@ -69,7 +71,7 @@ function PublicProfile() {
     const [{ data: prof }, { data: contact }] = await Promise.all([
       supabase
         .from("profiles")
-        .select("id, full_name, avatar_url, bio, location, karma_points, verified, incognito, premium_tier, skills, languages, account_type, org_type, fundraising_link, operational_hours")
+        .select("id, full_name, avatar_url, bio, location, karma_points, verified, incognito, premium_tier, skills, languages, account_type, org_type, fundraising_link, operational_hours, profession, website_url")
         .eq("id", userId)
         .maybeSingle(),
       supabase
@@ -201,7 +203,11 @@ function PublicProfile() {
         <div className="relative flex items-center gap-4">
           <div className={
             "h-20 w-20 rounded-2xl bg-white/20 backdrop-blur grid place-items-center text-3xl font-bold overflow-hidden " +
-            (isOrgNgo ? "ring-4 ring-emerald-300/80 shadow-[0_0_24px_-4px_rgba(16,185,129,0.9)]" : "")
+            (isOrgNgo
+              ? "ring-4 ring-emerald-300/80 shadow-[0_0_24px_-4px_rgba(16,185,129,0.9)]"
+              : isBusiness
+                ? "ring-4 ring-amber-300/90 shadow-[0_0_28px_-2px_rgba(245,158,11,0.95)] outline outline-2 outline-offset-2 outline-amber-400/70"
+                : "")
           }>
             {profile.incognito ? <EyeOff className="h-8 w-8" /> :
               profile.avatar_url ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" /> : initial}
@@ -220,6 +226,11 @@ function PublicProfile() {
                 </span>
               )}
             </div>
+            {isBusiness && profile?.profession && !profile.incognito && (
+              <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-amber-400/95 text-amber-950 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide shadow-[0_0_14px_-2px_rgba(245,158,11,0.8)]">
+                <Briefcase className="h-3 w-3" /> {profile.profession}
+              </div>
+            )}
             {orgMeta && !profile.incognito && (
               <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-black/25 backdrop-blur px-2.5 py-1 text-[11px] font-semibold text-white/95 border border-white/20">
                 {orgMeta.short} • {orgMeta.label}
@@ -231,8 +242,10 @@ function PublicProfile() {
               {profile?.location && !profile.incognito && (
                 <Badge variant="secondary" className="gap-1"><MapPin className="h-3 w-3" /> {profile.location}</Badge>
               )}
-              {profile?.operational_hours && !profile.incognito && (
-                <Badge variant="secondary" className="gap-1"><Clock className="h-3 w-3" /> {profile.operational_hours}</Badge>
+              {isBusiness && !profile.incognito && (
+                <Badge variant="secondary" className="gap-1">
+                  <Clock className="h-3 w-3" /> {profile?.operational_hours || "9 AM - 6 PM"}
+                </Badge>
               )}
             </div>
           </div>
@@ -366,8 +379,39 @@ function PublicProfile() {
           ) : null}
         </div>
       ) : null}
-      <ProfileMediaGrid userId={profile.id} isOwner={false} />
-      <ReviewsSection targetId={profile.id} targetName={display} me={me} />
+
+      {isBusiness && !profile.incognito && (
+        <div className="rounded-3xl bg-black border border-amber-400/40 p-5 shadow-[0_0_28px_-8px_rgba(245,158,11,0.55)] space-y-2">
+          <div className="flex items-center gap-2 mb-1">
+            <Building2 className="h-4 w-4 text-amber-400" />
+            <h2 className="text-sm font-black uppercase tracking-wider text-amber-300">Business Details</h2>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-2 text-sm text-white/90">
+            <div className="flex items-center gap-2"><Briefcase className="h-4 w-4 text-amber-400/80" /> {profile.profession || "Service Provider"}</div>
+            <div className="flex items-center gap-2"><Clock className="h-4 w-4 text-amber-400/80" /> {profile.operational_hours || "9 AM - 6 PM"}</div>
+            {profile.website_url && (
+              <a href={profile.website_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-amber-300 hover:underline sm:col-span-2 truncate">
+                <Globe className="h-4 w-4" /> {profile.website_url}
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+
+      {isBusiness ? (
+        <>
+          <ReviewsSection targetId={profile.id} targetName={display} me={me} />
+          <div>
+            <div className="text-xs font-black uppercase tracking-[0.2em] text-amber-400 mb-2 px-1">Work Portfolio</div>
+            <ProfileMediaGrid userId={profile.id} isOwner={false} />
+          </div>
+        </>
+      ) : (
+        <>
+          <ProfileMediaGrid userId={profile.id} isOwner={false} />
+          <ReviewsSection targetId={profile.id} targetName={display} me={me} />
+        </>
+      )}
     </div>
   );
 }
