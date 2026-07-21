@@ -114,7 +114,7 @@ function AdvancedSearch() {
           const cityTerm = city.trim().replace(/[%_]/g, "");
           let query = supabase
             .from("profiles")
-            .select("id, full_name, username, avatar_url, profession, location, skills, verified, karma_points, incognito, premium_tier" as never)
+            .select("id, full_name, username, avatar_url, profession, location, bio, skills, verified, karma_points, incognito, premium_tier, account_type, org_type" as never)
             .limit(60);
           if (safe) {
             query = query.or(
