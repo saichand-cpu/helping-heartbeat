@@ -26,6 +26,23 @@ function parseCall(content?: string | null): string | null {
   const m = content?.match(/^\[call:([a-z]+)\]/);
   return m ? m[1] : null;
 }
+function parseImage(content?: string | null): string | null {
+  const m = content?.match(/^\[img:(.+?)\]/);
+  return m ? m[1] : null;
+}
+
+const EMOJIS = ["😀","😂","🥰","😍","😎","🤔","🙌","👏","👍","👎","🙏","💪","🔥","✨","🎉","❤️","💙","💚","💛","🧡","💜","🖤","🤝","🫶","😊","😢","😭","😡","🥺","😴","🤗","👋"];
+
+function sameDay(a: Date, b: Date) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+function dayLabel(d: Date) {
+  const today = new Date();
+  const yest = new Date(); yest.setDate(today.getDate() - 1);
+  if (sameDay(d, today)) return "Today";
+  if (sameDay(d, yest)) return "Yesterday";
+  return d.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
+}
 
 export const Route = createFileRoute("/_authenticated/messages")({
   validateSearch: (s: Record<string, unknown>) => ({
