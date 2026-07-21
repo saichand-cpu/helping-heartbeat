@@ -8,11 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
   Award, ShieldCheck, EyeOff, MessageCircle, Phone, Lock, Loader2, ArrowLeft, MapPin, Check, X, UserPlus, UserCheck,
-  Star, Send, Trash2, HandHeart, Heart, Clock, Copy, Globe, Briefcase, Building2,
+  Star, Send, Trash2, HandHeart, Heart, Clock, Copy, Globe, Briefcase, Building2, Share2, Flag,
 } from "lucide-react";
 import { useFollow } from "@/hooks/use-follow";
+import { usePresence } from "@/hooks/use-presence";
 import { ProfileMediaGrid } from "@/components/site/ProfileMediaGrid";
 import { getOrgMeta, isNgo } from "@/lib/org-types";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/profile/$userId")({
   component: PublicProfile,
