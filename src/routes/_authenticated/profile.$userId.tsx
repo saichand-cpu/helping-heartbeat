@@ -192,6 +192,40 @@ function PublicProfile() {
     }
   };
 
+  const shareProfile = async () => {
+    const url = `${window.location.origin}/profile/${profile.id}`;
+    const shareData = { title: display ?? "HumanLink profile", text: `${display} on HumanLink`, url };
+    try {
+      if (typeof navigator !== "undefined" && "share" in navigator) {
+        await (navigator as Navigator).share(shareData);
+        return;
+      }
+    } catch { /* user cancelled */ }
+    try {
+      await navigator.clipboard?.writeText(url);
+      toast.success("Profile link copied");
+    } catch {
+      toast.error("Could not copy link");
+    }
+  };
+
+  const submitReport = async () => {
+    if (!me) return toast.error("Sign in to report");
+    const reason = reportReason.trim();
+    if (reason.length < 3) return toast.error("Please describe the issue");
+    setReporting(true);
+    const { error } = await supabase.from("user_reports" as never).insert({
+      reporter_id: me,
+      target_id: profile.id,
+      reason,
+    } as never);
+    setReporting(false);
+    if (error) return toast.error(error.message);
+    toast.success("Report submitted — our team will review it");
+    setReportReason("");
+    setReportOpen(false);
+  };
+
   return (
     <div className="max-w-3xl mx-auto pb-24 lg:pb-6 space-y-6">
       <button onClick={() => history.back()} className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
