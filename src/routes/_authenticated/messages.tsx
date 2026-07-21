@@ -194,15 +194,35 @@ function MessagesPage() {
   }, [me, activeId]);
 
   const activeConvo = useMemo(() => convos.find((c) => c.other_id === activeId) ?? null, [convos, activeId]);
+  const filteredConvos = useMemo(() => {
+    const q = convSearch.trim().toLowerCase();
+    if (!q) return convos;
+    return convos.filter((c) =>
+      (c.full_name?.toLowerCase().includes(q)) ||
+      (c.profession?.toLowerCase().includes(q)) ||
+      (c.last?.toLowerCase().includes(q)),
+    );
+  }, [convos, convSearch]);
 
   return (
     <div className="pb-24 lg:pb-6">
       <div className="glass rounded-3xl shadow-soft overflow-hidden grid md:grid-cols-[320px_1fr] h-[calc(100vh-140px)] min-h-[520px]">
         {/* List pane */}
         <aside className={cn("border-r border-border/40 overflow-y-auto", activeId && "hidden md:block")}>
-          <div className="px-4 py-3 border-b border-border/40">
-            <h1 className="text-lg font-bold">Messages</h1>
-            <p className="text-xs text-muted-foreground">Live conversations</p>
+          <div className="px-4 py-3 border-b border-border/40 space-y-2">
+            <div>
+              <h1 className="text-lg font-bold">Messages</h1>
+              <p className="text-xs text-muted-foreground">Live conversations</p>
+            </div>
+            <div className="relative">
+              <SearchIcon className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={convSearch}
+                onChange={(e) => setConvSearch(e.target.value)}
+                placeholder="Search conversations…"
+                className="h-8 pl-7 text-xs"
+              />
+            </div>
           </div>
           {loading ? (
             <div className="p-3 space-y-2">
@@ -213,9 +233,13 @@ function MessagesPage() {
               <MessageCircle className="h-7 w-7 mx-auto mb-2 text-primary" />
               No conversations yet.
             </div>
+          ) : filteredConvos.length === 0 ? (
+            <div className="p-8 text-center text-sm text-muted-foreground">
+              No matches for "{convSearch}"
+            </div>
           ) : (
             <ul>
-              {convos.map((c) => (
+              {filteredConvos.map((c) => (
                 <li key={c.other_id}>
                   <div
                     className={cn(
@@ -226,10 +250,13 @@ function MessagesPage() {
                     <Link
                       to="/profile/$userId"
                       params={{ userId: c.other_id }}
-                      className="h-11 w-11 rounded-full bg-gradient-brand grid place-items-center text-primary-foreground font-bold overflow-hidden shrink-0 hover:ring-2 hover:ring-primary/60 transition"
+                      className="relative h-11 w-11 rounded-full bg-gradient-brand grid place-items-center text-primary-foreground font-bold overflow-hidden shrink-0 hover:ring-2 hover:ring-primary/60 transition"
                       aria-label="Open profile"
                     >
                       {c.avatar_url ? <img src={c.avatar_url} alt="" className="h-full w-full object-cover" /> : (c.full_name || "U").charAt(0)}
+                      {presence.isOnline(c.other_id) && (
+                        <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-500 border-2 border-background" />
+                      )}
                     </Link>
                     <button
                       type="button"
@@ -246,7 +273,9 @@ function MessagesPage() {
                         <div className="text-[10px] text-amber-500/90 truncate">{c.profession}</div>
                       )}
                       <div className="flex items-center gap-2">
-                        <div className="text-xs text-muted-foreground truncate flex-1">{c.last}</div>
+                        <div className="text-xs text-muted-foreground truncate flex-1">
+                          {parseImage(c.last) ? "📷 Photo" : parseLocation(c.last) ? "📍 Location" : parseCall(c.last) ? "📞 Call" : c.last}
+                        </div>
                         {c.unread > 0 && (
                           <span className="text-[10px] font-bold rounded-full bg-amber-500 text-black px-1.5 py-0.5 shadow-[0_0_8px_rgba(245,158,11,0.7)]">
                             {c.unread}
