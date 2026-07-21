@@ -59,6 +59,10 @@ function PublicProfile() {
   const [loading, setLoading] = useState(true);
   const [actioning, setActioning] = useState<string | null>(null);
   const [messaging, setMessaging] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reporting, setReporting] = useState(false);
+  const { isOnline } = usePresence(me);
 
   const load = async () => {
     const { data: u } = await supabase.auth.getUser();
