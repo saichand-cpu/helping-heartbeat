@@ -554,13 +554,17 @@ function Thread({ me, other, onBack, onStartCall, isPeerOnline }: { me: string; 
     <div className="flex flex-col min-h-0 h-full">
       <header className="px-4 py-3 border-b border-amber-500/30 flex items-center gap-3 bg-black/40">
         <Button variant="ghost" size="icon" className="md:hidden" onClick={onBack}><ArrowLeft className="h-4 w-4" /></Button>
-        <Link to="/profile/$userId" params={{ userId: other.other_id }} className="h-9 w-9 rounded-full bg-gradient-brand grid place-items-center text-primary-foreground text-sm font-bold overflow-hidden hover:ring-2 hover:ring-primary/60 transition" aria-label="Open profile">
+        <Link to="/profile/$userId" params={{ userId: other.other_id }} className="relative h-9 w-9 rounded-full bg-gradient-brand grid place-items-center text-primary-foreground text-sm font-bold overflow-hidden hover:ring-2 hover:ring-primary/60 transition" aria-label="Open profile">
           {other.avatar_url ? <img src={other.avatar_url} alt="" className="h-full w-full object-cover" /> : (other.full_name || "U").charAt(0)}
+          {isPeerOnline && (
+            <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-black" />
+          )}
         </Link>
         <div className="min-w-0 flex-1">
           <Link to="/profile/$userId" params={{ userId: other.other_id }} className="font-semibold text-sm truncate hover:text-primary transition-colors block">{other.full_name || "User"}</Link>
-          <div className="text-[10px] text-emerald-500 flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live
+          <div className={cn("text-[10px] flex items-center gap-1", isPeerOnline ? "text-emerald-500" : "text-muted-foreground")}>
+            <span className={cn("h-1.5 w-1.5 rounded-full", isPeerOnline ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground/50")} />
+            {peerTyping ? "typing…" : isPeerOnline ? "Online" : "Offline"}
           </div>
         </div>
         <Button
@@ -584,69 +588,100 @@ function Thread({ me, other, onBack, onStartCall, isPeerOnline }: { me: string; 
           <div className="text-center text-xs text-muted-foreground py-10">Say hello — start the conversation.</div>
         ) : (
           <AnimatePresence initial={false}>
-            {msgs.map((m) => {
+            {msgs.map((m, i) => {
               const mine = m.sender_id === me;
               const loc = parseLocation(m?.content);
               const call = parseCall(m?.content);
+              const img = parseImage(m?.content);
+              const prev = i > 0 ? msgs[i - 1] : null;
+              const showDate = !prev || !sameDay(new Date(prev.created_at), new Date(m.created_at));
               return (
-                <motion.div
-                  key={m.id}
-                  initial={{ opacity: 0, y: 6, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  className={cn("flex", mine ? "justify-end" : "justify-start")}
-                >
-                  <div className={cn(
-                    "max-w-[78%] rounded-2xl px-3.5 py-2 text-sm shadow-soft",
-                    mine
-                      ? "bg-gradient-brand text-primary-foreground rounded-br-sm"
-                      : "bg-card border border-border rounded-bl-sm",
-                    m.pending && "opacity-70",
-                  )}>
-                    {loc ? (
-                      <a
-                        href={`https://www.google.com/maps?q=${loc.lat},${loc.lng}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="block space-y-2"
-                      >
-                        <div className="flex items-center gap-1 text-xs opacity-90">
-                          <MapPin className="h-3 w-3" /> Shared location
-                        </div>
-                        <div className="w-[220px] max-w-full">
-                          <LeafletMap pins={[{ id: m.id, lat: loc.lat, lng: loc.lng }]} height={140} interactive={false} zoom={13} />
-                        </div>
-                        <div className="text-[10px] opacity-80">
-                          {loc.lat.toFixed(4)}, {loc.lng.toFixed(4)} — tap to open
-                        </div>
-                      </a>
-                    ) : call ? (
-                      <div className="flex items-center gap-2">
-                        <span className="grid place-items-center h-8 w-8 rounded-full bg-primary/20 text-primary">
-                          <Phone className="h-4 w-4" />
-                        </span>
-                        <div>
-                          <div className="font-semibold">{mine ? "You started" : "Incoming"} {call} call</div>
-                          <div className="text-[10px] opacity-80">Tap to answer · WebRTC not yet wired</div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="whitespace-pre-wrap break-words">{m.content}</div>
-                    )}
-                    <div className={cn("text-[10px] mt-0.5 opacity-80 text-right flex items-center gap-1 justify-end")}>
-                      <span>
-                        {m.pending ? "sending…" : new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                <div key={m.id}>
+                  {showDate && (
+                    <div className="flex justify-center my-3">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground bg-accent/60 rounded-full px-3 py-1">
+                        {dayLabel(new Date(m.created_at))}
                       </span>
-                      {mine && !m.pending && (
-                        m.read
-                          ? <CheckCheck className="h-3 w-3 text-sky-300" aria-label="Read" />
-                          : <Check className="h-3 w-3 opacity-80" aria-label="Sent" />
-                      )}
                     </div>
-                  </div>
-                </motion.div>
+                  )}
+                  <motion.div
+                    initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    className={cn("flex", mine ? "justify-end" : "justify-start")}
+                  >
+                    <div className={cn(
+                      "max-w-[78%] rounded-2xl px-3.5 py-2 text-sm shadow-soft",
+                      mine
+                        ? "bg-gradient-brand text-primary-foreground rounded-br-sm"
+                        : "bg-card border border-border rounded-bl-sm",
+                      m.pending && "opacity-70",
+                      img && "p-1.5",
+                    )}>
+                      {img ? (
+                        <a href={imgUrls[img]} target="_blank" rel="noreferrer" className="block">
+                          {imgUrls[img] ? (
+                            <img src={imgUrls[img]} alt="Shared" className="rounded-xl max-w-[260px] max-h-[320px] object-cover" />
+                          ) : (
+                            <div className="w-[220px] h-[160px] rounded-xl bg-muted/40 grid place-items-center">
+                              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                            </div>
+                          )}
+                        </a>
+                      ) : loc ? (
+                        <a
+                          href={`https://www.google.com/maps?q=${loc.lat},${loc.lng}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block space-y-2"
+                        >
+                          <div className="flex items-center gap-1 text-xs opacity-90">
+                            <MapPin className="h-3 w-3" /> Shared location
+                          </div>
+                          <div className="w-[220px] max-w-full">
+                            <LeafletMap pins={[{ id: m.id, lat: loc.lat, lng: loc.lng }]} height={140} interactive={false} zoom={13} />
+                          </div>
+                          <div className="text-[10px] opacity-80">
+                            {loc.lat.toFixed(4)}, {loc.lng.toFixed(4)} — tap to open
+                          </div>
+                        </a>
+                      ) : call ? (
+                        <div className="flex items-center gap-2">
+                          <span className="grid place-items-center h-8 w-8 rounded-full bg-primary/20 text-primary">
+                            <Phone className="h-4 w-4" />
+                          </span>
+                          <div>
+                            <div className="font-semibold">{mine ? "You started" : "Incoming"} {call} call</div>
+                            <div className="text-[10px] opacity-80">Tap to answer · WebRTC</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="whitespace-pre-wrap break-words">{m.content}</div>
+                      )}
+                      <div className={cn("text-[10px] mt-0.5 opacity-80 text-right flex items-center gap-1 justify-end", img && "px-2 pb-1")}>
+                        <span>
+                          {m.pending ? "sending…" : new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                        {mine && !m.pending && (
+                          m.read
+                            ? <CheckCheck className="h-3 w-3 text-sky-300" aria-label="Read" />
+                            : <Check className="h-3 w-3 opacity-80" aria-label="Sent" />
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
               );
             })}
           </AnimatePresence>
+        )}
+        {peerTyping && (
+          <div className="flex justify-start">
+            <div className="bg-card border border-border rounded-2xl rounded-bl-sm px-4 py-2 text-xs text-muted-foreground flex items-center gap-1">
+              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "0ms" }} />
+              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "120ms" }} />
+              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "240ms" }} />
+            </div>
+          </div>
         )}
       </div>
 
@@ -654,6 +689,38 @@ function Thread({ me, other, onBack, onStartCall, isPeerOnline }: { me: string; 
         onSubmit={(e) => { e.preventDefault(); send(); }}
         className="border-t border-amber-500/30 p-3 flex items-center gap-2 bg-black/50 backdrop-blur"
       >
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={async (e) => {
+            const f = e.target.files?.[0];
+            if (!f) return;
+            e.target.value = "";
+            setUploading(true);
+            try {
+              const media = await uploadFeedMedia(f);
+              await sendRaw(`[img:feed-media:${media.path}]`);
+            } catch (err) {
+              toast.error(err instanceof Error ? err.message : "Upload failed");
+            } finally {
+              setUploading(false);
+            }
+          }}
+        />
+        <Button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading || sending}
+          size="icon"
+          variant="outline"
+          className="h-10 w-10 shrink-0"
+          aria-label="Send image"
+          title="Send an image"
+        >
+          {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
+        </Button>
         <Button
           type="button"
           onClick={shareLocation}
@@ -666,9 +733,30 @@ function Thread({ me, other, onBack, onStartCall, isPeerOnline }: { me: string; 
         >
           {sharingLoc ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
         </Button>
+        <Popover open={emojiOpen} onOpenChange={setEmojiOpen}>
+          <PopoverTrigger asChild>
+            <Button type="button" size="icon" variant="outline" className="h-10 w-10 shrink-0" aria-label="Emoji picker" title="Insert emoji">
+              <Smile className="h-4 w-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 p-2" side="top" align="start">
+            <div className="grid grid-cols-8 gap-1">
+              {EMOJIS.map((e) => (
+                <button
+                  key={e}
+                  type="button"
+                  onClick={() => { setText((t) => t + e); setEmojiOpen(false); }}
+                  className="h-8 w-8 text-lg rounded-md hover:bg-accent"
+                >
+                  {e}
+                </button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
         <Input
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => { setText(e.target.value); notifyTyping(); }}
           placeholder="Type a message…"
           className="h-10"
         />
