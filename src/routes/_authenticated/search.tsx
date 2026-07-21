@@ -14,6 +14,8 @@ import {
   Sparkles, ShieldCheck, Award, Loader2, Plus, Frown,
 } from "lucide-react";
 import { displayIdentity } from "@/lib/identity";
+import { UserCard } from "@/components/site/UserCard";
+import { usePresence } from "@/hooks/use-presence";
 
 export const Route = createFileRoute("/_authenticated/search")({
   component: AdvancedSearch,
@@ -63,6 +65,7 @@ function AdvancedSearch() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setMe(data.user?.id ?? null));
   }, []);
+  const { online: onlineIds } = usePresence(me);
 
   const addSkill = (s: string) => {
     const v = s.trim();
