@@ -76,7 +76,36 @@ function MessagesPage() {
   const [convos, setConvos] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [convSearch, setConvSearch] = useState("");
   const rtc = useWebRTC(me);
+  const presence = usePresence(me);
+  const routeSearch = Route.useSearch();
+
+  // Auto-open a conversation from ?user=<id>
+  useEffect(() => {
+    if (routeSearch?.user) setActiveId(routeSearch.user);
+  }, [routeSearch?.user]);
+
+  // Ensure the deep-linked peer appears in the conversation list even before the first message.
+  useEffect(() => {
+    const uid = routeSearch?.user;
+    if (!uid) return;
+    supabase.from("profiles").select("id, full_name, avatar_url, profession").eq("id", uid).maybeSingle().then(({ data }) => {
+      if (!data) return;
+      setConvos((prev) => {
+        if (prev.some((c) => c.other_id === uid)) return prev;
+        return [{
+          other_id: uid,
+          last: "",
+          time: new Date().toISOString(),
+          full_name: (data as { full_name?: string | null }).full_name ?? null,
+          avatar_url: (data as { avatar_url?: string | null }).avatar_url ?? null,
+          profession: (data as { profession?: string | null }).profession ?? null,
+          unread: 0,
+        }, ...prev];
+      });
+    });
+  }, [routeSearch?.user]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setMe(data.user?.id ?? null));
