@@ -1,78 +1,52 @@
-## Scope
+## Goal
+Unify user-profile navigation across the app and upgrade the 1:1 messaging surface with presence, typing, image sharing, search, and date separators — building on the existing profile page (`/profile/$userId`) and messages table (which already has realtime + read receipts).
 
-Five major modules in one pass. To keep this shippable and avoid breaking existing v1, I'll execute in a single migration + coordinated frontend pass, but with clear priorities. Existing data (profiles, requests, roles, plans) stays intact.
+## What already exists (won't rebuild)
+- `/profile/$userId` public profile with Follow, Message-open, phone gating, karma, reviews.
+- `/messages?user=X` thread with Supabase Realtime, read receipts, optimistic sends, WebRTC call button.
+- Global `UserSearch` dropdown and `/search` page (People + Requests tabs).
+- Feed, Requests, Leaderboard already link avatars/names to `/profile/$userId`.
 
-## 1. Leaderboard page (`/leaderboard`)
+## Changes
 
-- New public route, ranks profiles by `karma_points` desc.
-- Search by name/username, time-range filter (all-time / 30d / 7d) computed from `award_karma_on_complete` source: `help_requests.completed_at` joined to `helper_id`.
-- Top-3 podium with faux-3D cards, rank list below, verified badge for premium users, admin crown.
+### 1. Profile page (`profile.$userId.tsx`)
+- Add prominent action row: **Message · Follow · Share · Report** (own profile shows Edit · Share).
+- Share = copy profile URL via `navigator.share` fallback to clipboard.
+- Report = insert into new `user_reports` table (reporter, target, reason).
+- Add "Online now" / "Last seen" dot driven by presence channel.
+- Ensure clickable name/avatar everywhere routes here (audit Feed comments, Followers list, Reviews author, Leaderboard rows).
 
-## 2. Community feed + interactions
+### 2. Search upgrades (`/search` People tab + `UserSearch`)
+- Rich user card: avatar, name, @username, badge, karma, bio snippet, location, skill chips, **Follow** + **Message** buttons.
+- Message button navigates to `/messages?user=id` (thread auto-materializes on first send — no explicit conversation row needed since messaging uses per-message rows).
+- Friendly empty state ("No people match — try a different name, skill, or city").
+- Add badge/segment filter chips (NGO, Business, Volunteer, Verified) — reuse `SegmentFilter` pattern.
 
-- New tables: `posts`, `post_likes`, `post_comments`, `advertisements`.
-- `/feed` route (under `_authenticated`) with infinite scroll (cursor by `created_at`).
-- Create-post composer (text + optional image URL).
-- Like (toggle), comment (expandable thread, realtime via Supabase channel), share (copy link + Web Share API).
-- Admin-only "Official Announcement" switch on composer → `is_announcement=true`, pinned to top with royal-blue/gold border + badge.
-- Native ad injection: after every 6th post, pull next active ad from `advertisements` with "Sponsored" tag.
+### 3. Messaging upgrades (`messages.tsx`)
+- **Presence**: Supabase Realtime `presence` channel `presence:online` tracking my id; show green dot on conversation rows and thread header ("Online" / "Last seen …").
+- **Typing indicator**: broadcast `typing` events on the per-thread channel; show "typing…" pill under header.
+- **Image sharing**: image button using `feed-media` bucket; store as `[img:<publicUrl>]` marker (parsed alongside existing `[loc:]` / `[call:]` markers) and render inline.
+- **Emoji picker**: lightweight popover (small hand-picked set, no heavy dependency).
+- **Message search**: search input at top of list pane; filters conversations and, when active, highlights matches inside thread (client-side filter over loaded messages).
+- **Date separators**: group messages by day with a centered "Today / Yesterday / MMM d" pill.
+- **Unread badges**: already present in list; also surface global unread count in navbar (small dot on Messages link).
+- Auto-scroll & infinite scroll: extend current 200-message limit with "Load earlier" button that pages older messages by `created_at`.
 
-## 3. Mock payment + instant verification
+### 4. Data model
+- Migration: add `avatar_last_seen_at timestamptz` to `profiles` (updated by client on visibility) for offline "Last seen".
+- Migration: new `user_reports` table (reporter_id, target_id, reason, created_at) + RLS (insert by authenticated, select by admin via `has_role`).
+- No `conversations` table needed — the existing per-message pattern with `sender_id`/`receiver_id` already yields deterministic 1:1 threads. Getting a thread key = sorted pair of ids; opening `/messages?user=X` naturally shows or starts it.
 
-- Replace manual UPI/QR flow on `/pricing` with a `MockPaymentModal` (card + UPI tabs, realistic styling).
-- On "Confirm Payment": 2s spinner → server fn `activatePremium({planId})` updates `profiles.is_verified=true`, `profiles.premium_tier`, `profiles.premium_until`.
-- Verified checkmark badge component shown next to user names in feed, requests, leaderboard, profile.
+### 5. Design & responsiveness
+- Keep AMOLED / royal-blue-gold tokens already in use (no new colors).
+- Skeletons on card loads, framer-motion transitions on new messages, mobile: thread pane replaces list on small screens (already implemented — verify).
 
-## 4. AI Smart Match dashboard tab
+## Out of scope
+- Group chats, voice notes, message reactions, video calls (voice call button already exists via WebRTC).
+- New dedicated `conversations` table — not needed for current 1:1 model.
 
-- New tab on `/dashboard` ("AI Smart Match").
-- Server fn calls Lovable AI (`google/gemini-3-flash-preview`) with active requests + current user's skills/bio → returns ranked matches with score + reasoning.
-- Cards show "94% Match" ring, request summary, why-fit bullets, "Offer Help" CTA.
-
-## 5. Impact Time-Capsules
-
-- Table `time_capsules` (owner, goal_title, goal_karma, collected_karma, unlocked_at, media JSONB).
-- Page `/_authenticated/capsules`: create capsule, progress bar, locked/unlocked state.
-- Unlock trigger: when `collected_karma >= goal_karma`, set `unlocked_at`. Manual contribute action for v1 (collective karma aggregation is heavy — keep simple: capsule owner + contributors table later).
-
-## 6. Admin: Ad Manager
-
-- New tab in `/admin`: "Advertisements" — title, description, destination URL, image URL, active toggle, CRUD.
-
-## Technical details
-
-**Migration (one file):**
-- `posts(id, author_id→profiles, body, image_url, is_announcement, created_at, updated_at)`
-- `post_likes(post_id, user_id, created_at, PK(post_id,user_id))`
-- `post_comments(id, post_id, author_id, body, created_at)`
-- `advertisements(id, title, description, destination_url, image_url, active, created_at)`
-- `time_capsules(id, owner_id, title, description, goal_karma, collected_karma, unlocked_at, media jsonb, created_at)`
-- Add `profiles.is_verified bool default false`, `profiles.premium_tier text`, `profiles.premium_until timestamptz`.
-- GRANTs to authenticated + service_role; SELECT to anon on `posts`, `post_comments`, `advertisements`, `profiles` (already), `time_capsules` (public goals).
-- RLS: authors manage own posts/comments/capsules; anyone authed can like; only admins can write `advertisements` and set `posts.is_announcement=true` (enforced via trigger checking `has_role`).
-- Realtime: `ALTER PUBLICATION supabase_realtime ADD TABLE post_comments, post_likes;`
-
-**Server fns (`src/lib/*.functions.ts`):**
-- `activatePremium`, `aiSmartMatch`, `feed.create/list/like/comment`, `capsule.contribute`.
-
-**Components:**
-- `VerifiedBadge`, `PostCard`, `CommentThread`, `MockPaymentModal`, `AdCard`, `MatchCard`, `CapsuleCard`, `LeaderboardPodium`.
-
-**Routes added:**
-- `/leaderboard` (public)
-- `/_authenticated/feed`
-- `/_authenticated/capsules`
-- Tabs added to `/dashboard` and `/admin`
-
-**Aesthetic:** keep existing royal blue/gold tokens from `src/styles.css`. No new color hardcodes.
-
-## Out of scope (call out)
-
-- Real payment gateway (mock only, as requested).
-- Per-user collective karma streams for capsules (single-owner v1).
-- Image uploads to storage (image URL field only — fastest path; can add bucket later if you want).
-- Push notifications.
-
-## Risk
-
-This is ~12 new files + 1 large migration + edits to 5 existing files. I'll keep components lean and reuse shadcn primitives. Expect 1 follow-up turn to polish any rough edges after you click around.
+## Technical notes
+- Presence uses `supabase.channel('presence:online', { config: { presence: { key: me } } }).track({...})`.
+- Typing = `broadcast` on `thread:<sortedPair>` channel — no DB writes.
+- Image uploads reuse existing `feed-media` bucket + signed public URL; content stored as `[img:URL]`.
+- `avatar_last_seen_at` updated on tab focus/blur via lightweight upsert (throttled to 1/min).

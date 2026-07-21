@@ -500,6 +500,7 @@ export type Database = {
           interests: string[] | null
           karma_points: number
           languages: string[] | null
+          last_seen_at: string | null
           location: string | null
           onboarded: boolean
           operational_hours: string | null
@@ -528,6 +529,7 @@ export type Database = {
           interests?: string[] | null
           karma_points?: number
           languages?: string[] | null
+          last_seen_at?: string | null
           location?: string | null
           onboarded?: boolean
           operational_hours?: string | null
@@ -556,6 +558,7 @@ export type Database = {
           interests?: string[] | null
           karma_points?: number
           languages?: string[] | null
+          last_seen_at?: string | null
           location?: string | null
           onboarded?: boolean
           operational_hours?: string | null
@@ -760,6 +763,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_reports: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string
+          reporter_id: string
+          status: string
+          target_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason: string
+          reporter_id: string
+          status?: string
+          target_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string
+          reporter_id?: string
+          status?: string
+          target_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -801,6 +831,7 @@ export type Database = {
           interests: string[] | null
           karma_points: number
           languages: string[] | null
+          last_seen_at: string | null
           location: string | null
           onboarded: boolean
           operational_hours: string | null

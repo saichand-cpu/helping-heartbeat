@@ -5,15 +5,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
   Search as SearchIcon, MapPin, X, SlidersHorizontal, Users, HeartHandshake,
-  Sparkles, ShieldCheck, Award, Loader2, Plus, Frown,
+  Sparkles, Loader2, Plus, Frown,
 } from "lucide-react";
-import { displayIdentity } from "@/lib/identity";
+import { UserCard } from "@/components/site/UserCard";
+import { usePresence } from "@/hooks/use-presence";
 
 export const Route = createFileRoute("/_authenticated/search")({
   component: AdvancedSearch,
@@ -39,8 +39,10 @@ type Req = {
 type Person = {
   id: string; full_name: string | null; username: string | null;
   avatar_url: string | null; profession: string | null; location: string | null;
+  bio: string | null;
   skills: string[] | null; verified: boolean | null; karma_points: number | null;
   incognito: boolean | null; premium_tier: string | null;
+  account_type: string | null; org_type: string | null;
 };
 
 function AdvancedSearch() {
@@ -61,6 +63,7 @@ function AdvancedSearch() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setMe(data.user?.id ?? null));
   }, []);
+  const { online: onlineIds } = usePresence(me);
 
   const addSkill = (s: string) => {
     const v = s.trim();
@@ -112,7 +115,7 @@ function AdvancedSearch() {
           const cityTerm = city.trim().replace(/[%_]/g, "");
           let query = supabase
             .from("profiles")
-            .select("id, full_name, username, avatar_url, profession, location, skills, verified, karma_points, incognito, premium_tier" as never)
+            .select("id, full_name, username, avatar_url, profession, location, bio, skills, verified, karma_points, incognito, premium_tier, account_type, org_type" as never)
             .limit(60);
           if (safe) {
             query = query.or(
@@ -355,58 +358,9 @@ function AdvancedSearch() {
         />
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {people.map((p, i) => {
-            const id = displayIdentity(p, me);
-            return (
-              <motion.div
-                key={p.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.02 }}
-              >
-                <Link
-                  to="/profile/$userId"
-                  params={{ userId: p.id }}
-                  className="block rounded-3xl border border-border bg-card p-5 hover:shadow-pop hover:-translate-y-0.5 transition-all h-full"
-                >
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-14 w-14 ring-2 ring-primary/20">
-                      {id.avatar_url && <AvatarImage src={id.avatar_url} />}
-                      <AvatarFallback className="text-lg">{id.initial}</AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-1">
-                      <div className="font-semibold truncate flex items-center gap-1">
-                        {id.name}
-                        {p.verified && <ShieldCheck className="h-3.5 w-3.5 text-primary shrink-0" />}
-                      </div>
-                      <div className="text-xs text-muted-foreground truncate">
-                        {p.profession || "Member"}
-                      </div>
-                    </div>
-                  </div>
-                  {p.location && (
-                    <div className="mt-3 text-xs text-muted-foreground flex items-center gap-1">
-                      <MapPin className="h-3 w-3" /> {p.location}
-                    </div>
-                  )}
-                  {p.skills?.length ? (
-                    <div className="mt-3 flex flex-wrap gap-1">
-                      {p.skills.slice(0, 4).map((s) => (
-                        <Badge key={s} variant="outline" className="text-[10px] font-normal">{s}</Badge>
-                      ))}
-                      {p.skills.length > 4 && (
-                        <Badge variant="outline" className="text-[10px] font-normal">+{p.skills.length - 4}</Badge>
-                      )}
-                    </div>
-                  ) : null}
-                  <div className="mt-3 flex items-center gap-1 text-xs text-muted-foreground">
-                    <Award className="h-3 w-3 text-amber-500" />
-                    {p.karma_points ?? 0} karma
-                  </div>
-                </Link>
-              </motion.div>
-            );
-          })}
+          {people.map((p) => (
+            <UserCard key={p.id} user={p} me={me} online={onlineIds.has(p.id)} />
+          ))}
         </div>
       )}
     </div>

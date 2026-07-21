@@ -8,11 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
   Award, ShieldCheck, EyeOff, MessageCircle, Phone, Lock, Loader2, ArrowLeft, MapPin, Check, X, UserPlus, UserCheck,
-  Star, Send, Trash2, HandHeart, Heart, Clock, Copy, Globe, Briefcase, Building2,
+  Star, Send, Trash2, HandHeart, Heart, Clock, Copy, Globe, Briefcase, Building2, Share2, Flag,
 } from "lucide-react";
 import { useFollow } from "@/hooks/use-follow";
+import { usePresence } from "@/hooks/use-presence";
 import { ProfileMediaGrid } from "@/components/site/ProfileMediaGrid";
 import { getOrgMeta, isNgo } from "@/lib/org-types";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/profile/$userId")({
   component: PublicProfile,
@@ -57,6 +59,10 @@ function PublicProfile() {
   const [loading, setLoading] = useState(true);
   const [actioning, setActioning] = useState<string | null>(null);
   const [messaging, setMessaging] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reporting, setReporting] = useState(false);
+  const { isOnline } = usePresence(me);
 
   const load = async () => {
     const { data: u } = await supabase.auth.getUser();
@@ -186,6 +192,40 @@ function PublicProfile() {
     }
   };
 
+  const shareProfile = async () => {
+    const url = `${window.location.origin}/profile/${profile.id}`;
+    const shareData = { title: display ?? "HumanLink profile", text: `${display} on HumanLink`, url };
+    try {
+      if (typeof navigator !== "undefined" && "share" in navigator) {
+        await (navigator as Navigator).share(shareData);
+        return;
+      }
+    } catch { /* user cancelled */ }
+    try {
+      await navigator.clipboard?.writeText(url);
+      toast.success("Profile link copied");
+    } catch {
+      toast.error("Could not copy link");
+    }
+  };
+
+  const submitReport = async () => {
+    if (!me) return toast.error("Sign in to report");
+    const reason = reportReason.trim();
+    if (reason.length < 3) return toast.error("Please describe the issue");
+    setReporting(true);
+    const { error } = await supabase.from("user_reports" as never).insert({
+      reporter_id: me,
+      target_id: profile.id,
+      reason,
+    } as never);
+    setReporting(false);
+    if (error) return toast.error(error.message);
+    toast.success("Report submitted — our team will review it");
+    setReportReason("");
+    setReportOpen(false);
+  };
+
   return (
     <div className="max-w-3xl mx-auto pb-24 lg:pb-6 space-y-6">
       <button onClick={() => history.back()} className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
@@ -201,16 +241,21 @@ function PublicProfile() {
         }>
         <div className="absolute -bottom-10 -right-10 h-48 w-48 rounded-full bg-white/20 blur-3xl" />
         <div className="relative flex items-center gap-4">
-          <div className={
-            "h-20 w-20 rounded-2xl bg-white/20 backdrop-blur grid place-items-center text-3xl font-bold overflow-hidden " +
-            (isOrgNgo
-              ? "ring-4 ring-emerald-300/80 shadow-[0_0_24px_-4px_rgba(16,185,129,0.9)]"
-              : isBusiness
-                ? "ring-4 ring-amber-300/90 shadow-[0_0_28px_-2px_rgba(245,158,11,0.95)] outline outline-2 outline-offset-2 outline-amber-400/70"
-                : "")
-          }>
-            {profile.incognito ? <EyeOff className="h-8 w-8" /> :
-              profile.avatar_url ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" /> : initial}
+          <div className="relative">
+            <div className={
+              "h-20 w-20 rounded-2xl bg-white/20 backdrop-blur grid place-items-center text-3xl font-bold overflow-hidden " +
+              (isOrgNgo
+                ? "ring-4 ring-emerald-300/80 shadow-[0_0_24px_-4px_rgba(16,185,129,0.9)]"
+                : isBusiness
+                  ? "ring-4 ring-amber-300/90 shadow-[0_0_28px_-2px_rgba(245,158,11,0.95)] outline outline-2 outline-offset-2 outline-amber-400/70"
+                  : "")
+            }>
+              {profile.incognito ? <EyeOff className="h-8 w-8" /> :
+                profile.avatar_url ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" /> : initial}
+            </div>
+            {isOnline(profile.id) && !profile.incognito && (
+              <span className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-emerald-500 border-2 border-background shadow-[0_0_10px_rgba(16,185,129,0.9)]" aria-label="Online" />
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -301,6 +346,13 @@ function PublicProfile() {
               <Lock className="h-3.5 w-3.5 mr-1" /> Call unlocks after accepted offer
             </Button>
           )}
+
+          <Button onClick={shareProfile} variant="outline" size="lg" className="h-12 px-4">
+            <Share2 className="h-4 w-4 mr-1" /> Share
+          </Button>
+          <Button onClick={() => setReportOpen(true)} variant="outline" size="lg" className="h-12 px-4 border-destructive/40 text-destructive hover:bg-destructive/10">
+            <Flag className="h-4 w-4 mr-1" /> Report
+          </Button>
         </div>
 
         {showDonate && isOrgNgo && (
@@ -412,6 +464,30 @@ function PublicProfile() {
           <ReviewsSection targetId={profile.id} targetName={display} me={me} />
         </>
       )}
+
+      <Dialog open={reportOpen} onOpenChange={setReportOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Report {display}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Tell us what's wrong. Our team reviews every report — thank you for keeping HumanLink safe.
+          </p>
+          <Textarea
+            value={reportReason}
+            onChange={(e) => setReportReason(e.target.value)}
+            placeholder="Describe the issue (spam, harassment, impersonation, unsafe behavior, …)"
+            className="min-h-[120px]"
+            maxLength={1000}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReportOpen(false)}>Cancel</Button>
+            <Button onClick={submitReport} disabled={reporting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {reporting ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Flag className="h-4 w-4 mr-1" />} Submit report
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

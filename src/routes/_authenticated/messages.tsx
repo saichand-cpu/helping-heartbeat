@@ -5,10 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MessageCircle, Send, ArrowLeft, Loader2, Check, CheckCheck, Phone, MapPin } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { MessageCircle, Send, ArrowLeft, Loader2, Check, CheckCheck, Phone, MapPin, Search as SearchIcon, Smile, ImageIcon } from "lucide-react";
 import { LeafletMap } from "@/components/site/LeafletMap";
 import { CallOverlay } from "@/components/site/CallOverlay";
 import { useWebRTC } from "@/hooks/use-webrtc";
+import { usePresence } from "@/hooks/use-presence";
+import { uploadFeedMedia, resolveMediaUrl } from "@/lib/upload";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +25,23 @@ function parseLocation(content?: string | null): { lat: number; lng: number } | 
 function parseCall(content?: string | null): string | null {
   const m = content?.match(/^\[call:([a-z]+)\]/);
   return m ? m[1] : null;
+}
+function parseImage(content?: string | null): string | null {
+  const m = content?.match(/^\[img:(.+?)\]/);
+  return m ? m[1] : null;
+}
+
+const EMOJIS = ["😀","😂","🥰","😍","😎","🤔","🙌","👏","👍","👎","🙏","💪","🔥","✨","🎉","❤️","💙","💚","💛","🧡","💜","🖤","🤝","🫶","😊","😢","😭","😡","🥺","😴","🤗","👋"];
+
+function sameDay(a: Date, b: Date) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+function dayLabel(d: Date) {
+  const today = new Date();
+  const yest = new Date(); yest.setDate(today.getDate() - 1);
+  if (sameDay(d, today)) return "Today";
+  if (sameDay(d, yest)) return "Yesterday";
+  return d.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
 }
 
 export const Route = createFileRoute("/_authenticated/messages")({
@@ -56,7 +76,36 @@ function MessagesPage() {
   const [convos, setConvos] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [convSearch, setConvSearch] = useState("");
   const rtc = useWebRTC(me);
+  const presence = usePresence(me);
+  const routeSearch = Route.useSearch();
+
+  // Auto-open a conversation from ?user=<id>
+  useEffect(() => {
+    if (routeSearch?.user) setActiveId(routeSearch.user);
+  }, [routeSearch?.user]);
+
+  // Ensure the deep-linked peer appears in the conversation list even before the first message.
+  useEffect(() => {
+    const uid = routeSearch?.user;
+    if (!uid) return;
+    supabase.from("profiles").select("id, full_name, avatar_url, profession").eq("id", uid).maybeSingle().then(({ data }) => {
+      if (!data) return;
+      setConvos((prev) => {
+        if (prev.some((c) => c.other_id === uid)) return prev;
+        return [{
+          other_id: uid,
+          last: "",
+          time: new Date().toISOString(),
+          full_name: (data as { full_name?: string | null }).full_name ?? null,
+          avatar_url: (data as { avatar_url?: string | null }).avatar_url ?? null,
+          profession: (data as { profession?: string | null }).profession ?? null,
+          unread: 0,
+        }, ...prev];
+      });
+    });
+  }, [routeSearch?.user]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setMe(data.user?.id ?? null));
@@ -93,10 +142,10 @@ function MessagesPage() {
     const map = buildConvos((data ?? []) as Msg[], me);
     const others = Array.from(map.keys());
     if (others.length) {
-      const { data: profs } = await supabase.from("profiles").select("id, full_name, avatar_url").in("id", others);
+      const { data: profs } = await supabase.from("profiles").select("id, full_name, avatar_url, profession").in("id", others);
       (profs ?? []).forEach((p: any) => {
         const c = map.get(p.id);
-        if (c) { c.full_name = p.full_name; c.avatar_url = p.avatar_url; }
+        if (c) { c.full_name = p.full_name; c.avatar_url = p.avatar_url; c.profession = p.profession; }
       });
     }
     setConvos(Array.from(map.values()));
@@ -145,15 +194,35 @@ function MessagesPage() {
   }, [me, activeId]);
 
   const activeConvo = useMemo(() => convos.find((c) => c.other_id === activeId) ?? null, [convos, activeId]);
+  const filteredConvos = useMemo(() => {
+    const q = convSearch.trim().toLowerCase();
+    if (!q) return convos;
+    return convos.filter((c) =>
+      (c.full_name?.toLowerCase().includes(q)) ||
+      (c.profession?.toLowerCase().includes(q)) ||
+      (c.last?.toLowerCase().includes(q)),
+    );
+  }, [convos, convSearch]);
 
   return (
     <div className="pb-24 lg:pb-6">
       <div className="glass rounded-3xl shadow-soft overflow-hidden grid md:grid-cols-[320px_1fr] h-[calc(100vh-140px)] min-h-[520px]">
         {/* List pane */}
         <aside className={cn("border-r border-border/40 overflow-y-auto", activeId && "hidden md:block")}>
-          <div className="px-4 py-3 border-b border-border/40">
-            <h1 className="text-lg font-bold">Messages</h1>
-            <p className="text-xs text-muted-foreground">Live conversations</p>
+          <div className="px-4 py-3 border-b border-border/40 space-y-2">
+            <div>
+              <h1 className="text-lg font-bold">Messages</h1>
+              <p className="text-xs text-muted-foreground">Live conversations</p>
+            </div>
+            <div className="relative">
+              <SearchIcon className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={convSearch}
+                onChange={(e) => setConvSearch(e.target.value)}
+                placeholder="Search conversations…"
+                className="h-8 pl-7 text-xs"
+              />
+            </div>
           </div>
           {loading ? (
             <div className="p-3 space-y-2">
@@ -164,9 +233,13 @@ function MessagesPage() {
               <MessageCircle className="h-7 w-7 mx-auto mb-2 text-primary" />
               No conversations yet.
             </div>
+          ) : filteredConvos.length === 0 ? (
+            <div className="p-8 text-center text-sm text-muted-foreground">
+              No matches for "{convSearch}"
+            </div>
           ) : (
             <ul>
-              {convos.map((c) => (
+              {filteredConvos.map((c) => (
                 <li key={c.other_id}>
                   <div
                     className={cn(
@@ -177,10 +250,13 @@ function MessagesPage() {
                     <Link
                       to="/profile/$userId"
                       params={{ userId: c.other_id }}
-                      className="h-11 w-11 rounded-full bg-gradient-brand grid place-items-center text-primary-foreground font-bold overflow-hidden shrink-0 hover:ring-2 hover:ring-primary/60 transition"
+                      className="relative h-11 w-11 rounded-full bg-gradient-brand grid place-items-center text-primary-foreground font-bold overflow-hidden shrink-0 hover:ring-2 hover:ring-primary/60 transition"
                       aria-label="Open profile"
                     >
                       {c.avatar_url ? <img src={c.avatar_url} alt="" className="h-full w-full object-cover" /> : (c.full_name || "U").charAt(0)}
+                      {presence.isOnline(c.other_id) && (
+                        <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-500 border-2 border-background" />
+                      )}
                     </Link>
                     <button
                       type="button"
@@ -197,7 +273,9 @@ function MessagesPage() {
                         <div className="text-[10px] text-amber-500/90 truncate">{c.profession}</div>
                       )}
                       <div className="flex items-center gap-2">
-                        <div className="text-xs text-muted-foreground truncate flex-1">{c.last}</div>
+                        <div className="text-xs text-muted-foreground truncate flex-1">
+                          {parseImage(c.last) ? "📷 Photo" : parseLocation(c.last) ? "📍 Location" : parseCall(c.last) ? "📞 Call" : c.last}
+                        </div>
                         {c.unread > 0 && (
                           <span className="text-[10px] font-bold rounded-full bg-amber-500 text-black px-1.5 py-0.5 shadow-[0_0_8px_rgba(245,158,11,0.7)]">
                             {c.unread}
@@ -215,7 +293,7 @@ function MessagesPage() {
         {/* Thread pane */}
         <section className={cn("flex flex-col min-h-0", !activeId && "hidden md:flex")}>
           {activeConvo && me ? (
-            <Thread me={me} other={activeConvo} onBack={() => setActiveId(null)} onStartCall={() => rtc.startCall(activeConvo.other_id)} />
+            <Thread me={me} other={activeConvo} onBack={() => setActiveId(null)} onStartCall={() => rtc.startCall(activeConvo.other_id)} isPeerOnline={presence.isOnline(activeConvo.other_id)} />
           ) : (
             <div className="flex-1 grid place-items-center text-sm text-muted-foreground p-8 text-center">
               <div>
@@ -241,12 +319,20 @@ function MessagesPage() {
   );
 }
 
-function Thread({ me, other, onBack, onStartCall }: { me: string; other: Conversation; onBack: () => void; onStartCall: () => void }) {
+function Thread({ me, other, onBack, onStartCall, isPeerOnline }: { me: string; other: Conversation; onBack: () => void; onStartCall: () => void; isPeerOnline: boolean }) {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [peerTyping, setPeerTyping] = useState(false);
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const [imgUrls, setImgUrls] = useState<Record<string, string>>({});
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const typingChanRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const typingTimerRef = useRef<number | null>(null);
+  const peerTypingTimerRef = useRef<number | null>(null);
 
   // Mark all unread messages from `other` as read (server + optimistic local).
   const markThreadRead = useCallback(async (rows: Msg[]) => {
@@ -337,6 +423,56 @@ function Thread({ me, other, onBack, onStartCall }: { me: string; other: Convers
     };
   }, [me, other.other_id, markThreadRead]);
 
+  // Typing broadcast (Supabase Realtime broadcast channel scoped to the pair).
+  useEffect(() => {
+    const key = `typing:${[me, other.other_id].sort().join(":")}`;
+    const ch = supabase.channel(key, { config: { broadcast: { self: false } } });
+    ch.on("broadcast", { event: "typing" }, (payload) => {
+      const from = (payload as { payload?: { from?: string } })?.payload?.from;
+      if (from !== other.other_id) return;
+      setPeerTyping(true);
+      if (peerTypingTimerRef.current) window.clearTimeout(peerTypingTimerRef.current);
+      peerTypingTimerRef.current = window.setTimeout(() => setPeerTyping(false), 2500);
+    });
+    ch.subscribe();
+    typingChanRef.current = ch;
+    return () => {
+      if (peerTypingTimerRef.current) window.clearTimeout(peerTypingTimerRef.current);
+      supabase.removeChannel(ch);
+      typingChanRef.current = null;
+    };
+  }, [me, other.other_id]);
+
+  // Resolve stored image markers to signed URLs for display.
+  useEffect(() => {
+    const missing = msgs
+      .map((m) => parseImage(m.content))
+      .filter((v): v is string => !!v)
+      .filter((path) => !(path in imgUrls));
+    if (missing.length === 0) return;
+    let alive = true;
+    (async () => {
+      const entries: Array<[string, string]> = [];
+      for (const stored of missing) {
+        const url = await resolveMediaUrl(stored);
+        if (url) entries.push([stored, url]);
+      }
+      if (alive && entries.length) setImgUrls((prev) => ({ ...prev, ...Object.fromEntries(entries) }));
+    })();
+    return () => { alive = false; };
+  }, [msgs, imgUrls]);
+
+  const notifyTyping = () => {
+    const ch = typingChanRef.current;
+    if (!ch) return;
+    if (typingTimerRef.current) return; // throttle to once every 1.5s
+    ch.send({ type: "broadcast", event: "typing", payload: { from: me } });
+    typingTimerRef.current = window.setTimeout(() => {
+      typingTimerRef.current = null;
+    }, 1500);
+  };
+
+
   useEffect(() => {
     const el = scrollerRef.current;
     if (el) el.scrollTop = el.scrollHeight;
@@ -418,13 +554,17 @@ function Thread({ me, other, onBack, onStartCall }: { me: string; other: Convers
     <div className="flex flex-col min-h-0 h-full">
       <header className="px-4 py-3 border-b border-amber-500/30 flex items-center gap-3 bg-black/40">
         <Button variant="ghost" size="icon" className="md:hidden" onClick={onBack}><ArrowLeft className="h-4 w-4" /></Button>
-        <Link to="/profile/$userId" params={{ userId: other.other_id }} className="h-9 w-9 rounded-full bg-gradient-brand grid place-items-center text-primary-foreground text-sm font-bold overflow-hidden hover:ring-2 hover:ring-primary/60 transition" aria-label="Open profile">
+        <Link to="/profile/$userId" params={{ userId: other.other_id }} className="relative h-9 w-9 rounded-full bg-gradient-brand grid place-items-center text-primary-foreground text-sm font-bold overflow-hidden hover:ring-2 hover:ring-primary/60 transition" aria-label="Open profile">
           {other.avatar_url ? <img src={other.avatar_url} alt="" className="h-full w-full object-cover" /> : (other.full_name || "U").charAt(0)}
+          {isPeerOnline && (
+            <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-black" />
+          )}
         </Link>
         <div className="min-w-0 flex-1">
           <Link to="/profile/$userId" params={{ userId: other.other_id }} className="font-semibold text-sm truncate hover:text-primary transition-colors block">{other.full_name || "User"}</Link>
-          <div className="text-[10px] text-emerald-500 flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live
+          <div className={cn("text-[10px] flex items-center gap-1", isPeerOnline ? "text-emerald-500" : "text-muted-foreground")}>
+            <span className={cn("h-1.5 w-1.5 rounded-full", isPeerOnline ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground/50")} />
+            {peerTyping ? "typing…" : isPeerOnline ? "Online" : "Offline"}
           </div>
         </div>
         <Button
@@ -448,69 +588,100 @@ function Thread({ me, other, onBack, onStartCall }: { me: string; other: Convers
           <div className="text-center text-xs text-muted-foreground py-10">Say hello — start the conversation.</div>
         ) : (
           <AnimatePresence initial={false}>
-            {msgs.map((m) => {
+            {msgs.map((m, i) => {
               const mine = m.sender_id === me;
               const loc = parseLocation(m?.content);
               const call = parseCall(m?.content);
+              const img = parseImage(m?.content);
+              const prev = i > 0 ? msgs[i - 1] : null;
+              const showDate = !prev || !sameDay(new Date(prev.created_at), new Date(m.created_at));
               return (
-                <motion.div
-                  key={m.id}
-                  initial={{ opacity: 0, y: 6, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  className={cn("flex", mine ? "justify-end" : "justify-start")}
-                >
-                  <div className={cn(
-                    "max-w-[78%] rounded-2xl px-3.5 py-2 text-sm shadow-soft",
-                    mine
-                      ? "bg-gradient-brand text-primary-foreground rounded-br-sm"
-                      : "bg-card border border-border rounded-bl-sm",
-                    m.pending && "opacity-70",
-                  )}>
-                    {loc ? (
-                      <a
-                        href={`https://www.google.com/maps?q=${loc.lat},${loc.lng}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="block space-y-2"
-                      >
-                        <div className="flex items-center gap-1 text-xs opacity-90">
-                          <MapPin className="h-3 w-3" /> Shared location
-                        </div>
-                        <div className="w-[220px] max-w-full">
-                          <LeafletMap pins={[{ id: m.id, lat: loc.lat, lng: loc.lng }]} height={140} interactive={false} zoom={13} />
-                        </div>
-                        <div className="text-[10px] opacity-80">
-                          {loc.lat.toFixed(4)}, {loc.lng.toFixed(4)} — tap to open
-                        </div>
-                      </a>
-                    ) : call ? (
-                      <div className="flex items-center gap-2">
-                        <span className="grid place-items-center h-8 w-8 rounded-full bg-primary/20 text-primary">
-                          <Phone className="h-4 w-4" />
-                        </span>
-                        <div>
-                          <div className="font-semibold">{mine ? "You started" : "Incoming"} {call} call</div>
-                          <div className="text-[10px] opacity-80">Tap to answer · WebRTC not yet wired</div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="whitespace-pre-wrap break-words">{m.content}</div>
-                    )}
-                    <div className={cn("text-[10px] mt-0.5 opacity-80 text-right flex items-center gap-1 justify-end")}>
-                      <span>
-                        {m.pending ? "sending…" : new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                <div key={m.id}>
+                  {showDate && (
+                    <div className="flex justify-center my-3">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground bg-accent/60 rounded-full px-3 py-1">
+                        {dayLabel(new Date(m.created_at))}
                       </span>
-                      {mine && !m.pending && (
-                        m.read
-                          ? <CheckCheck className="h-3 w-3 text-sky-300" aria-label="Read" />
-                          : <Check className="h-3 w-3 opacity-80" aria-label="Sent" />
-                      )}
                     </div>
-                  </div>
-                </motion.div>
+                  )}
+                  <motion.div
+                    initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    className={cn("flex", mine ? "justify-end" : "justify-start")}
+                  >
+                    <div className={cn(
+                      "max-w-[78%] rounded-2xl px-3.5 py-2 text-sm shadow-soft",
+                      mine
+                        ? "bg-gradient-brand text-primary-foreground rounded-br-sm"
+                        : "bg-card border border-border rounded-bl-sm",
+                      m.pending && "opacity-70",
+                      img && "p-1.5",
+                    )}>
+                      {img ? (
+                        <a href={imgUrls[img]} target="_blank" rel="noreferrer" className="block">
+                          {imgUrls[img] ? (
+                            <img src={imgUrls[img]} alt="Shared" className="rounded-xl max-w-[260px] max-h-[320px] object-cover" />
+                          ) : (
+                            <div className="w-[220px] h-[160px] rounded-xl bg-muted/40 grid place-items-center">
+                              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                            </div>
+                          )}
+                        </a>
+                      ) : loc ? (
+                        <a
+                          href={`https://www.google.com/maps?q=${loc.lat},${loc.lng}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block space-y-2"
+                        >
+                          <div className="flex items-center gap-1 text-xs opacity-90">
+                            <MapPin className="h-3 w-3" /> Shared location
+                          </div>
+                          <div className="w-[220px] max-w-full">
+                            <LeafletMap pins={[{ id: m.id, lat: loc.lat, lng: loc.lng }]} height={140} interactive={false} zoom={13} />
+                          </div>
+                          <div className="text-[10px] opacity-80">
+                            {loc.lat.toFixed(4)}, {loc.lng.toFixed(4)} — tap to open
+                          </div>
+                        </a>
+                      ) : call ? (
+                        <div className="flex items-center gap-2">
+                          <span className="grid place-items-center h-8 w-8 rounded-full bg-primary/20 text-primary">
+                            <Phone className="h-4 w-4" />
+                          </span>
+                          <div>
+                            <div className="font-semibold">{mine ? "You started" : "Incoming"} {call} call</div>
+                            <div className="text-[10px] opacity-80">Tap to answer · WebRTC</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="whitespace-pre-wrap break-words">{m.content}</div>
+                      )}
+                      <div className={cn("text-[10px] mt-0.5 opacity-80 text-right flex items-center gap-1 justify-end", img && "px-2 pb-1")}>
+                        <span>
+                          {m.pending ? "sending…" : new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                        {mine && !m.pending && (
+                          m.read
+                            ? <CheckCheck className="h-3 w-3 text-sky-300" aria-label="Read" />
+                            : <Check className="h-3 w-3 opacity-80" aria-label="Sent" />
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
               );
             })}
           </AnimatePresence>
+        )}
+        {peerTyping && (
+          <div className="flex justify-start">
+            <div className="bg-card border border-border rounded-2xl rounded-bl-sm px-4 py-2 text-xs text-muted-foreground flex items-center gap-1">
+              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "0ms" }} />
+              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "120ms" }} />
+              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "240ms" }} />
+            </div>
+          </div>
         )}
       </div>
 
@@ -518,6 +689,38 @@ function Thread({ me, other, onBack, onStartCall }: { me: string; other: Convers
         onSubmit={(e) => { e.preventDefault(); send(); }}
         className="border-t border-amber-500/30 p-3 flex items-center gap-2 bg-black/50 backdrop-blur"
       >
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={async (e) => {
+            const f = e.target.files?.[0];
+            if (!f) return;
+            e.target.value = "";
+            setUploading(true);
+            try {
+              const media = await uploadFeedMedia(f);
+              await sendRaw(`[img:feed-media:${media.path}]`);
+            } catch (err) {
+              toast.error(err instanceof Error ? err.message : "Upload failed");
+            } finally {
+              setUploading(false);
+            }
+          }}
+        />
+        <Button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading || sending}
+          size="icon"
+          variant="outline"
+          className="h-10 w-10 shrink-0"
+          aria-label="Send image"
+          title="Send an image"
+        >
+          {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
+        </Button>
         <Button
           type="button"
           onClick={shareLocation}
@@ -530,9 +733,30 @@ function Thread({ me, other, onBack, onStartCall }: { me: string; other: Convers
         >
           {sharingLoc ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
         </Button>
+        <Popover open={emojiOpen} onOpenChange={setEmojiOpen}>
+          <PopoverTrigger asChild>
+            <Button type="button" size="icon" variant="outline" className="h-10 w-10 shrink-0" aria-label="Emoji picker" title="Insert emoji">
+              <Smile className="h-4 w-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 p-2" side="top" align="start">
+            <div className="grid grid-cols-8 gap-1">
+              {EMOJIS.map((e) => (
+                <button
+                  key={e}
+                  type="button"
+                  onClick={() => { setText((t) => t + e); setEmojiOpen(false); }}
+                  className="h-8 w-8 text-lg rounded-md hover:bg-accent"
+                >
+                  {e}
+                </button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
         <Input
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => { setText(e.target.value); notifyTyping(); }}
           placeholder="Type a message…"
           className="h-10"
         />
