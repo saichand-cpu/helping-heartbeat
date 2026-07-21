@@ -341,6 +341,13 @@ function PublicProfile() {
               <Lock className="h-3.5 w-3.5 mr-1" /> Call unlocks after accepted offer
             </Button>
           )}
+
+          <Button onClick={shareProfile} variant="outline" size="lg" className="h-12 px-4">
+            <Share2 className="h-4 w-4 mr-1" /> Share
+          </Button>
+          <Button onClick={() => setReportOpen(true)} variant="outline" size="lg" className="h-12 px-4 border-destructive/40 text-destructive hover:bg-destructive/10">
+            <Flag className="h-4 w-4 mr-1" /> Report
+          </Button>
         </div>
 
         {showDonate && isOrgNgo && (
