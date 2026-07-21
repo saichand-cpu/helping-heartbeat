@@ -5,10 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MessageCircle, Send, ArrowLeft, Loader2, Check, CheckCheck, Phone, MapPin } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { MessageCircle, Send, ArrowLeft, Loader2, Check, CheckCheck, Phone, MapPin, Search as SearchIcon, Smile, ImageIcon, X } from "lucide-react";
 import { LeafletMap } from "@/components/site/LeafletMap";
 import { CallOverlay } from "@/components/site/CallOverlay";
 import { useWebRTC } from "@/hooks/use-webrtc";
+import { usePresence } from "@/hooks/use-presence";
+import { uploadFeedMedia, resolveMediaUrl } from "@/lib/upload";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
