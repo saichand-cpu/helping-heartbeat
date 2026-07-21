@@ -5,15 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
   Search as SearchIcon, MapPin, X, SlidersHorizontal, Users, HeartHandshake,
-  Sparkles, ShieldCheck, Award, Loader2, Plus, Frown,
+  Sparkles, Loader2, Plus, Frown,
 } from "lucide-react";
-import { displayIdentity } from "@/lib/identity";
 import { UserCard } from "@/components/site/UserCard";
 import { usePresence } from "@/hooks/use-presence";
 
