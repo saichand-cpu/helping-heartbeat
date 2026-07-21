@@ -464,6 +464,30 @@ function PublicProfile() {
           <ReviewsSection targetId={profile.id} targetName={display} me={me} />
         </>
       )}
+
+      <Dialog open={reportOpen} onOpenChange={setReportOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Report {display}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Tell us what's wrong. Our team reviews every report — thank you for keeping HumanLink safe.
+          </p>
+          <Textarea
+            value={reportReason}
+            onChange={(e) => setReportReason(e.target.value)}
+            placeholder="Describe the issue (spam, harassment, impersonation, unsafe behavior, …)"
+            className="min-h-[120px]"
+            maxLength={1000}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReportOpen(false)}>Cancel</Button>
+            <Button onClick={submitReport} disabled={reporting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {reporting ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Flag className="h-4 w-4 mr-1" />} Submit report
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
