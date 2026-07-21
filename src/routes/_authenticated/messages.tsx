@@ -423,6 +423,56 @@ function Thread({ me, other, onBack, onStartCall, isPeerOnline }: { me: string; 
     };
   }, [me, other.other_id, markThreadRead]);
 
+  // Typing broadcast (Supabase Realtime broadcast channel scoped to the pair).
+  useEffect(() => {
+    const key = `typing:${[me, other.other_id].sort().join(":")}`;
+    const ch = supabase.channel(key, { config: { broadcast: { self: false } } });
+    ch.on("broadcast", { event: "typing" }, (payload) => {
+      const from = (payload as { payload?: { from?: string } })?.payload?.from;
+      if (from !== other.other_id) return;
+      setPeerTyping(true);
+      if (peerTypingTimerRef.current) window.clearTimeout(peerTypingTimerRef.current);
+      peerTypingTimerRef.current = window.setTimeout(() => setPeerTyping(false), 2500);
+    });
+    ch.subscribe();
+    typingChanRef.current = ch;
+    return () => {
+      if (peerTypingTimerRef.current) window.clearTimeout(peerTypingTimerRef.current);
+      supabase.removeChannel(ch);
+      typingChanRef.current = null;
+    };
+  }, [me, other.other_id]);
+
+  // Resolve stored image markers to signed URLs for display.
+  useEffect(() => {
+    const missing = msgs
+      .map((m) => parseImage(m.content))
+      .filter((v): v is string => !!v)
+      .filter((path) => !(path in imgUrls));
+    if (missing.length === 0) return;
+    let alive = true;
+    (async () => {
+      const entries: Array<[string, string]> = [];
+      for (const stored of missing) {
+        const url = await resolveMediaUrl(stored);
+        if (url) entries.push([stored, url]);
+      }
+      if (alive && entries.length) setImgUrls((prev) => ({ ...prev, ...Object.fromEntries(entries) }));
+    })();
+    return () => { alive = false; };
+  }, [msgs, imgUrls]);
+
+  const notifyTyping = () => {
+    const ch = typingChanRef.current;
+    if (!ch) return;
+    if (typingTimerRef.current) return; // throttle to once every 1.5s
+    ch.send({ type: "broadcast", event: "typing", payload: { from: me } });
+    typingTimerRef.current = window.setTimeout(() => {
+      typingTimerRef.current = null;
+    }, 1500);
+  };
+
+
   useEffect(() => {
     const el = scrollerRef.current;
     if (el) el.scrollTop = el.scrollHeight;
