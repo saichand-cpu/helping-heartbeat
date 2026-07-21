@@ -241,16 +241,21 @@ function PublicProfile() {
         }>
         <div className="absolute -bottom-10 -right-10 h-48 w-48 rounded-full bg-white/20 blur-3xl" />
         <div className="relative flex items-center gap-4">
-          <div className={
-            "h-20 w-20 rounded-2xl bg-white/20 backdrop-blur grid place-items-center text-3xl font-bold overflow-hidden " +
-            (isOrgNgo
-              ? "ring-4 ring-emerald-300/80 shadow-[0_0_24px_-4px_rgba(16,185,129,0.9)]"
-              : isBusiness
-                ? "ring-4 ring-amber-300/90 shadow-[0_0_28px_-2px_rgba(245,158,11,0.95)] outline outline-2 outline-offset-2 outline-amber-400/70"
-                : "")
-          }>
-            {profile.incognito ? <EyeOff className="h-8 w-8" /> :
-              profile.avatar_url ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" /> : initial}
+          <div className="relative">
+            <div className={
+              "h-20 w-20 rounded-2xl bg-white/20 backdrop-blur grid place-items-center text-3xl font-bold overflow-hidden " +
+              (isOrgNgo
+                ? "ring-4 ring-emerald-300/80 shadow-[0_0_24px_-4px_rgba(16,185,129,0.9)]"
+                : isBusiness
+                  ? "ring-4 ring-amber-300/90 shadow-[0_0_28px_-2px_rgba(245,158,11,0.95)] outline outline-2 outline-offset-2 outline-amber-400/70"
+                  : "")
+            }>
+              {profile.incognito ? <EyeOff className="h-8 w-8" /> :
+                profile.avatar_url ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" /> : initial}
+            </div>
+            {isOnline(profile.id) && !profile.incognito && (
+              <span className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-emerald-500 border-2 border-background shadow-[0_0_10px_rgba(16,185,129,0.9)]" aria-label="Online" />
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
