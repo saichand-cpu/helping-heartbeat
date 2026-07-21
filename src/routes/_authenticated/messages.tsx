@@ -293,7 +293,7 @@ function MessagesPage() {
         {/* Thread pane */}
         <section className={cn("flex flex-col min-h-0", !activeId && "hidden md:flex")}>
           {activeConvo && me ? (
-            <Thread me={me} other={activeConvo} onBack={() => setActiveId(null)} onStartCall={() => rtc.startCall(activeConvo.other_id)} />
+            <Thread me={me} other={activeConvo} onBack={() => setActiveId(null)} onStartCall={() => rtc.startCall(activeConvo.other_id)} isPeerOnline={presence.isOnline(activeConvo.other_id)} />
           ) : (
             <div className="flex-1 grid place-items-center text-sm text-muted-foreground p-8 text-center">
               <div>
