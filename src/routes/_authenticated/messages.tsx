@@ -319,12 +319,20 @@ function MessagesPage() {
   );
 }
 
-function Thread({ me, other, onBack, onStartCall }: { me: string; other: Conversation; onBack: () => void; onStartCall: () => void }) {
+function Thread({ me, other, onBack, onStartCall, isPeerOnline }: { me: string; other: Conversation; onBack: () => void; onStartCall: () => void; isPeerOnline: boolean }) {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [peerTyping, setPeerTyping] = useState(false);
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const [imgUrls, setImgUrls] = useState<Record<string, string>>({});
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const typingChanRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const typingTimerRef = useRef<number | null>(null);
+  const peerTypingTimerRef = useRef<number | null>(null);
 
   // Mark all unread messages from `other` as read (server + optimistic local).
   const markThreadRead = useCallback(async (rows: Msg[]) => {
