@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { MessageCircle, Send, ArrowLeft, Loader2, Check, CheckCheck, Phone, MapPin, Search as SearchIcon, Smile, ImageIcon, X } from "lucide-react";
+import { MessageCircle, Send, ArrowLeft, Loader2, Check, CheckCheck, Phone, MapPin, Search as SearchIcon, Smile, ImageIcon } from "lucide-react";
 import { LeafletMap } from "@/components/site/LeafletMap";
 import { CallOverlay } from "@/components/site/CallOverlay";
 import { useWebRTC } from "@/hooks/use-webrtc";
