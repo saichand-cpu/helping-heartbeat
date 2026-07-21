@@ -39,8 +39,10 @@ type Req = {
 type Person = {
   id: string; full_name: string | null; username: string | null;
   avatar_url: string | null; profession: string | null; location: string | null;
+  bio: string | null;
   skills: string[] | null; verified: boolean | null; karma_points: number | null;
   incognito: boolean | null; premium_tier: string | null;
+  account_type: string | null; org_type: string | null;
 };
 
 function AdvancedSearch() {
