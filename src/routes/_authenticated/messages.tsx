@@ -142,10 +142,10 @@ function MessagesPage() {
     const map = buildConvos((data ?? []) as Msg[], me);
     const others = Array.from(map.keys());
     if (others.length) {
-      const { data: profs } = await supabase.from("profiles").select("id, full_name, avatar_url").in("id", others);
+      const { data: profs } = await supabase.from("profiles").select("id, full_name, avatar_url, profession").in("id", others);
       (profs ?? []).forEach((p: any) => {
         const c = map.get(p.id);
-        if (c) { c.full_name = p.full_name; c.avatar_url = p.avatar_url; }
+        if (c) { c.full_name = p.full_name; c.avatar_url = p.avatar_url; c.profession = p.profession; }
       });
     }
     setConvos(Array.from(map.values()));
