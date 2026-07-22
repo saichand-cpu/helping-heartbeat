@@ -585,8 +585,7 @@ function Thread({ me, other, onBack, onStartCall, isPeerOnline }: { me: string; 
         .from("messages")
         .select("*")
         .or(`and(sender_id.eq.${me},receiver_id.eq.${other.other_id}),and(sender_id.eq.${other.other_id},receiver_id.eq.${me})`)
-        .order("created_at", { ascending: true })
-        .limit(200);
+        .order("created_at", { ascending: true });
       if (!alive) return;
       const rows = (data ?? []) as Msg[];
       setMsgs(rows);
