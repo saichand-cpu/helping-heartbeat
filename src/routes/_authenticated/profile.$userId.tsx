@@ -136,7 +136,8 @@ function PublicProfile() {
 
   const startChat = () => {
     if (!profile) return;
-    navigate({ to: "/messages", search: { user: profile.id } });
+    console.info("[HumanLink messaging] (1) Message button clicked", { selectedUserId: profile.id, source: "Profile" });
+    navigate({ to: "/messages", search: { userId: profile.id } as never });
   };
 
   const callNow = () => {
@@ -178,7 +179,8 @@ function PublicProfile() {
     } as never);
     setMessaging(false);
     if (error) return toast.error(error.message);
-    navigate({ to: "/messages", search: { user: profile.id } });
+    console.info("[HumanLink messaging] (1) Message button clicked", { selectedUserId: profile.id, source: "Profile volunteer" });
+    navigate({ to: "/messages", search: { userId: profile.id } as never });
   };
 
   const [showDonate, setShowDonate] = useState(false);

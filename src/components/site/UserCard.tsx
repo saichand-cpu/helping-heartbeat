@@ -46,7 +46,8 @@ export function UserCard({
   const message = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    navigate({ to: "/messages", search: { user: user.id } });
+    console.info("[HumanLink messaging] (1) Message button clicked", { selectedUserId: user.id, source: "UserCard" });
+    navigate({ to: "/messages", search: { userId: user.id } as never });
   };
 
   const doFollow = (e: React.MouseEvent) => {
