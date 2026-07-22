@@ -193,7 +193,21 @@ function MessagesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [me, activeId]);
 
-  const activeConvo = useMemo(() => convos.find((c) => c.other_id === activeId) ?? null, [convos, activeId]);
+  const activeConvo = useMemo<Conversation | null>(() => {
+    if (!activeId) return null;
+    const found = convos.find((c) => c.other_id === activeId);
+    if (found) return found;
+    // Fallback stub so the thread opens immediately even before profile/convo data arrives.
+    return {
+      other_id: activeId,
+      last: "",
+      time: new Date().toISOString(),
+      full_name: null,
+      avatar_url: null,
+      profession: null,
+      unread: 0,
+    };
+  }, [convos, activeId]);
   const filteredConvos = useMemo(() => {
     const q = convSearch.trim().toLowerCase();
     if (!q) return convos;
@@ -203,6 +217,7 @@ function MessagesPage() {
       (c.last?.toLowerCase().includes(q)),
     );
   }, [convos, convSearch]);
+
 
   return (
     <div className="pb-24 lg:pb-6">
