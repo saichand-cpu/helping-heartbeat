@@ -54,6 +54,7 @@ export function CoFounderCarousel() {
       navigate({ to: "/messages" });
       return;
     }
+    console.info("[HumanLink messaging] (1) Message button clicked", { selectedUserId: target.id, source: "CoFounderCarousel" });
     setPitching(target.id);
     const { error } = await supabase.from("messages").insert({
       sender_id: me,
@@ -65,7 +66,7 @@ export function CoFounderCarousel() {
       toast.error(error.message);
       return;
     }
-    navigate({ to: "/messages" });
+    navigate({ to: "/messages", search: { userId: target.id } as never });
   };
 
   return (

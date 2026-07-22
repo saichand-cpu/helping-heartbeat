@@ -70,7 +70,8 @@ function RequestsBrowse() {
 
   const startCall = (r: Request) => {
     if (r?.requester_id === meId) return;
-    navigate({ to: "/messages", search: { user: r.requester_id, call: "voice" } as never });
+    console.info("[HumanLink messaging] (1) Message button clicked", { selectedUserId: r.requester_id, source: "Requests call" });
+    navigate({ to: "/messages", search: { userId: r.requester_id, call: "voice" } as never });
   };
 
   const confirmDelete = async () => {
@@ -285,7 +286,11 @@ function RequestsBrowse() {
                 </div>
                 <div className="mt-3 grid grid-cols-3 gap-2 rounded-2xl border border-amber-500/25 bg-black p-2" onClick={(e) => e.stopPropagation()}>
                   <Button
-                    onClick={(e) => { e.stopPropagation(); navigate({ to: "/messages", search: { user: r.requester_id } }); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      console.info("[HumanLink messaging] (1) Message button clicked", { selectedUserId: r.requester_id, source: "Requests text" });
+                      navigate({ to: "/messages", search: { userId: r.requester_id } as never });
+                    }}
                     disabled={r.requester_id === meId}
                     size="sm"
                     className="bg-gradient-brand text-primary-foreground border-0 shadow-glow"
