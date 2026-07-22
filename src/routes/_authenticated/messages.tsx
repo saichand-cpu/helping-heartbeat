@@ -770,9 +770,11 @@ function Thread({ me, other, onBack, onStartCall, isPeerOnline }: { me: string; 
           </PopoverContent>
         </Popover>
         <Input
+          autoFocus
           value={text}
           onChange={(e) => { setText(e.target.value); notifyTyping(); }}
           placeholder="Type a message…"
+
           className="h-10"
         />
         <Button
