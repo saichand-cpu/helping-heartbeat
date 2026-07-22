@@ -269,8 +269,8 @@ function MessagesPage() {
       return raced as ConversationRecord | null;
     }
 
-    logMessageFailure(5, "conversation creation failed", { reason: createError?.message, code: createError?.code });
-    throw createError;
+    logMessageFailure(5, "conversation creation failed", { reason: createError?.message ?? "No conversation returned", code: createError?.code });
+    throw createError ?? new Error("Conversation creation returned no data");
   }, []);
 
   const loadConvos = async () => {
@@ -283,10 +283,10 @@ function MessagesPage() {
         .order("updated_at", { ascending: false })
         .limit(200),
       supabase
-      .from("messages")
-      .select("id, sender_id, receiver_id, content, created_at")
-      .or(`sender_id.eq.${me},receiver_id.eq.${me}`)
-      .order("created_at", { ascending: false })
+        .from("messages")
+        .select("id, sender_id, receiver_id, content, created_at")
+        .or(`sender_id.eq.${me},receiver_id.eq.${me}`)
+        .order("created_at", { ascending: false })
         .limit(500),
     ]);
 
@@ -476,7 +476,12 @@ function MessagesPage() {
                     </Link>
                     <button
                       type="button"
-                      onClick={() => { setActiveId(c.other_id); setConvos((prev) => prev.map((x) => x.other_id === c.other_id ? { ...x, unread: 0 } : x)); }}
+                      onClick={() => {
+                        setActiveId(c.other_id);
+                        setActiveConversationId(c.conversation_id ?? null);
+                        setConvos((prev) => prev.map((x) => x.other_id === c.other_id ? { ...x, unread: 0 } : x));
+                        navigate({ to: "/messages", search: { userId: c.other_id, conversationId: c.conversation_id ?? undefined } as never, replace: true });
+                      }}
                       className="flex-1 min-w-0 text-left"
                     >
                       <div className="flex items-center justify-between gap-2">
@@ -510,6 +515,13 @@ function MessagesPage() {
         <section className={cn("flex flex-col min-h-0", !activeId && "hidden md:flex")}>
           {activeConvo && me ? (
             <Thread me={me} other={activeConvo} onBack={() => setActiveId(null)} onStartCall={() => rtc.startCall(activeConvo.other_id)} isPeerOnline={presence.isOnline(activeConvo.other_id)} />
+          ) : hasValidSelectedUser || deepLinkLoading ? (
+            <div className="flex-1 grid place-items-center text-sm text-muted-foreground p-8 text-center">
+              <div className="space-y-3">
+                <Loader2 className="h-8 w-8 mx-auto text-primary animate-spin" />
+                <p>Opening chat…</p>
+              </div>
+            </div>
           ) : (
             <div className="flex-1 grid place-items-center text-sm text-muted-foreground p-8 text-center">
               <div>
@@ -546,6 +558,7 @@ function Thread({ me, other, onBack, onStartCall, isPeerOnline }: { me: string; 
   const [imgUrls, setImgUrls] = useState<Record<string, string>>({});
   const scrollerRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const typingChanRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const typingTimerRef = useRef<number | null>(null);
   const peerTypingTimerRef = useRef<number | null>(null);
@@ -578,7 +591,9 @@ function Thread({ me, other, onBack, onStartCall, isPeerOnline }: { me: string; 
       const rows = (data ?? []) as Msg[];
       setMsgs(rows);
       setLoading(false);
+      logMessageFlow(7, "messages loaded", { selectedUserId: other.other_id, conversationId: other.conversation_id ?? null, count: rows.length });
       markThreadRead(rows);
+      window.setTimeout(() => inputRef.current?.focus(), 0);
     })();
 
     const ch = supabase
@@ -971,6 +986,7 @@ function Thread({ me, other, onBack, onStartCall, isPeerOnline }: { me: string; 
           </PopoverContent>
         </Popover>
         <Input
+          ref={inputRef}
           autoFocus
           value={text}
           onChange={(e) => { setText(e.target.value); notifyTyping(); }}
