@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,12 +46,40 @@ function dayLabel(d: Date) {
 
 export const Route = createFileRoute("/_authenticated/messages")({
   validateSearch: (s: Record<string, unknown>) => ({
+    userId: typeof s?.userId === "string" ? s.userId : undefined,
     user: typeof s?.user === "string" ? s.user : undefined,
+    conversationId: typeof s?.conversationId === "string" ? s.conversationId : undefined,
+    call: typeof s?.call === "string" ? s.call : undefined,
+  }),
+  head: () => ({
+    meta: [
+      { title: "Messages — HumanLink" },
+      { name: "description", content: "Open real-time HumanLink conversations and continue one-to-one chats instantly." },
+      { property: "og:title", content: "Messages — HumanLink" },
+      { property: "og:description", content: "Open real-time HumanLink conversations and continue one-to-one chats instantly." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
   }),
   component: MessagesPage,
 });
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isValidUserId(value?: string | null) {
+  return !!value && UUID_RE.test(value);
+}
+
+function logMessageFlow(step: number, message: string, details?: Record<string, unknown>) {
+  console.info(`[HumanLink messaging] (${step}) ${message}`, details ?? {});
+}
+
+function logMessageFailure(step: number, message: string, details?: Record<string, unknown>) {
+  console.error(`[HumanLink messaging] (${step}) ${message}`, details ?? {});
+}
+
 type Conversation = {
+  conversation_id?: string | null;
   other_id: string;
   last: string;
   time: string;
@@ -59,6 +87,15 @@ type Conversation = {
   avatar_url: string | null;
   profession: string | null;
   unread: number;
+};
+
+type ConversationRecord = {
+  id: string;
+  participant_one_id: string;
+  participant_two_id: string;
+  last_message_at: string | null;
+  created_at: string;
+  updated_at: string;
 };
 
 type Msg = {
@@ -72,29 +109,43 @@ type Msg = {
 };
 
 function MessagesPage() {
+  const navigate = useNavigate();
   const [me, setMe] = useState<string | null>(null);
   const [convos, setConvos] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deepLinkLoading, setDeepLinkLoading] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [convSearch, setConvSearch] = useState("");
   const rtc = useWebRTC(me);
   const presence = usePresence(me);
   const routeSearch = Route.useSearch();
+  const selectedUserId = useMemo(() => routeSearch?.userId ?? routeSearch?.user, [routeSearch?.userId, routeSearch?.user]);
+  const hasValidSelectedUser = isValidUserId(selectedUserId);
+  const processedDeepLinkRef = useRef<string | null>(null);
 
-  // Auto-open a conversation from ?user=<id>
+  // Read the selected user immediately from either the new ?userId= shape or legacy ?user= links.
   useEffect(() => {
-    if (routeSearch?.user) setActiveId(routeSearch.user);
-  }, [routeSearch?.user]);
+    if (!selectedUserId) return;
+    logMessageFlow(2, "selected userId received from route", { selectedUserId, legacyParam: !!routeSearch?.user && !routeSearch?.userId });
+    if (!isValidUserId(selectedUserId)) {
+      logMessageFailure(4, "invalid userId detected on Messages page", { selectedUserId });
+      return;
+    }
+    logMessageFlow(4, "valid userId detected on Messages page", { selectedUserId });
+    setActiveId(selectedUserId);
+  }, [routeSearch?.user, routeSearch?.userId, selectedUserId]);
 
   // Ensure the deep-linked peer appears in the conversation list even before the first message.
   useEffect(() => {
-    const uid = routeSearch?.user;
-    if (!uid) return;
+    const uid = selectedUserId;
+    if (!isValidUserId(uid)) return;
     supabase.from("profiles").select("id, full_name, avatar_url, profession").eq("id", uid).maybeSingle().then(({ data }) => {
       if (!data) return;
       setConvos((prev) => {
         if (prev.some((c) => c.other_id === uid)) return prev;
         return [{
+          conversation_id: null,
           other_id: uid,
           last: "",
           time: new Date().toISOString(),
@@ -105,7 +156,7 @@ function MessagesPage() {
         }, ...prev];
       });
     });
-  }, [routeSearch?.user]);
+  }, [selectedUserId]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setMe(data.user?.id ?? null));
@@ -124,22 +175,139 @@ function MessagesPage() {
     rows.forEach((m) => {
       const other = m.sender_id === meId ? m.receiver_id : m.sender_id;
       if (!map.has(other)) {
-        map.set(other, { other_id: other, last: m.content, time: m.created_at, full_name: null, avatar_url: null, profession: null, unread: 0 });
+        map.set(other, { conversation_id: null, other_id: other, last: m.content, time: m.created_at, full_name: null, avatar_url: null, profession: null, unread: 0 });
       }
     });
     return map;
   };
 
+  const hydratePeerProfile = useCallback(async (otherId: string, conversationId?: string | null) => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id, full_name, avatar_url, profession")
+      .eq("id", otherId)
+      .maybeSingle();
+
+    if (error) {
+      logMessageFailure(5, "failed to load selected user's profile", { otherId, reason: error.message });
+      return;
+    }
+    if (!data) {
+      logMessageFailure(5, "selected user profile not found", { otherId });
+      return;
+    }
+
+    setConvos((prev) => {
+      const idx = prev.findIndex((c) => c.other_id === otherId);
+      const next: Conversation = {
+        conversation_id: conversationId ?? prev[idx]?.conversation_id ?? null,
+        other_id: otherId,
+        last: prev[idx]?.last ?? "",
+        time: prev[idx]?.time ?? new Date().toISOString(),
+        full_name: (data as { full_name?: string | null })?.full_name ?? null,
+        avatar_url: (data as { avatar_url?: string | null })?.avatar_url ?? null,
+        profession: (data as { profession?: string | null })?.profession ?? null,
+        unread: prev[idx]?.unread ?? 0,
+      };
+      if (idx >= 0) {
+        const copy = prev.slice();
+        copy[idx] = { ...prev[idx], ...next };
+        return copy;
+      }
+      return [next, ...prev];
+    });
+  }, []);
+
+  const findOrCreateConversation = useCallback(async (meId: string, targetId: string) => {
+    if (!isValidUserId(targetId)) {
+      logMessageFailure(5, "cannot find or create conversation: invalid selected userId", { targetId });
+      return null;
+    }
+    if (targetId === meId) {
+      logMessageFailure(5, "cannot create a conversation with yourself", { targetId });
+      return null;
+    }
+
+    logMessageFlow(5, "checking for an existing conversation", { meId, selectedUserId: targetId });
+    const pairFilter = `and(participant_one_id.eq.${meId},participant_two_id.eq.${targetId}),and(participant_one_id.eq.${targetId},participant_two_id.eq.${meId})`;
+    const { data: existing, error: lookupError } = await supabase
+      .from("conversations")
+      .select("*")
+      .or(pairFilter)
+      .maybeSingle();
+
+    if (lookupError) {
+      logMessageFailure(5, "conversation lookup failed", { reason: lookupError.message, code: lookupError.code });
+      throw lookupError;
+    }
+    if (existing) {
+      logMessageFlow(5, "existing conversation found", { conversationId: (existing as ConversationRecord).id, selectedUserId: targetId });
+      return existing as ConversationRecord;
+    }
+
+    const [participant_one_id, participant_two_id] = [meId, targetId].sort();
+    logMessageFlow(5, "no existing conversation found; creating one", { selectedUserId: targetId });
+    const { data: created, error: createError } = await supabase
+      .from("conversations")
+      .insert({ participant_one_id, participant_two_id })
+      .select("*")
+      .single();
+
+    if (!createError && created) {
+      logMessageFlow(5, "conversation created", { conversationId: (created as ConversationRecord).id, selectedUserId: targetId });
+      return created as ConversationRecord;
+    }
+
+    if (createError?.code === "23505") {
+      logMessageFlow(5, "conversation was created concurrently; reusing existing one", { selectedUserId: targetId });
+      const { data: raced, error: racedError } = await supabase
+        .from("conversations")
+        .select("*")
+        .or(pairFilter)
+        .maybeSingle();
+      if (racedError) throw racedError;
+      return raced as ConversationRecord | null;
+    }
+
+    logMessageFailure(5, "conversation creation failed", { reason: createError?.message, code: createError?.code });
+    throw createError;
+  }, []);
+
   const loadConvos = async () => {
     if (!me) return;
-    const { data } = await supabase
+    const [{ data: conversationRows, error: conversationsError }, { data, error: messagesError }] = await Promise.all([
+      supabase
+        .from("conversations")
+        .select("*")
+        .or(`participant_one_id.eq.${me},participant_two_id.eq.${me}`)
+        .order("updated_at", { ascending: false })
+        .limit(200),
+      supabase
       .from("messages")
       .select("id, sender_id, receiver_id, content, created_at")
       .or(`sender_id.eq.${me},receiver_id.eq.${me}`)
       .order("created_at", { ascending: false })
-      .limit(200);
+        .limit(500),
+    ]);
+
+    if (conversationsError) logMessageFailure(7, "conversation list failed to load", { reason: conversationsError.message });
+    if (messagesError) logMessageFailure(7, "message previews failed to load", { reason: messagesError.message });
 
     const map = buildConvos((data ?? []) as Msg[], me);
+    ((conversationRows as ConversationRecord[] | null) ?? []).forEach((row) => {
+      const other = row.participant_one_id === me ? row.participant_two_id : row.participant_one_id;
+      const existing = map.get(other);
+      map.set(other, {
+        conversation_id: row.id,
+        other_id: other,
+        last: existing?.last ?? "",
+        time: existing?.time ?? row.last_message_at ?? row.updated_at ?? row.created_at,
+        full_name: existing?.full_name ?? null,
+        avatar_url: existing?.avatar_url ?? null,
+        profession: existing?.profession ?? null,
+        unread: existing?.unread ?? 0,
+      });
+    });
     const others = Array.from(map.keys());
     if (others.length) {
       const { data: profs } = await supabase.from("profiles").select("id, full_name, avatar_url, profession").in("id", others);
@@ -148,9 +316,38 @@ function MessagesPage() {
         if (c) { c.full_name = p.full_name; c.avatar_url = p.avatar_url; c.profession = p.profession; }
       });
     }
-    setConvos(Array.from(map.values()));
+    setConvos(Array.from(map.values()).sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()));
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (!me || !selectedUserId) return;
+    if (!isValidUserId(selectedUserId)) return;
+
+    const key = `${me}:${selectedUserId}:${routeSearch?.conversationId ?? ""}`;
+    if (processedDeepLinkRef.current === key) return;
+    processedDeepLinkRef.current = key;
+    setDeepLinkLoading(true);
+
+    (async () => {
+      try {
+        const conversation = await findOrCreateConversation(me, selectedUserId);
+        if (!conversation) return;
+        setActiveId(selectedUserId);
+        setActiveConversationId(conversation.id);
+        await hydratePeerProfile(selectedUserId, conversation.id);
+        logMessageFlow(6, "active conversation set", { conversationId: conversation.id, selectedUserId });
+        logMessageFlow(3, "route navigation successful", { pathname: "/messages", selectedUserId, conversationId: conversation.id });
+        navigate({ to: "/messages", search: { userId: selectedUserId, conversationId: conversation.id } as never, replace: true });
+      } catch (error) {
+        processedDeepLinkRef.current = null;
+        logMessageFailure(5, "find-or-create conversation flow failed", { reason: error instanceof Error ? error.message : String(error), selectedUserId });
+        toast.error("Could not open this chat. Please try again.");
+      } finally {
+        setDeepLinkLoading(false);
+      }
+    })();
+  }, [findOrCreateConversation, hydratePeerProfile, me, navigate, routeSearch?.conversationId, selectedUserId]);
 
   useEffect(() => {
     if (!me) return;
@@ -168,7 +365,7 @@ function MessagesPage() {
             const idx = prev.findIndex((c) => c.other_id === other);
             const next: Conversation = idx >= 0
               ? { ...prev[idx], last: m.content, time: m.created_at, unread: activeId === other ? 0 : prev[idx].unread + 1 }
-              : { other_id: other, last: m.content, time: m.created_at, full_name: null, avatar_url: null, profession: null, unread: activeId === other ? 0 : 1 };
+              : { conversation_id: null, other_id: other, last: m.content, time: m.created_at, full_name: null, avatar_url: null, profession: null, unread: activeId === other ? 0 : 1 };
             const without = prev.filter((c) => c.other_id !== other);
             return [next, ...without];
           });
@@ -182,11 +379,14 @@ function MessagesPage() {
             const idx = prev.findIndex((c) => c.other_id === other);
             const next: Conversation = idx >= 0
               ? { ...prev[idx], last: m.content, time: m.created_at }
-              : { other_id: other, last: m.content, time: m.created_at, full_name: null, avatar_url: null, profession: null, unread: 0 };
+              : { conversation_id: null, other_id: other, last: m.content, time: m.created_at, full_name: null, avatar_url: null, profession: null, unread: 0 };
             const without = prev.filter((c) => c.other_id !== other);
             return [next, ...without];
           });
         })
+      .on("postgres_changes",
+        { event: "*", schema: "public", table: "conversations" },
+        () => { loadConvos(); })
       .subscribe();
 
     return () => { supabase.removeChannel(ch); };
@@ -199,6 +399,7 @@ function MessagesPage() {
     if (found) return found;
     // Fallback stub so the thread opens immediately even before profile/convo data arrives.
     return {
+      conversation_id: activeConversationId,
       other_id: activeId,
       last: "",
       time: new Date().toISOString(),
@@ -207,7 +408,7 @@ function MessagesPage() {
       profession: null,
       unread: 0,
     };
-  }, [convos, activeId]);
+  }, [convos, activeId, activeConversationId]);
   const filteredConvos = useMemo(() => {
     const q = convSearch.trim().toLowerCase();
     if (!q) return convos;
