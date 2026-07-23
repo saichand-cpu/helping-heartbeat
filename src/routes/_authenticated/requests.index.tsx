@@ -250,10 +250,10 @@ function RequestsBrowse() {
             const Icon = CATEGORY_ICONS[r.category] ?? Heart;
             return (
               <motion.div key={r.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
-                onClick={() => navigate({ to: "/profile/$userId", params: { userId: r.requester_id } })}
+                onClick={() => navigate({ to: "/requests/$requestId", params: { requestId: r.id } })}
                 role="link"
                 tabIndex={0}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate({ to: "/profile/$userId", params: { userId: r.requester_id } }); } }}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate({ to: "/requests/$requestId", params: { requestId: r.id } }); } }}
                 className="group cursor-pointer rounded-3xl border border-border bg-card p-6 hover:shadow-pop hover:-translate-y-0.5 transition-all">
                 <div className="flex items-start justify-between gap-3">
                   <div className="h-11 w-11 rounded-xl bg-accent grid place-items-center text-primary"><Icon className="h-5 w-5" /></div>
