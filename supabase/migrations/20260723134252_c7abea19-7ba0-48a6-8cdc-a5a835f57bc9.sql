@@ -1,0 +1,2 @@
+DROP POLICY IF EXISTS "Public can read founder-assets" ON storage.objects;
+CREATE POLICY "Admins can read founder-assets" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'founder-assets' AND public.has_role(auth.uid(), 'admin'));
