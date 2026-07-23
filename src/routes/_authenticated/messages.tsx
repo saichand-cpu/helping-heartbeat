@@ -78,7 +78,7 @@ function logMessageFailure(step: number, message: string, details?: Record<strin
   console.error(`[HumanLink messaging] (${step}) ${message}`, details ?? {});
 }
 
-type Conversation = {
+export type Conversation = {
   conversation_id?: string | null;
   other_id: string;
   last: string;
