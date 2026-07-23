@@ -547,7 +547,7 @@ function MessagesPage() {
   );
 }
 
-function Thread({ me, other, onBack, onStartCall, isPeerOnline }: { me: string; other: Conversation; onBack: () => void; onStartCall: () => void; isPeerOnline: boolean }) {
+export function Thread({ me, other, onBack, onStartCall, isPeerOnline }: { me: string; other: Conversation; onBack: () => void; onStartCall: () => void; isPeerOnline: boolean }) {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
