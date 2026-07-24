@@ -15,7 +15,6 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ApiHumiChatRouteImport } from './routes/api/humi-chat'
 import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated/search'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
@@ -61,11 +60,6 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AuthCallbackRoute = AuthCallbackRouteImport.update({
-  id: '/callback',
-  path: '/callback',
-  getParentRoute: () => AuthRoute,
 } as any)
 const ApiHumiChatRoute = ApiHumiChatRouteImport.update({
   id: '/api/humi-chat',
@@ -158,7 +152,7 @@ const AuthenticatedAdminDashboardMetricsRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/auth': typeof AuthRouteWithChildren
+  '/auth': typeof AuthRoute
   '/leaderboard': typeof LeaderboardRoute
   '/pricing': typeof PricingRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -171,7 +165,6 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/search': typeof AuthenticatedSearchRoute
   '/api/humi-chat': typeof ApiHumiChatRoute
-  '/auth/callback': typeof AuthCallbackRoute
   '/admin-dashboard/metrics': typeof AuthenticatedAdminDashboardMetricsRoute
   '/profile/$userId': typeof AuthenticatedProfileUserIdRoute
   '/requests/$requestId': typeof AuthenticatedRequestsRequestIdRoute
@@ -182,7 +175,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/auth': typeof AuthRouteWithChildren
+  '/auth': typeof AuthRoute
   '/leaderboard': typeof LeaderboardRoute
   '/pricing': typeof PricingRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -195,7 +188,6 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/search': typeof AuthenticatedSearchRoute
   '/api/humi-chat': typeof ApiHumiChatRoute
-  '/auth/callback': typeof AuthCallbackRoute
   '/admin-dashboard/metrics': typeof AuthenticatedAdminDashboardMetricsRoute
   '/profile/$userId': typeof AuthenticatedProfileUserIdRoute
   '/requests/$requestId': typeof AuthenticatedRequestsRequestIdRoute
@@ -208,7 +200,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/about': typeof AboutRoute
-  '/auth': typeof AuthRouteWithChildren
+  '/auth': typeof AuthRoute
   '/leaderboard': typeof LeaderboardRoute
   '/pricing': typeof PricingRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
@@ -221,7 +213,6 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRouteWithChildren
   '/_authenticated/search': typeof AuthenticatedSearchRoute
   '/api/humi-chat': typeof ApiHumiChatRoute
-  '/auth/callback': typeof AuthCallbackRoute
   '/_authenticated/admin-dashboard/metrics': typeof AuthenticatedAdminDashboardMetricsRoute
   '/_authenticated/profile/$userId': typeof AuthenticatedProfileUserIdRoute
   '/_authenticated/requests/$requestId': typeof AuthenticatedRequestsRequestIdRoute
@@ -247,7 +238,6 @@ export interface FileRouteTypes {
     | '/profile'
     | '/search'
     | '/api/humi-chat'
-    | '/auth/callback'
     | '/admin-dashboard/metrics'
     | '/profile/$userId'
     | '/requests/$requestId'
@@ -271,7 +261,6 @@ export interface FileRouteTypes {
     | '/profile'
     | '/search'
     | '/api/humi-chat'
-    | '/auth/callback'
     | '/admin-dashboard/metrics'
     | '/profile/$userId'
     | '/requests/$requestId'
@@ -296,7 +285,6 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/_authenticated/search'
     | '/api/humi-chat'
-    | '/auth/callback'
     | '/_authenticated/admin-dashboard/metrics'
     | '/_authenticated/profile/$userId'
     | '/_authenticated/requests/$requestId'
@@ -309,7 +297,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
-  AuthRoute: typeof AuthRouteWithChildren
+  AuthRoute: typeof AuthRoute
   LeaderboardRoute: typeof LeaderboardRoute
   PricingRoute: typeof PricingRoute
   ApiHumiChatRoute: typeof ApiHumiChatRoute
@@ -358,13 +346,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/auth/callback': {
-      id: '/auth/callback'
-      path: '/callback'
-      fullPath: '/auth/callback'
-      preLoaderRoute: typeof AuthCallbackRouteImport
-      parentRoute: typeof AuthRoute
     }
     '/api/humi-chat': {
       id: '/api/humi-chat'
@@ -530,21 +511,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
-interface AuthRouteChildren {
-  AuthCallbackRoute: typeof AuthCallbackRoute
-}
-
-const AuthRouteChildren: AuthRouteChildren = {
-  AuthCallbackRoute: AuthCallbackRoute,
-}
-
-const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AboutRoute: AboutRoute,
-  AuthRoute: AuthRouteWithChildren,
+  AuthRoute: AuthRoute,
   LeaderboardRoute: LeaderboardRoute,
   PricingRoute: PricingRoute,
   ApiHumiChatRoute: ApiHumiChatRoute,
