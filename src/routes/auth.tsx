@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Heart, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,14 +32,15 @@ function AuthPage() {
 
   const handleGoogle = async () => {
     setLoading(true);
-    const res = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-    if (res.error) {
-      toast.error("Could not sign in with Google");
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+    if (error) {
+      toast.error(error.message || "Could not sign in with Google");
       setLoading(false);
-      return;
     }
-    if (res.redirected) return;
-    navigate({ to: "/dashboard" });
+    // On success, browser redirects to Google — no navigate needed.
   };
 
   return (
@@ -151,7 +151,7 @@ function SignUpForm() {
       email,
       password,
       options: {
-        emailRedirectTo: window.location.origin + "/dashboard",
+        emailRedirectTo: window.location.origin + "/auth/callback",
         data: { full_name: name },
       },
     });
