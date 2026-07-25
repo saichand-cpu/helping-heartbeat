@@ -98,16 +98,19 @@ function AdminDashboard() {
           <TabsTrigger value="plans"><CreditCard className="h-4 w-4 mr-1" /> Plans</TabsTrigger>
           <TabsTrigger value="ads"><Megaphone className="h-4 w-4 mr-1" /> Ads</TabsTrigger>
           <TabsTrigger value="payment"><Banknote className="h-4 w-4 mr-1" /> Payment</TabsTrigger>
+          <TabsTrigger value="reports"><Flag className="h-4 w-4 mr-1" /> Reports</TabsTrigger>
         </TabsList>
         <TabsContent value="users"><UsersPanel /></TabsContent>
         <TabsContent value="requests"><RequestsPanel /></TabsContent>
         <TabsContent value="plans"><PlansPanel /></TabsContent>
         <TabsContent value="ads"><AdsPanel /></TabsContent>
         <TabsContent value="payment"><PaymentPanel /></TabsContent>
+        <TabsContent value="reports"><ReportsPanel /></TabsContent>
       </Tabs>
     </div>
   );
 }
+
 
 function StatsRow() {
   const [stats, setStats] = useState({ users: 0, requests: 0, completed: 0, pending: 0 });
