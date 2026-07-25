@@ -98,7 +98,13 @@ export function UserCard({
               {user.username ? ` · @${user.username}` : ""}
             </div>
           </div>
+          {!isMe && (
+            <div onClick={(e) => e.preventDefault()}>
+              <ReportBlockMenu targetUserId={user.id} targetName={id.name} />
+            </div>
+          )}
         </div>
+
 
         {!compact && user.bio && (
           <p className="mt-3 text-xs text-muted-foreground line-clamp-2">{user.bio}</p>
