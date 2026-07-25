@@ -305,6 +305,12 @@ function PublicProfile() {
       {/* Follow + stats */}
       <FollowBlock targetId={profile.id} />
 
+      {/* Report/Block */}
+      <div className="flex justify-end -mb-2">
+        <ReportBlockMenu targetUserId={profile.id} targetName={profile.full_name ?? undefined} size="sm" />
+      </div>
+
+
       {/* Action bar */}
       <div className="glass rounded-3xl p-5 shadow-soft space-y-3">
         <div className="flex flex-wrap items-center gap-2">
