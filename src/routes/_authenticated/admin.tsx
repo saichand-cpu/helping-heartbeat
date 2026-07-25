@@ -13,8 +13,9 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Shield, Users, HeartHandshake, CreditCard, Banknote, Plus, Trash2, Save, Lock, Megaphone,
-  Eye, MousePointerClick, TrendingUp,
+  Eye, MousePointerClick, TrendingUp, Flag, Ban, ShieldOff,
 } from "lucide-react";
+
 
 export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
