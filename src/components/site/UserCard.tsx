@@ -6,7 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useFollow } from "@/hooks/use-follow";
 import { displayIdentity } from "@/lib/identity";
+import { ReportBlockMenu } from "@/components/site/ReportBlockMenu";
 import { cn } from "@/lib/utils";
+
 
 export type UserCardData = {
   id: string;
