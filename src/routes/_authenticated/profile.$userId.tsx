@@ -11,6 +11,8 @@ import {
   Star, Send, Trash2, HandHeart, Heart, Clock, Copy, Globe, Briefcase, Building2, Share2, Flag,
 } from "lucide-react";
 import { useFollow } from "@/hooks/use-follow";
+import { ReportBlockMenu } from "@/components/site/ReportBlockMenu";
+
 import { usePresence } from "@/hooks/use-presence";
 import { ProfileMediaGrid } from "@/components/site/ProfileMediaGrid";
 import { getOrgMeta, isNgo } from "@/lib/org-types";
