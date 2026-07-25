@@ -11,6 +11,8 @@ import {
   Star, Send, Trash2, HandHeart, Heart, Clock, Copy, Globe, Briefcase, Building2, Share2, Flag,
 } from "lucide-react";
 import { useFollow } from "@/hooks/use-follow";
+import { ReportBlockMenu } from "@/components/site/ReportBlockMenu";
+
 import { usePresence } from "@/hooks/use-presence";
 import { ProfileMediaGrid } from "@/components/site/ProfileMediaGrid";
 import { getOrgMeta, isNgo } from "@/lib/org-types";
@@ -304,6 +306,12 @@ function PublicProfile() {
 
       {/* Follow + stats */}
       <FollowBlock targetId={profile.id} />
+
+      {/* Report/Block */}
+      <div className="flex justify-end -mb-2">
+        <ReportBlockMenu targetUserId={profile.id} targetName={profile.full_name ?? undefined} size="sm" />
+      </div>
+
 
       {/* Action bar */}
       <div className="glass rounded-3xl p-5 shadow-soft space-y-3">

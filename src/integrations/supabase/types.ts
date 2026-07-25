@@ -79,6 +79,27 @@ export type Database = {
         }
         Relationships: []
       }
+      blocked_users: {
+        Row: {
+          blocked_user_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          blocked_user_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          blocked_user_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       bookmarks: {
         Row: {
           created_at: string
@@ -553,6 +574,9 @@ export type Database = {
           role: Database["public"]["Enums"]["user_role"]
           seeking_cofounder: boolean
           skills: string[] | null
+          suspended: boolean
+          suspended_at: string | null
+          suspended_reason: string | null
           updated_at: string
           username: string | null
           verified: boolean
@@ -582,6 +606,9 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"]
           seeking_cofounder?: boolean
           skills?: string[] | null
+          suspended?: boolean
+          suspended_at?: string | null
+          suspended_reason?: string | null
           updated_at?: string
           username?: string | null
           verified?: boolean
@@ -611,10 +638,46 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"]
           seeking_cofounder?: boolean
           skills?: string[] | null
+          suspended?: boolean
+          suspended_at?: string | null
+          suspended_reason?: string | null
           updated_at?: string
           username?: string | null
           verified?: boolean
           website_url?: string | null
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          reason: string
+          reported_user_id: string
+          reporter_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          reason: string
+          reported_user_id: string
+          reporter_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          reason?: string
+          reported_user_id?: string
+          reporter_id?: string
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -884,6 +947,9 @@ export type Database = {
           role: Database["public"]["Enums"]["user_role"]
           seeking_cofounder: boolean
           skills: string[] | null
+          suspended: boolean
+          suspended_at: string | null
+          suspended_reason: string | null
           updated_at: string
           username: string | null
           verified: boolean
