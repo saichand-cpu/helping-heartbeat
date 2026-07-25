@@ -592,3 +592,141 @@ function AdsPanel() {
     </div>
   );
 }
+
+type ReportRow = {
+  id: string;
+  reporter_id: string;
+  reported_user_id: string;
+  reason: string;
+  description: string | null;
+  status: string;
+  created_at: string;
+  reporter?: { full_name: string | null } | null;
+  reported?: { full_name: string | null; suspended: boolean | null } | null;
+};
+
+function ReportsPanel() {
+  const [rows, setRows] = useState<ReportRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<"pending" | "all">("pending");
+
+  const load = async () => {
+    setLoading(true);
+    let q = supabase
+      .from("reports")
+      .select("id, reporter_id, reported_user_id, reason, description, status, created_at")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (filter === "pending") q = q.eq("status", "pending");
+    const { data } = await q;
+    const list = (data ?? []) as ReportRow[];
+    const ids = Array.from(new Set(list.flatMap((r) => [r.reporter_id, r.reported_user_id])));
+    if (ids.length) {
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, full_name, suspended")
+        .in("id", ids);
+      const map = new Map((profs ?? []).map((p: { id: string; full_name: string | null; suspended: boolean | null }) => [p.id, p]));
+      list.forEach((r) => {
+        const rep = map.get(r.reporter_id);
+        const tgt = map.get(r.reported_user_id);
+        r.reporter = rep ? { full_name: rep.full_name } : null;
+        r.reported = tgt ? { full_name: tgt.full_name, suspended: tgt.suspended } : null;
+      });
+    }
+    setRows(list);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter]);
+
+  const updateStatus = async (id: string, status: string) => {
+    const { error } = await supabase.from("reports").update({ status }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success(`Report ${status}`);
+    load();
+  };
+
+  const setSuspended = async (userId: string, suspended: boolean) => {
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        suspended,
+        suspended_at: suspended ? new Date().toISOString() : null,
+      })
+      .eq("id", userId);
+    if (error) return toast.error(error.message);
+    toast.success(suspended ? "User suspended" : "User restored");
+    load();
+  };
+
+  return (
+    <div className="glass rounded-3xl p-5 shadow-soft space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold flex items-center gap-2"><Flag className="h-4 w-4" /> User Reports</h3>
+        <div className="flex gap-2">
+          <Button size="sm" variant={filter === "pending" ? "default" : "outline"} onClick={() => setFilter("pending")}>Pending</Button>
+          <Button size="sm" variant={filter === "all" ? "default" : "outline"} onClick={() => setFilter("all")}>All</Button>
+        </div>
+      </div>
+
+      {loading ? (
+        <Skeleton className="h-24 w-full" />
+      ) : rows.length === 0 ? (
+        <p className="text-sm text-muted-foreground text-center py-8">No reports.</p>
+      ) : (
+        <div className="space-y-3">
+          {rows.map((r) => (
+            <div key={r.id} className="rounded-2xl border p-4 space-y-2">
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div className="min-w-0">
+                  <div className="text-sm">
+                    <span className="font-semibold">{r.reporter?.full_name ?? "Someone"}</span>
+                    <span className="text-muted-foreground"> reported </span>
+                    <Link to="/profile/$userId" params={{ userId: r.reported_user_id }} className="font-semibold hover:underline">
+                      {r.reported?.full_name ?? "user"}
+                    </Link>
+                    {r.reported?.suspended && (
+                      <Badge variant="destructive" className="ml-2">Suspended</Badge>
+                    )}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-0.5">
+                    {new Date(r.created_at).toLocaleString()} · Status: <span className="font-medium">{r.status}</span>
+                  </div>
+                </div>
+                <Badge variant="outline" className="shrink-0">{r.reason}</Badge>
+              </div>
+              {r.description && (
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{r.description}</p>
+              )}
+              <div className="flex flex-wrap gap-2 pt-1">
+                {r.status === "pending" && (
+                  <>
+                    <Button size="sm" variant="outline" onClick={() => updateStatus(r.id, "reviewed")}>Mark reviewed</Button>
+                    <Button size="sm" variant="outline" onClick={() => updateStatus(r.id, "dismissed")}>Dismiss</Button>
+                    <Button size="sm" onClick={() => updateStatus(r.id, "actioned")}>
+                      Action taken
+                    </Button>
+                  </>
+                )}
+                {r.reported?.suspended ? (
+                  <Button size="sm" variant="outline" onClick={() => setSuspended(r.reported_user_id, false)}>
+                    <ShieldOff className="h-3 w-3 mr-1" /> Restore user
+                  </Button>
+                ) : (
+                  <Button size="sm" variant="destructive" onClick={() => setSuspended(r.reported_user_id, true)}>
+                    <Ban className="h-3 w-3 mr-1" /> Suspend user
+                  </Button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
