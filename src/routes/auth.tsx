@@ -1,17 +1,12 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Heart, Loader2, Phone, ShieldCheck, ArrowLeft } from "lucide-react";
+import { Heart, Loader2, Mail, Lock, User, Phone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
 import { Logo } from "@/components/site/Logo";
 
 export const Route = createFileRoute("/auth")({
@@ -21,27 +16,12 @@ export const Route = createFileRoute("/auth")({
       {
         name: "description",
         content:
-          "Sign in to HumanLink with your phone number. Fast, secure, no passwords.",
+          "Sign in or create your HumanLink account with email and password.",
       },
     ],
   }),
   component: AuthPage,
 });
-
-const COUNTRY_CODES = [
-  { code: "+91", label: "🇮🇳 India (+91)" },
-  { code: "+1", label: "🇺🇸 US/Canada (+1)" },
-  { code: "+44", label: "🇬🇧 UK (+44)" },
-  { code: "+61", label: "🇦🇺 Australia (+61)" },
-  { code: "+971", label: "🇦🇪 UAE (+971)" },
-  { code: "+65", label: "🇸🇬 Singapore (+65)" },
-  { code: "+49", label: "🇩🇪 Germany (+49)" },
-  { code: "+33", label: "🇫🇷 France (+33)" },
-  { code: "+81", label: "🇯🇵 Japan (+81)" },
-  { code: "+880", label: "🇧🇩 Bangladesh (+880)" },
-  { code: "+92", label: "🇵🇰 Pakistan (+92)" },
-  { code: "+94", label: "🇱🇰 Sri Lanka (+94)" },
-];
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -70,8 +50,8 @@ function AuthPage() {
             <span className="text-gradient-brand">one tap</span>
           </h2>
           <p className="text-muted-foreground max-w-md">
-            Sign in with your phone. No passwords, no email — just an OTP and
-            you're in.
+            Create your account and start connecting instantly. No verification,
+            no waiting.
           </p>
           <div className="glass rounded-2xl p-5 max-w-md shadow-soft">
             <div className="flex items-center gap-3">
@@ -102,7 +82,7 @@ function AuthPage() {
           <div className="lg:hidden mb-6">
             <Logo />
           </div>
-          <PhoneOtpFlow />
+          <EmailAuthFlow />
           <p className="mt-6 text-xs text-center text-muted-foreground">
             By continuing you agree to our{" "}
             <Link to="/" className="underline">
@@ -120,233 +100,269 @@ function AuthPage() {
   );
 }
 
-type Step = "phone" | "otp";
+type Mode = "signin" | "signup";
 
-function PhoneOtpFlow() {
-  const navigate = useNavigate();
-  const [step, setStep] = useState<Step>("phone");
-  const [countryCode, setCountryCode] = useState("+91");
-  const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [resendIn, setResendIn] = useState(0);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+// Simple client-side cooldown to slow down brute-force / spam attempts.
+// Server-side Supabase auth also rate-limits; this is a UX guardrail.
+const ATTEMPT_WINDOW_MS = 60_000;
+const MAX_ATTEMPTS = 5;
+const COOLDOWN_MS = 60_000;
 
-  const fullPhone = useMemo(
-    () => `${countryCode}${phone.replace(/\D/g, "")}`,
-    [countryCode, phone],
-  );
+function useAttemptGuard(storageKey: string) {
+  const attemptsRef = useRef<number[]>([]);
+  const [cooldownUntil, setCooldownUntil] = useState<number>(() => {
+    if (typeof window === "undefined") return 0;
+    const raw = window.localStorage.getItem(storageKey);
+    return raw ? Number(raw) || 0 : 0;
+  });
 
-  useEffect(() => {
-    if (resendIn <= 0) {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-      return;
-    }
-    if (!timerRef.current) {
-      timerRef.current = setInterval(() => {
-        setResendIn((s) => (s > 0 ? s - 1 : 0));
-      }, 1000);
-    }
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-  }, [resendIn]);
+  const now = () => Date.now();
+  const remainingCooldown = Math.max(0, cooldownUntil - now());
 
-  const validPhone = /^\+\d{7,15}$/.test(fullPhone);
-
-  const sendOtp = async (isResend = false) => {
-    if (!validPhone) {
-      toast.error("Enter a valid phone number");
-      return;
-    }
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      phone: fullPhone,
-    });
-    setLoading(false);
-    if (error) {
-      toast.error(error.message || "Could not send OTP");
-      return;
-    }
-    toast.success(isResend ? "OTP resent" : "OTP sent to your phone");
-    setStep("otp");
-    setResendIn(45);
-  };
-
-  const verifyOtp = async () => {
-    if (otp.length < 6) {
-      toast.error("Enter the 6-digit code");
-      return;
-    }
-    setLoading(true);
-    const { data, error } = await supabase.auth.verifyOtp({
-      phone: fullPhone,
-      token: otp,
-      type: "sms",
-    });
-    setLoading(false);
-    if (error || !data.session) {
-      toast.error(error?.message || "Invalid or expired code");
-      return;
-    }
-    // Ensure profile row exists / phone is up to date.
-    try {
-      await supabase
-        .from("profiles")
-        .upsert(
-          { id: data.session.user.id },
-          { onConflict: "id", ignoreDuplicates: true },
-        );
-    } catch {
-      // Trigger handles it; ignore.
-    }
-    toast.success("Welcome to HumanLink");
-    navigate({ to: "/dashboard" });
-  };
-
-  if (step === "phone") {
-    return (
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Phone className="h-5 w-5 text-primary" /> Sign in with your phone
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          We'll send a one-time code by SMS.
-        </p>
-
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            sendOtp(false);
-          }}
-          className="space-y-4 mt-6"
-        >
-          <div>
-            <Label htmlFor="phone">Phone number</Label>
-            <div className="mt-1 flex gap-2">
-              <select
-                aria-label="Country code"
-                value={countryCode}
-                onChange={(e) => setCountryCode(e.target.value)}
-                className="h-10 rounded-md border border-input bg-background px-2 text-sm min-w-[110px]"
-              >
-                {COUNTRY_CODES.map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.label}
-                  </option>
-                ))}
-              </select>
-              <Input
-                id="phone"
-                inputMode="tel"
-                autoComplete="tel"
-                required
-                value={phone}
-                onChange={(e) =>
-                  setPhone(e.target.value.replace(/[^\d\s-]/g, ""))
-                }
-                placeholder="98765 43210"
-              />
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              We'll text{" "}
-              <span className="font-mono">
-                {validPhone ? fullPhone : "your number"}
-              </span>{" "}
-              a 6-digit code.
-            </p>
-          </div>
-
-          <Button
-            type="submit"
-            disabled={loading || !validPhone}
-            className="w-full h-11 bg-gradient-brand text-primary-foreground border-0 shadow-glow"
-          >
-            {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              "Send OTP"
-            )}
-          </Button>
-        </form>
-      </div>
+  const registerAttempt = () => {
+    const t = now();
+    attemptsRef.current = attemptsRef.current.filter(
+      (x) => t - x < ATTEMPT_WINDOW_MS,
     );
-  }
+    attemptsRef.current.push(t);
+    if (attemptsRef.current.length >= MAX_ATTEMPTS) {
+      const until = t + COOLDOWN_MS;
+      setCooldownUntil(until);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(storageKey, String(until));
+      }
+      attemptsRef.current = [];
+    }
+  };
+
+  const clearCooldown = () => {
+    setCooldownUntil(0);
+    attemptsRef.current = [];
+    if (typeof window !== "undefined") window.localStorage.removeItem(storageKey);
+  };
+
+  return { remainingCooldown, registerAttempt, clearCooldown };
+}
+
+function EmailAuthFlow() {
+  const navigate = useNavigate();
+  const [mode, setMode] = useState<Mode>("signin");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const { remainingCooldown, registerAttempt, clearCooldown } =
+    useAttemptGuard("humanlink:auth:cooldown");
+  const [, force] = useState(0);
+  useEffect(() => {
+    if (remainingCooldown <= 0) return;
+    const i = setInterval(() => force((n) => n + 1), 1000);
+    return () => clearInterval(i);
+  }, [remainingCooldown]);
+
+  const cooldownSec = Math.ceil(remainingCooldown / 1000);
+  const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const validPassword = password.length >= 8;
+  const validPhone = phone.trim().length === 0 || /^\+?[\d\s\-()]{7,20}$/.test(phone.trim());
+  const validName = fullName.trim().length >= 2;
+
+  const canSubmit =
+    cooldownSec === 0 &&
+    !loading &&
+    validEmail &&
+    validPassword &&
+    (mode === "signin" || (validName && validPhone && phone.trim().length > 0));
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSubmit) return;
+    setLoading(true);
+    try {
+      if (mode === "signup") {
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
+            data: {
+              full_name: fullName.trim(),
+              phone: phone.trim(),
+            },
+          },
+        });
+        if (error) {
+          registerAttempt();
+          toast.error(error.message || "Could not create account");
+          return;
+        }
+        // With auto-confirm on, signUp returns a session immediately.
+        if (!data.session) {
+          // Fallback: sign in explicitly.
+          const { error: signInErr } = await supabase.auth.signInWithPassword({
+            email: email.trim(),
+            password,
+          });
+          if (signInErr) {
+            toast.error(signInErr.message || "Signed up, please sign in");
+            setMode("signin");
+            return;
+          }
+        }
+        clearCooldown();
+        toast.success("Welcome to HumanLink");
+        navigate({ to: "/dashboard" });
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+        if (error) {
+          registerAttempt();
+          toast.error(error.message || "Invalid email or password");
+          return;
+        }
+        clearCooldown();
+        toast.success("Welcome back");
+        navigate({ to: "/dashboard" });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div>
-      <button
-        type="button"
-        onClick={() => {
-          setStep("phone");
-          setOtp("");
-        }}
-        className="text-xs text-muted-foreground inline-flex items-center gap-1 hover:text-foreground"
-      >
-        <ArrowLeft className="h-3 w-3" /> Change number
-      </button>
-      <h1 className="mt-2 text-2xl font-bold flex items-center gap-2">
-        <ShieldCheck className="h-5 w-5 text-primary" /> Enter the code
+      <h1 className="text-2xl font-bold">
+        {mode === "signin" ? "Welcome back" : "Create your account"}
       </h1>
       <p className="text-sm text-muted-foreground mt-1">
-        Sent to <span className="font-mono">{fullPhone}</span>
+        {mode === "signin"
+          ? "Sign in with your email and password."
+          : "It only takes a moment — no verification needed."}
       </p>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          verifyOtp();
-        }}
-        className="space-y-5 mt-6"
-      >
-        <div className="flex justify-center">
-          <InputOTP
-            maxLength={6}
-            value={otp}
-            onChange={setOtp}
-            autoFocus
-            inputMode="numeric"
-          >
-            <InputOTPGroup>
-              {[0, 1, 2, 3, 4, 5].map((i) => (
-                <InputOTPSlot key={i} index={i} />
-              ))}
-            </InputOTPGroup>
-          </InputOTP>
+      <form onSubmit={handleSubmit} className="space-y-4 mt-6">
+        {mode === "signup" && (
+          <div>
+            <Label htmlFor="fullName">Full name</Label>
+            <div className="relative mt-1">
+              <User className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="fullName"
+                autoComplete="name"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Aarav Sharma"
+                className="pl-9"
+              />
+            </div>
+          </div>
+        )}
+
+        <div>
+          <Label htmlFor="email">Email address</Label>
+          <div className="relative mt-1">
+            <Mail className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              id="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="pl-9"
+            />
+          </div>
         </div>
+
+        {mode === "signup" && (
+          <div>
+            <Label htmlFor="phone">Mobile number</Label>
+            <div className="relative mt-1">
+              <Phone className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="phone"
+                type="tel"
+                autoComplete="tel"
+                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+91 98765 43210"
+                className="pl-9"
+              />
+            </div>
+          </div>
+        )}
+
+        <div>
+          <Label htmlFor="password">Password</Label>
+          <div className="relative mt-1">
+            <Lock className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              id="password"
+              type="password"
+              autoComplete={mode === "signin" ? "current-password" : "new-password"}
+              required
+              minLength={8}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="At least 8 characters"
+              className="pl-9"
+            />
+          </div>
+          {mode === "signup" && password.length > 0 && !validPassword && (
+            <p className="text-xs text-destructive mt-1">
+              Password must be at least 8 characters.
+            </p>
+          )}
+        </div>
+
+        {cooldownSec > 0 && (
+          <p className="text-xs text-destructive text-center">
+            Too many attempts. Try again in {cooldownSec}s.
+          </p>
+        )}
 
         <Button
           type="submit"
-          disabled={loading || otp.length < 6}
+          disabled={!canSubmit}
           className="w-full h-11 bg-gradient-brand text-primary-foreground border-0 shadow-glow"
         >
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
+          ) : mode === "signin" ? (
+            "Sign in"
           ) : (
-            "Verify & Continue"
+            "Create account"
           )}
         </Button>
 
-        <div className="text-center text-sm">
-          {resendIn > 0 ? (
-            <span className="text-muted-foreground">
-              Resend code in {resendIn}s
-            </span>
+        <div className="text-center text-sm text-muted-foreground">
+          {mode === "signin" ? (
+            <>
+              New to HumanLink?{" "}
+              <button
+                type="button"
+                onClick={() => setMode("signup")}
+                className="text-primary hover:underline font-medium"
+              >
+                Create an account
+              </button>
+            </>
           ) : (
-            <button
-              type="button"
-              onClick={() => sendOtp(true)}
-              disabled={loading}
-              className="text-primary hover:underline font-medium disabled:opacity-50"
-            >
-              Resend OTP
-            </button>
+            <>
+              Already have an account?{" "}
+              <button
+                type="button"
+                onClick={() => setMode("signin")}
+                className="text-primary hover:underline font-medium"
+              >
+                Sign in
+              </button>
+            </>
           )}
         </div>
       </form>
