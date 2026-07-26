@@ -318,6 +318,16 @@ function EmailAuthFlow() {
               Password must be at least 8 characters.
             </p>
           )}
+          {mode === "signin" && (
+            <div className="text-right mt-2">
+              <Link
+                to="/forgot-password"
+                className="text-xs text-primary hover:underline font-medium"
+              >
+                Forgot password?
+              </Link>
+            </div>
+          )}
         </div>
 
         {cooldownSec > 0 && (
