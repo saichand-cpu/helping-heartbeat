@@ -332,6 +332,57 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_prefs: {
+        Row: {
+          chat_notifications: boolean
+          comments: boolean
+          created_at: string
+          donation_updates: boolean
+          email_enabled: boolean
+          followers: boolean
+          likes: boolean
+          marketing_emails: boolean
+          mentions: boolean
+          product_updates: boolean
+          push_enabled: boolean
+          request_updates: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chat_notifications?: boolean
+          comments?: boolean
+          created_at?: string
+          donation_updates?: boolean
+          email_enabled?: boolean
+          followers?: boolean
+          likes?: boolean
+          marketing_emails?: boolean
+          mentions?: boolean
+          product_updates?: boolean
+          push_enabled?: boolean
+          request_updates?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chat_notifications?: boolean
+          comments?: boolean
+          created_at?: string
+          donation_updates?: boolean
+          email_enabled?: boolean
+          followers?: boolean
+          likes?: boolean
+          marketing_emails?: boolean
+          mentions?: boolean
+          product_updates?: boolean
+          push_enabled?: boolean
+          request_updates?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null
@@ -549,15 +600,73 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_privacy: {
+        Row: {
+          allow_profile_indexing: boolean
+          created_at: string
+          profile_visibility: string
+          show_activity_status: boolean
+          show_last_seen: boolean
+          show_online_status: boolean
+          updated_at: string
+          user_id: string
+          who_can_message: string
+          who_can_view_email: string
+          who_can_view_followers: string
+          who_can_view_following: string
+          who_can_view_phone: string
+        }
+        Insert: {
+          allow_profile_indexing?: boolean
+          created_at?: string
+          profile_visibility?: string
+          show_activity_status?: boolean
+          show_last_seen?: boolean
+          show_online_status?: boolean
+          updated_at?: string
+          user_id: string
+          who_can_message?: string
+          who_can_view_email?: string
+          who_can_view_followers?: string
+          who_can_view_following?: string
+          who_can_view_phone?: string
+        }
+        Update: {
+          allow_profile_indexing?: boolean
+          created_at?: string
+          profile_visibility?: string
+          show_activity_status?: boolean
+          show_last_seen?: boolean
+          show_online_status?: boolean
+          updated_at?: string
+          user_id?: string
+          who_can_message?: string
+          who_can_view_email?: string
+          who_can_view_followers?: string
+          who_can_view_following?: string
+          who_can_view_phone?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           account_type: string
+          address: string | null
+          availability: string | null
           avatar_url: string | null
           bio: string | null
+          categories: string[] | null
+          city: string | null
           cofounder_pitch: string | null
+          country: string | null
+          cover_url: string | null
           created_at: string
+          date_of_birth: string | null
+          deactivated_at: string | null
+          emergency_contact: string | null
           full_name: string
           fundraising_link: string | null
+          gender: string | null
           id: string
           incognito: boolean
           interests: string[] | null
@@ -568,12 +677,15 @@ export type Database = {
           onboarded: boolean
           operational_hours: string | null
           org_type: string | null
+          preferred_language: string | null
           premium_tier: string | null
           premium_until: string | null
           profession: string | null
           role: Database["public"]["Enums"]["user_role"]
+          search_radius: number | null
           seeking_cofounder: boolean
           skills: string[] | null
+          state: string | null
           suspended: boolean
           suspended_at: string | null
           suspended_reason: string | null
@@ -584,12 +696,22 @@ export type Database = {
         }
         Insert: {
           account_type?: string
+          address?: string | null
+          availability?: string | null
           avatar_url?: string | null
           bio?: string | null
+          categories?: string[] | null
+          city?: string | null
           cofounder_pitch?: string | null
+          country?: string | null
+          cover_url?: string | null
           created_at?: string
+          date_of_birth?: string | null
+          deactivated_at?: string | null
+          emergency_contact?: string | null
           full_name?: string
           fundraising_link?: string | null
+          gender?: string | null
           id: string
           incognito?: boolean
           interests?: string[] | null
@@ -600,12 +722,15 @@ export type Database = {
           onboarded?: boolean
           operational_hours?: string | null
           org_type?: string | null
+          preferred_language?: string | null
           premium_tier?: string | null
           premium_until?: string | null
           profession?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          search_radius?: number | null
           seeking_cofounder?: boolean
           skills?: string[] | null
+          state?: string | null
           suspended?: boolean
           suspended_at?: string | null
           suspended_reason?: string | null
@@ -616,12 +741,22 @@ export type Database = {
         }
         Update: {
           account_type?: string
+          address?: string | null
+          availability?: string | null
           avatar_url?: string | null
           bio?: string | null
+          categories?: string[] | null
+          city?: string | null
           cofounder_pitch?: string | null
+          country?: string | null
+          cover_url?: string | null
           created_at?: string
+          date_of_birth?: string | null
+          deactivated_at?: string | null
+          emergency_contact?: string | null
           full_name?: string
           fundraising_link?: string | null
+          gender?: string | null
           id?: string
           incognito?: boolean
           interests?: string[] | null
@@ -632,12 +767,15 @@ export type Database = {
           onboarded?: boolean
           operational_hours?: string | null
           org_type?: string | null
+          preferred_language?: string | null
           premium_tier?: string | null
           premium_until?: string | null
           profession?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          search_radius?: number | null
           seeking_cofounder?: boolean
           skills?: string[] | null
+          state?: string | null
           suspended?: boolean
           suspended_at?: string | null
           suspended_reason?: string | null
@@ -916,6 +1054,48 @@ export type Database = {
         }
         Relationships: []
       }
+      verification_requests: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          document_url: string | null
+          id: string
+          kind: string
+          notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          document_url?: string | null
+          id?: string
+          kind: string
+          notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          document_url?: string | null
+          id?: string
+          kind?: string
+          notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -925,12 +1105,22 @@ export type Database = {
         Args: { _plan_id: string }
         Returns: {
           account_type: string
+          address: string | null
+          availability: string | null
           avatar_url: string | null
           bio: string | null
+          categories: string[] | null
+          city: string | null
           cofounder_pitch: string | null
+          country: string | null
+          cover_url: string | null
           created_at: string
+          date_of_birth: string | null
+          deactivated_at: string | null
+          emergency_contact: string | null
           full_name: string
           fundraising_link: string | null
+          gender: string | null
           id: string
           incognito: boolean
           interests: string[] | null
@@ -941,12 +1131,15 @@ export type Database = {
           onboarded: boolean
           operational_hours: string | null
           org_type: string | null
+          preferred_language: string | null
           premium_tier: string | null
           premium_until: string | null
           profession: string | null
           role: Database["public"]["Enums"]["user_role"]
+          search_radius: number | null
           seeking_cofounder: boolean
           skills: string[] | null
+          state: string | null
           suspended: boolean
           suspended_at: string | null
           suspended_reason: string | null
