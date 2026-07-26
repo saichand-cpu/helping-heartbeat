@@ -168,11 +168,12 @@ function AccountSection() {
     const setter = kind === "avatar" ? setUploadingAvatar : setUploadingCover;
     setter(true);
     try {
-      const { url } = await uploadFeedMedia(file, user.id);
+      const { signedUrl } = await uploadFeedMedia(file);
       const col = kind === "avatar" ? "avatar_url" : "cover_url";
-      const { error } = await supabase.from("profiles").update({ [col]: url }).eq("id", user.id);
+      const patch = { [col]: signedUrl } as Record<string, string>;
+      const { error } = await supabase.from("profiles").update(patch as never).eq("id", user.id);
       if (error) throw error;
-      setForm((f) => ({ ...f, [col]: url }));
+      setForm((f) => ({ ...f, [col]: signedUrl }));
       toast.success(`${kind === "avatar" ? "Profile picture" : "Cover photo"} updated`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Upload failed");
