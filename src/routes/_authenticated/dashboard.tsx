@@ -71,6 +71,9 @@ function Dashboard() {
             <Link to="/requests">
               <Button variant="outline">Browse requests</Button>
             </Link>
+            <Link to="/settings">
+              <Button variant="outline">Settings</Button>
+            </Link>
           </div>
         </div>
       </motion.div>
