@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
@@ -33,6 +34,11 @@ import { Route as AuthenticatedRequestsRequestIdRouteImport } from './routes/_au
 import { Route as AuthenticatedProfileUserIdRouteImport } from './routes/_authenticated/profile.$userId'
 import { Route as AuthenticatedAdminDashboardMetricsRouteImport } from './routes/_authenticated/admin-dashboard.metrics'
 
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
@@ -162,6 +168,7 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/leaderboard': typeof LeaderboardRoute
   '/pricing': typeof PricingRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/admin-metrics': typeof AuthenticatedAdminMetricsRoute
   '/capsules': typeof AuthenticatedCapsulesRoute
@@ -186,6 +193,7 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/leaderboard': typeof LeaderboardRoute
   '/pricing': typeof PricingRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/admin-metrics': typeof AuthenticatedAdminMetricsRoute
   '/capsules': typeof AuthenticatedCapsulesRoute
@@ -212,6 +220,7 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/leaderboard': typeof LeaderboardRoute
   '/pricing': typeof PricingRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/admin-metrics': typeof AuthenticatedAdminMetricsRoute
   '/_authenticated/capsules': typeof AuthenticatedCapsulesRoute
@@ -238,6 +247,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/leaderboard'
     | '/pricing'
+    | '/reset-password'
     | '/admin'
     | '/admin-metrics'
     | '/capsules'
@@ -262,6 +272,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/leaderboard'
     | '/pricing'
+    | '/reset-password'
     | '/admin'
     | '/admin-metrics'
     | '/capsules'
@@ -287,6 +298,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/leaderboard'
     | '/pricing'
+    | '/reset-password'
     | '/_authenticated/admin'
     | '/_authenticated/admin-metrics'
     | '/_authenticated/capsules'
@@ -313,11 +325,19 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LeaderboardRoute: typeof LeaderboardRoute
   PricingRoute: typeof PricingRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   ApiHumiChatRoute: typeof ApiHumiChatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pricing': {
       id: '/pricing'
       path: '/pricing'
@@ -539,6 +559,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   LeaderboardRoute: LeaderboardRoute,
   PricingRoute: PricingRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   ApiHumiChatRoute: ApiHumiChatRoute,
 }
 export const routeTree = rootRouteImport
