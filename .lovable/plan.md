@@ -1,52 +1,46 @@
-## Goal
-Unify user-profile navigation across the app and upgrade the 1:1 messaging surface with presence, typing, image sharing, search, and date separators — building on the existing profile page (`/profile/$userId`) and messages table (which already has realtime + read receipts).
+## HumanLink Settings System — Phased Plan
 
-## What already exists (won't rebuild)
-- `/profile/$userId` public profile with Follow, Message-open, phone gating, karma, reviews.
-- `/messages?user=X` thread with Supabase Realtime, read receipts, optimistic sends, WebRTC call button.
-- Global `UserSearch` dropdown and `/search` page (People + Requests tabs).
-- Feed, Requests, Leaderboard already link avatars/names to `/profile/$userId`.
+This is a very large scope (11 user sections, 12 admin sections, super-admin, RBAC overhaul, audit logs, soft-delete across 5 tables, security hardening). Shipping it all in one pass would take many hours and likely regress existing flows. I'll deliver it in reviewable phases; each phase is production-ready on its own.
 
-## Changes
+### Phase 1 — User Settings (this turn)
 
-### 1. Profile page (`profile.$userId.tsx`)
-- Add prominent action row: **Message · Follow · Share · Report** (own profile shows Edit · Share).
-- Share = copy profile URL via `navigator.share` fallback to clipboard.
-- Report = insert into new `user_reports` table (reporter, target, reason).
-- Add "Online now" / "Last seen" dot driven by presence channel.
-- Ensure clickable name/avatar everywhere routes here (audit Feed comments, Followers list, Reviews author, Leaderboard rows).
+New route `/settings` (under `_authenticated`) with a left-nav + section layout, mobile-responsive, matching current glassmorphic design. Backed by existing `profiles` / `profile_contacts` where possible; new columns/tables added only where required.
 
-### 2. Search upgrades (`/search` People tab + `UserSearch`)
-- Rich user card: avatar, name, @username, badge, karma, bio snippet, location, skill chips, **Follow** + **Message** buttons.
-- Message button navigates to `/messages?user=id` (thread auto-materializes on first send — no explicit conversation row needed since messaging uses per-message rows).
-- Friendly empty state ("No people match — try a different name, skill, or city").
-- Add badge/segment filter chips (NGO, Business, Volunteer, Verified) — reuse `SegmentFilter` pattern.
+Sections wired to real data:
+1. **Account** — edit full_name, username, bio, avatar, cover, DOB, gender, occupation, address, country/state/city, language (extends `profiles`)
+2. **Security** — change password, forgot password link, sign out other devices (`supabase.auth.signOut({ scope: 'others' })`), deactivate, delete account
+3. **Privacy** — profile visibility, who-can-message, show online/last-seen, phone/email visibility (new `profile_privacy` table)
+4. **Notifications** — per-channel toggles (new `notification_prefs` table); wired into existing notification triggers
+5. **Chat Settings** — read receipts, typing indicator, wallpaper, font size, archived, muted, blocked users list (reuses `blocked_users`)
+6. **HumanLink Preferences** — default location, radius, availability, categories, skills, emergency contact
+7. **Subscription** — current plan, upgrade (reuses `RazorpayCheckoutModal`), payment history
+8. **Verification** — apply NGO/Business/Identity (new `verification_requests` table), status badge
+9. **Activity** — links to existing history views
+10. **Appearance** — theme (reuses `use-theme`), font size, reduced motion
+11. **About** — static links, version, logout
 
-### 3. Messaging upgrades (`messages.tsx`)
-- **Presence**: Supabase Realtime `presence` channel `presence:online` tracking my id; show green dot on conversation rows and thread header ("Online" / "Last seen …").
-- **Typing indicator**: broadcast `typing` events on the per-thread channel; show "typing…" pill under header.
-- **Image sharing**: image button using `feed-media` bucket; store as `[img:<publicUrl>]` marker (parsed alongside existing `[loc:]` / `[call:]` markers) and render inline.
-- **Emoji picker**: lightweight popover (small hand-picked set, no heavy dependency).
-- **Message search**: search input at top of list pane; filters conversations and, when active, highlights matches inside thread (client-side filter over loaded messages).
-- **Date separators**: group messages by day with a centered "Today / Yesterday / MMM d" pill.
-- **Unread badges**: already present in list; also surface global unread count in navbar (small dot on Messages link).
-- Auto-scroll & infinite scroll: extend current 200-message limit with "Load earlier" button that pages older messages by `created_at`.
+### Phase 2 — RBAC + Audit Log + Soft-Delete foundation
+- Extend `app_role` enum with `moderator`, `support_admin`, `finance_admin`, `content_admin`, `super_admin`
+- `role_permissions` table + `has_permission()` SQL function
+- `audit_logs` table + helper insert function; wire into all admin mutations
+- Add `deleted_at` to users/requests/messages/posts/reviews with filtered RLS
 
-### 4. Data model
-- Migration: add `avatar_last_seen_at timestamptz` to `profiles` (updated by client on visibility) for offline "Last seen".
-- Migration: new `user_reports` table (reporter_id, target_id, reason, created_at) + RLS (insert by authenticated, select by admin via `has_role`).
-- No `conversations` table needed — the existing per-message pattern with `sender_id`/`receiver_id` already yields deterministic 1:1 threads. Getting a thread key = sorted pair of ids; opening `/messages?user=X` naturally shows or starts it.
+### Phase 3 — Admin Panel expansion
+Extend existing `/admin` with: verification center, payments, content management, AI settings, system settings, database export, support tickets. Dashboard metrics already partly exist under `/admin-metrics`.
 
-### 5. Design & responsiveness
-- Keep AMOLED / royal-blue-gold tokens already in use (no new colors).
-- Skeletons on card loads, framer-motion transitions on new messages, mobile: thread pane replaces list on small screens (already implemented — verify).
+### Phase 4 — Super Admin
+Gated `/admin/super` route: create/remove admins & moderators, permission editor, maintenance toggles, global announcements, force-logout-all, permanent delete.
 
-## Out of scope
-- Group chats, voice notes, message reactions, video calls (voice call button already exists via WebRTC).
-- New dedicated `conversations` table — not needed for current 1:1 model.
+### Phase 5 — Security hardening pass
+CSRF for server routes, rate limiting middleware, session/device tracking table, suspicious-login detection, file-upload validation helper.
 
-## Technical notes
-- Presence uses `supabase.channel('presence:online', { config: { presence: { key: me } } }).track({...})`.
-- Typing = `broadcast` on `thread:<sortedPair>` channel — no DB writes.
-- Image uploads reuse existing `feed-media` bucket + signed public URL; content stored as `[img:URL]`.
-- `avatar_last_seen_at` updated on tab focus/blur via lightweight upsert (throttled to 1/min).
+### Technical notes
+- All new tables: `GRANT` + RLS + `updated_at` trigger per project conventions
+- Preferences read via a single `useSettings()` hook with TanStack Query cache
+- Destructive actions use `AlertDialog` confirmation
+- No changes to existing auth flow, messaging, or feed
+
+### Deliverable for this turn
+**Phase 1 only** — User Settings page fully functional, plus the small schema additions it needs (`profile_privacy`, `notification_prefs`, `verification_requests`, and new nullable columns on `profiles`). Phases 2-5 ship in follow-up turns so you can review each before the next lands.
+
+Reply "go" to start Phase 1, or tell me to reorder / skip phases.
