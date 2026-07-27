@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useServerFn } from "@tanstack/react-start";
 import { improveRequest } from "@/lib/ai.functions";
+import { recommendHelpers } from "@/lib/helper-match.functions";
 
 export const Route = createFileRoute("/_authenticated/requests/new")({
   component: NewRequest,
@@ -22,6 +23,7 @@ const urgencies = ["low","normal","high","emergency"];
 function NewRequest() {
   const navigate = useNavigate();
   const aiImprove = useServerFn(improveRequest);
+  const runMatch = useServerFn(recommendHelpers);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("other");
@@ -35,14 +37,20 @@ function NewRequest() {
     setLoading(true);
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) { setLoading(false); return; }
-    const { error } = await supabase.from("help_requests").insert({
+    const { data: inserted, error } = await supabase.from("help_requests").insert({
       requester_id: u.user.id, title, description, location,
       category: category as never, urgency: urgency as never,
-    });
+    }).select("id").single();
     setLoading(false);
     if (error) return toast.error(error.message);
     toast.success("Request posted!");
-    navigate({ to: "/requests" });
+    // Fire-and-forget: pre-warm AI helper recommendations so they're ready when the requester opens the detail page.
+    if (inserted?.id) {
+      void runMatch({ data: { requestId: inserted.id } }).catch(() => {});
+      navigate({ to: "/requests/$requestId", params: { requestId: inserted.id } });
+    } else {
+      navigate({ to: "/requests" });
+    }
   };
 
   const handleAI = async () => {
