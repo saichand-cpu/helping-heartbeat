@@ -20,6 +20,7 @@ import { VerifiedBadge } from "@/components/site/VerifiedBadge";
 import { pinKindFor } from "@/lib/org-types";
 import { resolveMediaUrl } from "@/lib/upload";
 import { Thread, type Conversation } from "./messages";
+import { RecommendedHelpers } from "@/components/site/RecommendedHelpers";
 
 export const Route = createFileRoute("/_authenticated/requests/$requestId")({
   component: RequestDetailsPage,
@@ -246,7 +247,16 @@ function RequestDetailsPage() {
         <h1 className="text-lg font-bold text-gradient-brand">Request Details</h1>
       </div>
 
+      {request && isOwn && (
+        <RecommendedHelpers
+          requestId={request.id}
+          requesterId={request.requester_id}
+          currentUserId={me}
+        />
+      )}
+
       <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
+
         {/* Request info */}
         <motion.section
           initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
