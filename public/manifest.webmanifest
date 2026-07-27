@@ -11,13 +11,13 @@
   "categories": ["social", "lifestyle", "productivity"],
   "icons": [
     {
-      "src": "/__l5e/assets-v1/292f435f-b711-4584-99b5-1bd62bcc5359/humanlink-logo.jpeg",
+      "src": "/humanlink-logo.jpeg",
       "sizes": "512x512",
       "type": "image/jpeg",
       "purpose": "any"
     },
     {
-      "src": "/__l5e/assets-v1/292f435f-b711-4584-99b5-1bd62bcc5359/humanlink-logo.jpeg",
+      "src": "/humanlink-logo.jpeg",
       "sizes": "192x192",
       "type": "image/jpeg",
       "purpose": "any"
