@@ -335,7 +335,7 @@ export const recommendHelpers = createServerFn({ method: "POST" })
         helper_id: t.candidate.id,
         score: t.score,
         reasons: t.reasons,
-        signals: t.signals,
+        signals: t.signals as never,
         updated_at: new Date().toISOString(),
       }));
       await supabaseAdmin
