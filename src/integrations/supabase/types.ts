@@ -305,6 +305,54 @@ export type Database = {
         }
         Relationships: []
       }
+      helper_recommendations: {
+        Row: {
+          created_at: string
+          helper_id: string
+          id: string
+          reasons: string[]
+          request_id: string
+          score: number
+          signals: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          helper_id: string
+          id?: string
+          reasons?: string[]
+          request_id: string
+          score: number
+          signals?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          helper_id?: string
+          id?: string
+          reasons?: string[]
+          request_id?: string
+          score?: number
+          signals?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "helper_recommendations_helper_id_fkey"
+            columns: ["helper_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "helper_recommendations_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "help_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
