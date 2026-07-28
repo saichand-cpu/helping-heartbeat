@@ -96,6 +96,7 @@ function AdminDashboard() {
           <TabsTrigger value="users"><Users className="h-4 w-4 mr-1" /> Users</TabsTrigger>
           <TabsTrigger value="requests"><HeartHandshake className="h-4 w-4 mr-1" /> Requests</TabsTrigger>
           <TabsTrigger value="plans"><CreditCard className="h-4 w-4 mr-1" /> Plans</TabsTrigger>
+          <TabsTrigger value="revenue"><Banknote className="h-4 w-4 mr-1" /> Revenue</TabsTrigger>
           <TabsTrigger value="ads"><Megaphone className="h-4 w-4 mr-1" /> Ads</TabsTrigger>
           <TabsTrigger value="payment"><Banknote className="h-4 w-4 mr-1" /> Payment</TabsTrigger>
           <TabsTrigger value="reports"><Flag className="h-4 w-4 mr-1" /> Reports</TabsTrigger>
@@ -103,6 +104,7 @@ function AdminDashboard() {
         <TabsContent value="users"><UsersPanel /></TabsContent>
         <TabsContent value="requests"><RequestsPanel /></TabsContent>
         <TabsContent value="plans"><PlansPanel /></TabsContent>
+        <TabsContent value="revenue"><RevenuePanel /></TabsContent>
         <TabsContent value="ads"><AdsPanel /></TabsContent>
         <TabsContent value="payment"><PaymentPanel /></TabsContent>
         <TabsContent value="reports"><ReportsPanel /></TabsContent>
@@ -729,4 +731,188 @@ function ReportsPanel() {
     </div>
   );
 }
+
+type PaymentRow = {
+  id: string;
+  user_id: string;
+  razorpay_order_id: string;
+  razorpay_payment_id: string | null;
+  amount: number;
+  currency: string;
+  status: string;
+  plan_name: string;
+  created_at: string;
+};
+
+function RevenuePanel() {
+  const [payments, setPayments] = useState<PaymentRow[]>([]);
+  const [profiles, setProfiles] = useState<Record<string, { full_name: string; avatar_url: string | null }>>({});
+  const [q, setQ] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "paid" | "created" | "failed" | "cancelled">("all");
+  const [loading, setLoading] = useState(true);
+
+  const load = async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from("payments")
+      .select("id, user_id, razorpay_order_id, razorpay_payment_id, amount, currency, status, plan_name, created_at")
+      .order("created_at", { ascending: false })
+      .limit(500);
+    const rows = (data ?? []) as PaymentRow[];
+    setPayments(rows);
+    const ids = Array.from(new Set(rows.map((r) => r.user_id)));
+    if (ids.length) {
+      const { data: profs } = await supabase.from("profiles").select("id, full_name, avatar_url").in("id", ids);
+      const map: Record<string, { full_name: string; avatar_url: string | null }> = {};
+      (profs ?? []).forEach((p) => {
+        map[p.id] = { full_name: p.full_name ?? "", avatar_url: p.avatar_url ?? null };
+      });
+      setProfiles(map);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    void load();
+  }, []);
+
+  const paid = payments.filter((p) => p.status === "paid");
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthlyPaid = paid.filter((p) => new Date(p.created_at) >= monthStart);
+  const totalRevenue = paid.reduce((s, p) => s + p.amount, 0) / 100;
+  const monthlyRevenue = monthlyPaid.reduce((s, p) => s + p.amount, 0) / 100;
+  const proSubs = new Set(paid.filter((p) => /pro/i.test(p.plan_name)).map((p) => p.user_id)).size;
+  const ngoSubs = new Set(paid.filter((p) => /ngo/i.test(p.plan_name)).map((p) => p.user_id)).size;
+  const totalSubs = proSubs + ngoSubs;
+  const failedCount = payments.filter((p) => p.status === "failed").length;
+
+  const filtered = payments.filter((p) => {
+    if (statusFilter !== "all" && p.status !== statusFilter) return false;
+    if (!q.trim()) return true;
+    const query = q.toLowerCase();
+    return (
+      p.razorpay_order_id.toLowerCase().includes(query) ||
+      (p.razorpay_payment_id ?? "").toLowerCase().includes(query) ||
+      p.plan_name.toLowerCase().includes(query) ||
+      (profiles[p.user_id]?.full_name ?? "").toLowerCase().includes(query)
+    );
+  });
+
+  const exportCsv = () => {
+    const header = ["Date", "User", "Plan", "Amount (INR)", "Status", "Order ID", "Payment ID"];
+    const rows = filtered.map((p) => [
+      new Date(p.created_at).toISOString(),
+      profiles[p.user_id]?.full_name ?? p.user_id,
+      p.plan_name,
+      (p.amount / 100).toFixed(2),
+      p.status,
+      p.razorpay_order_id,
+      p.razorpay_payment_id ?? "",
+    ]);
+    const csv = [header, ...rows]
+      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `humanlink-payments-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const stats = [
+    { label: "Total Revenue", value: `₹${totalRevenue.toLocaleString("en-IN")}`, tone: "from-emerald-400 to-teal-500" },
+    { label: "This Month", value: `₹${monthlyRevenue.toLocaleString("en-IN")}`, tone: "from-blue-400 to-indigo-500" },
+    { label: "Total Subscribers", value: totalSubs, tone: "from-violet-400 to-fuchsia-500" },
+    { label: "Pro Subscribers", value: proSubs, tone: "from-amber-400 to-orange-500" },
+    { label: "NGO Subscribers", value: ngoSubs, tone: "from-emerald-400 to-green-500" },
+    { label: "Failed Payments", value: failedCount, tone: "from-rose-400 to-red-500" },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        {stats.map((s) => (
+          <div key={s.label} className="relative rounded-2xl border border-border bg-card p-4 overflow-hidden">
+            <div className={`absolute -top-6 -right-6 h-16 w-16 rounded-full bg-gradient-to-br ${s.tone} opacity-20 blur-2xl`} />
+            <div className="text-xs text-muted-foreground">{s.label}</div>
+            <div className="mt-1 text-2xl font-bold">{s.value}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap gap-2 items-center">
+        <Input
+          placeholder="Search by user, plan, order or payment ID…"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          className="max-w-sm"
+        />
+        <select
+          className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
+        >
+          <option value="all">All statuses</option>
+          <option value="paid">Paid</option>
+          <option value="created">Pending</option>
+          <option value="failed">Failed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <Button variant="outline" onClick={exportCsv}>Export CSV</Button>
+        <Button variant="ghost" onClick={load}>Refresh</Button>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-card overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
+            <tr>
+              <th className="text-left p-3">Date</th>
+              <th className="text-left p-3">User</th>
+              <th className="text-left p-3">Plan</th>
+              <th className="text-right p-3">Amount</th>
+              <th className="text-left p-3">Status</th>
+              <th className="text-left p-3">Payment ID</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">Loading…</td></tr>
+            ) : filtered.length === 0 ? (
+              <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">No payments found.</td></tr>
+            ) : (
+              filtered.map((p) => (
+                <tr key={p.id} className="border-t border-border">
+                  <td className="p-3 whitespace-nowrap">{new Date(p.created_at).toLocaleString()}</td>
+                  <td className="p-3">{profiles[p.user_id]?.full_name ?? p.user_id.slice(0, 8)}</td>
+                  <td className="p-3">{p.plan_name}</td>
+                  <td className="p-3 text-right font-medium">₹{(p.amount / 100).toLocaleString("en-IN")}</td>
+                  <td className="p-3">
+                    <span
+                      className={
+                        p.status === "paid"
+                          ? "text-emerald-600 dark:text-emerald-400 font-medium"
+                          : p.status === "failed"
+                            ? "text-destructive font-medium"
+                            : "text-muted-foreground"
+                      }
+                    >
+                      {p.status}
+                    </span>
+                  </td>
+                  <td className="p-3 text-xs font-mono text-muted-foreground">
+                    {p.razorpay_payment_id ?? p.razorpay_order_id}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 
