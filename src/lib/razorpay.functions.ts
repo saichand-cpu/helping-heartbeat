@@ -13,7 +13,9 @@ async function log(
 ) {
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.from("payment_logs").insert({ payment_id, user_id, event, level, message, metadata });
+    await supabaseAdmin
+      .from("payment_logs")
+      .insert({ payment_id, user_id, event, level, message, metadata: metadata as never });
   } catch (e) {
     console.error("[razorpay] failed to write payment log", e);
   }
