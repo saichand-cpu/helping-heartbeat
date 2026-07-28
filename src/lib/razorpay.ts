@@ -20,6 +20,7 @@ export type RazorpayOptions = {
   name: string;
   description?: string;
   image?: string;
+  order_id?: string;
   prefill?: { name?: string; email?: string; contact?: string };
   notes?: Record<string, string>;
   theme?: { color?: string };

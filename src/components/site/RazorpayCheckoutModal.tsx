@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Crown, HeartHandshake, Loader2, CheckCircle2, ShieldCheck } from "lucide-react";
+import { Crown, HeartHandshake, Loader2, CheckCircle2, ShieldCheck, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { useIsAdmin } from "@/hooks/use-role";
 import { openRazorpay, type RazorpayResponse } from "@/lib/razorpay";
+import { createRazorpayOrder, verifyRazorpayPayment, cancelRazorpayOrder } from "@/lib/razorpay.functions";
 
 type TierKey = "pro" | "ngo";
 
@@ -28,7 +30,7 @@ const CARDS: PlanCard[] = [
     price: 59900,
     label: "₹599 / month",
     tagline: "For businesses & professionals",
-    perks: ["Gold Pro verified badge", "Customer reviews", "Searchable portfolio grid", "Top placement in search"],
+    perks: ["Gold Pro verified badge", "Priority visibility", "Premium AI features", "Premium support"],
     accent: "gold",
   },
   {
@@ -37,13 +39,10 @@ const CARDS: PlanCard[] = [
     price: 29900,
     label: "₹299 / month",
     tagline: "For NGOs, non-profits & causes",
-    perks: ["Forest Green verified badge", "Volunteer direct triggers", "Custom donation link", "Cause-based discovery"],
+    perks: ["Forest Green verified badge", "NGO verification status", "Higher trust visibility", "Custom donation link"],
     accent: "green",
   },
 ];
-
-const RAZORPAY_KEY =
-  (import.meta.env.VITE_RAZORPAY_KEY_ID as string | undefined) ?? "rzp_test_1DP5mmOlF5G5ag";
 
 export function RazorpayCheckoutModal({
   open,
@@ -58,20 +57,23 @@ export function RazorpayCheckoutModal({
 }) {
   const { user } = useAuth();
   const { isAdmin } = useIsAdmin();
+  const createOrder = useServerFn(createRazorpayOrder);
+  const verifyPayment = useServerFn(verifyRazorpayPayment);
+  const cancelOrder = useServerFn(cancelRazorpayOrder);
+
   const [selected, setSelected] = useState<TierKey>(defaultTier);
   const [planIds, setPlanIds] = useState<Record<TierKey, string | null>>({ pro: null, ngo: null });
   const [loading, setLoading] = useState(false);
-  const [stage, setStage] = useState<"pick" | "processing" | "done">("pick");
+  const [stage, setStage] = useState<"pick" | "processing" | "done" | "error">("pick");
+  const [errorMsg, setErrorMsg] = useState<string>("");
 
   useEffect(() => {
     if (!open) return;
     setSelected(defaultTier);
     setStage("pick");
+    setErrorMsg("");
     (async () => {
-      const { data } = await supabase
-        .from("premium_plans")
-        .select("id, name")
-        .eq("is_active", true);
+      const { data } = await supabase.from("premium_plans").select("id, name").eq("is_active", true);
       const rows = data ?? [];
       const pro = rows.find((r) => /pro/i.test(r?.name ?? "")) ?? null;
       const ngo = rows.find((r) => /ngo/i.test(r?.name ?? "")) ?? null;
@@ -81,28 +83,29 @@ export function RazorpayCheckoutModal({
 
   const active = useMemo(() => CARDS.find((c) => c.key === selected)!, [selected]);
 
-  const handleSuccess = async (_response: RazorpayResponse, targetTier: TierKey) => {
+  const handleVerified = async (response: RazorpayResponse) => {
     setStage("processing");
-    const planId = planIds[targetTier];
-    if (!planId) {
-      toast.error("Plan unavailable — please retry");
-      setStage("pick");
-      return;
+    try {
+      await verifyPayment({
+        data: {
+          razorpay_order_id: response.razorpay_order_id!,
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_signature: response.razorpay_signature!,
+        },
+      });
+      setStage("done");
+      toast.success(`${active.title} activated!`);
+      window.dispatchEvent(new CustomEvent("humanlink:premium-updated"));
+      setTimeout(() => {
+        onOpenChange(false);
+        onSuccess?.();
+      }, 1800);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Verification failed";
+      setErrorMsg(msg);
+      setStage("error");
+      toast.error(msg);
     }
-    const { error } = await supabase.rpc("activate_premium" as never, { _plan_id: planId } as never);
-    if (error) {
-      toast.error(error.message);
-      setStage("pick");
-      return;
-    }
-    setStage("done");
-    toast.success(`${targetTier === "pro" ? "Gold Pro" : "Forest Green NGO"} badge activated`);
-    // Broadcast a lightweight refresh so premium hooks re-fetch immediately.
-    window.dispatchEvent(new CustomEvent("humanlink:premium-updated"));
-    setTimeout(() => {
-      onOpenChange(false);
-      onSuccess?.();
-    }, 1600);
   };
 
   const subscribe = async () => {
@@ -110,28 +113,41 @@ export function RazorpayCheckoutModal({
       toast.error("Please sign in first");
       return;
     }
+    const planId = planIds[selected];
+    if (!planId) {
+      toast.error("Plan unavailable — please retry");
+      return;
+    }
     setLoading(true);
     try {
+      const order = await createOrder({ data: { plan_id: planId } });
       await openRazorpay({
-        key: RAZORPAY_KEY,
-        amount: active.price,
-        currency: "INR",
+        key: order.key_id,
+        amount: order.amount,
+        currency: order.currency,
         name: "HumanLink",
-        description: active.title,
+        description: order.plan_name,
+        order_id: order.order_id,
         prefill: {
           name: (user?.user_metadata?.full_name as string | undefined) ?? "Neighbor",
-          email: user?.email ?? "user@example.com",
+          email: user?.email ?? "",
         },
         theme: { color: "#0b57d0" },
         handler: (response) => {
-          handleSuccess(response, active.key);
+          void handleVerified(response);
         },
         modal: {
-          ondismiss: () => setLoading(false),
+          ondismiss: () => {
+            setLoading(false);
+            void cancelOrder({ data: { razorpay_order_id: order.order_id } }).catch(() => {});
+          },
         },
       });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Checkout failed to load");
+      const msg = e instanceof Error ? e.message : "Checkout failed to load";
+      toast.error(msg);
+      setErrorMsg(msg);
+      setStage("error");
     } finally {
       setLoading(false);
     }
@@ -221,7 +237,7 @@ export function RazorpayCheckoutModal({
                 )}
               </Button>
               <p className="mt-3 text-[11px] text-muted-foreground text-center">
-                You'll be charged {active.label} through Razorpay. Cancel any time.
+                You'll be charged {active.label} through Razorpay. Cancel any time from your dashboard.
               </p>
             </>
           )}
@@ -229,7 +245,8 @@ export function RazorpayCheckoutModal({
           {stage === "processing" && (
             <div className="py-12 flex flex-col items-center gap-3">
               <Loader2 className="h-10 w-10 animate-spin text-primary" />
-              <div className="font-medium">Activating your badge…</div>
+              <div className="font-medium">Verifying payment & activating your badge…</div>
+              <div className="text-xs text-muted-foreground">Do not close this window.</div>
             </div>
           )}
 
@@ -249,8 +266,19 @@ export function RazorpayCheckoutModal({
               </div>
               <div className="font-bold text-lg">Welcome to {active.title}!</div>
               <div className="text-sm text-muted-foreground">
-                Your {active.accent === "gold" ? "gold" : "forest green"} verified badge is now live across HumanLink.
+                Your {active.accent === "gold" ? "gold" : "forest green"} verified badge is live across HumanLink.
               </div>
+            </div>
+          )}
+
+          {stage === "error" && (
+            <div className="py-10 flex flex-col items-center gap-3 text-center">
+              <div className="h-16 w-16 rounded-full flex items-center justify-center bg-destructive/15">
+                <ShieldAlert className="h-9 w-9 text-destructive" />
+              </div>
+              <div className="font-bold text-lg">Payment could not be completed</div>
+              <div className="text-sm text-muted-foreground max-w-sm">{errorMsg || "Something went wrong. No charges have been applied."}</div>
+              <Button variant="outline" onClick={() => setStage("pick")}>Try again</Button>
             </div>
           )}
         </div>
