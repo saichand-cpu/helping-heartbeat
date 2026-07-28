@@ -13,6 +13,8 @@ import { smartMatch } from "@/lib/ai-match.functions";
 import { UserSearch } from "@/components/site/UserSearch";
 import { SuggestedForYou } from "@/components/site/SuggestedForYou";
 import { NotificationOptIn } from "@/components/site/NotificationOptIn";
+import { SubscriptionPanel } from "@/components/site/SubscriptionPanel";
+import { CreditCard } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -88,6 +90,7 @@ function Dashboard() {
         <TabsList className="glass">
           <TabsTrigger value="overview"><Sparkles className="h-4 w-4 mr-1" /> Overview</TabsTrigger>
           <TabsTrigger value="match"><Brain className="h-4 w-4 mr-1" /> AI Smart Match</TabsTrigger>
+          <TabsTrigger value="subscription"><CreditCard className="h-4 w-4 mr-1" /> Subscription</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -123,6 +126,10 @@ function Dashboard() {
 
         <TabsContent value="match">
           <SmartMatchPanel />
+        </TabsContent>
+
+        <TabsContent value="subscription">
+          <SubscriptionPanel />
         </TabsContent>
       </Tabs>
     </div>
