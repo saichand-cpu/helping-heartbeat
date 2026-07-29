@@ -92,7 +92,7 @@ function AdminDashboard() {
       <StatsRow />
 
       <Tabs defaultValue="users" className="space-y-4">
-        <TabsList className="glass flex-wrap h-auto">
+        <TabsList className="bg-muted rounded-2xl p-1 flex-wrap h-auto">
           <TabsTrigger value="users"><Users className="h-4 w-4 mr-1" /> Users</TabsTrigger>
           <TabsTrigger value="requests"><HeartHandshake className="h-4 w-4 mr-1" /> Requests</TabsTrigger>
           <TabsTrigger value="plans"><CreditCard className="h-4 w-4 mr-1" /> Plans</TabsTrigger>
