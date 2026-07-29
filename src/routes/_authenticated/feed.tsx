@@ -236,7 +236,7 @@ function FeedPage() {
       </header>
 
       {/* Composer */}
-      <div className="glass rounded-3xl p-4 md:p-5 shadow-soft space-y-3">
+      <div className="rounded-3xl bg-card border border-border p-4 md:p-5 shadow-soft space-y-3">
         <Textarea
           placeholder="Share an update, a story, or a thank you..."
           value={body}
@@ -269,7 +269,7 @@ function FeedPage() {
           <Button
             onClick={createPost}
             disabled={!body.trim()}
-            className="bg-gradient-brand text-primary-foreground border-0 shadow-glow"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
             size="sm"
           >
             <Send className="h-3.5 w-3.5 mr-1" /> Post
@@ -307,7 +307,7 @@ function FeedPage() {
           </div>
         )}
         {!loading && posts.length === 0 && (
-          <div className="glass rounded-3xl p-12 text-center shadow-soft">
+          <div className="rounded-3xl bg-card border border-border p-12 text-center shadow-soft">
             <p className="text-muted-foreground">No posts yet. Be the first to share something kind.</p>
           </div>
         )}
@@ -365,7 +365,7 @@ function PostCard({
         const clickable = !id.isIncognito && post.author_id !== me;
         const Header = (
           <div className="flex items-center gap-3 mb-3">
-            <div className="h-10 w-10 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground text-sm font-bold overflow-hidden">
+            <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold overflow-hidden">
               {id.isIncognito ? (
                 <EyeOff className="h-4 w-4" />
               ) : id.avatar_url ? (
@@ -485,7 +485,7 @@ function CommentThread({ postId, me }: { postId: string; me: string | null }) {
           const id = displayIdentity({ ...c.author, id: c.author_id }, me);
           return (
             <div key={c.id} className="flex gap-2 text-sm">
-              <div className="h-7 w-7 shrink-0 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground text-xs font-bold">
+              <div className="h-7 w-7 shrink-0 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
                 {id.isIncognito ? <EyeOff className="h-3 w-3" /> : id.initial}
               </div>
               <div className="flex-1 bg-muted/40 rounded-2xl px-3 py-2">
@@ -501,7 +501,7 @@ function CommentThread({ postId, me }: { postId: string; me: string | null }) {
       )}
       <div className="flex gap-2">
         <Input value={body} onChange={(e) => setBody(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder="Write a comment..." />
-        <Button size="sm" onClick={send} disabled={!body.trim()} className="bg-gradient-brand text-primary-foreground border-0">
+        <Button size="sm" onClick={send} disabled={!body.trim()} className="bg-primary text-primary-foreground hover:bg-primary/90">
           <Send className="h-3.5 w-3.5" />
         </Button>
       </div>

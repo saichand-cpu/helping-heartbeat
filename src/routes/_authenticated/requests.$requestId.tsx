@@ -229,7 +229,7 @@ function RequestDetailsPage() {
 
   if (notFound) {
     return (
-      <div className="glass rounded-3xl p-10 text-center space-y-3">
+      <div className="rounded-3xl bg-card border border-border p-10 text-center space-y-3">
         <AlertTriangle className="h-8 w-8 mx-auto text-destructive" />
         <h1 className="text-xl font-semibold">Request not found</h1>
         <p className="text-sm text-muted-foreground">It may have been removed or fulfilled.</p>
@@ -244,7 +244,7 @@ function RequestDetailsPage() {
         <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/requests" })}>
           <ArrowLeft className="h-4 w-4 mr-1" /> Back
         </Button>
-        <h1 className="text-lg font-bold text-gradient-brand">Request Details</h1>
+        <h1 className="text-lg font-bold text-primary">Request Details</h1>
       </div>
 
       {request && isOwn && (
@@ -260,7 +260,7 @@ function RequestDetailsPage() {
         {/* Request info */}
         <motion.section
           initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-          className="glass rounded-3xl p-6 shadow-soft space-y-5"
+          className="rounded-3xl bg-card border border-border p-6 shadow-soft space-y-5"
         >
           {loading || !request ? (
             <div className="space-y-3">
@@ -347,7 +347,7 @@ function RequestDetailsPage() {
         <aside className="space-y-4">
           <motion.div
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-            className="glass rounded-3xl p-5 shadow-soft"
+            className="rounded-3xl bg-card border border-border p-5 shadow-soft"
           >
             {loading || !owner ? (
               <div className="space-y-3">
@@ -365,7 +365,7 @@ function RequestDetailsPage() {
                 <div className="flex items-center gap-3">
                   <Link
                     to="/profile/$userId" params={{ userId: owner.id }}
-                    className="relative h-16 w-16 rounded-full bg-gradient-brand grid place-items-center text-primary-foreground text-xl font-bold overflow-hidden shrink-0 hover:ring-2 hover:ring-primary/60 transition"
+                    className="relative h-16 w-16 rounded-full bg-primary grid place-items-center text-primary-foreground text-xl font-bold overflow-hidden shrink-0 hover:ring-2 hover:ring-primary/60 transition"
                   >
                     {owner.avatar_url
                       ? <img src={owner.avatar_url} alt="" className="h-full w-full object-cover" />
@@ -401,7 +401,7 @@ function RequestDetailsPage() {
                   <Button
                     onClick={() => rtc.startCall(owner.id).catch((e) => toast.error(e instanceof Error ? e.message : "Call failed"))}
                     disabled={isOwn}
-                    className="bg-primary text-primary-foreground shadow-glow"
+                    className="bg-primary text-primary-foreground shadow-sm"
                     size="sm"
                   >
                     <PhoneCall className="h-4 w-4 mr-1" /> Call
@@ -422,7 +422,7 @@ function RequestDetailsPage() {
 
           <motion.div
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-            className="glass rounded-3xl shadow-soft overflow-hidden h-[560px] flex flex-col"
+            className="rounded-3xl bg-card border border-border shadow-soft overflow-hidden h-[560px] flex flex-col"
           >
             {isOwn ? (
               <div className="flex-1 grid place-items-center text-sm text-muted-foreground p-6 text-center">
