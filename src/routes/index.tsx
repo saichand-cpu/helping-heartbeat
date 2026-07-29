@@ -393,9 +393,9 @@ function TopHelpers() {
 /* ---------- LEADERSHIP (clean, light) ---------- */
 function LeadershipVoice() {
   const people = [
-    { role: "Founder", name: "L. Saichand", initials: "LS", title: "Founder · HumanLink",
+    { role: "Founder & CEO", name: "Saichand", initials: "S", title: "Founder & CEO · HumanLink",
       quote: "Humanity becomes stronger when people help each other. HumanLink began the day that belief turned into action — a place where a stranger's kindness is only one tap away." },
-    { role: "Chief Executive Officer", name: "Varun K", initials: "VK", title: "CEO · HumanLink",
+    { role: "Managing Director", name: "Varun K", initials: "VK", title: "Managing Director · HumanLink",
       quote: "Scaling a global network requires hyper-fast engineering and rock-solid trust. We are removing every unnecessary gateway between people who need help and people ready to give it." },
   ];
   return (
