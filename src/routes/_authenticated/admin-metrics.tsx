@@ -23,7 +23,7 @@ function AdminMetricsPage() {
   if (loading) return <Skeleton className="h-40 w-full" />;
   if (!isAdmin) {
     return (
-      <div className="glass rounded-3xl p-12 text-center shadow-soft max-w-lg mx-auto mt-12">
+      <div className="rounded-3xl bg-card border border-border p-12 text-center shadow-soft max-w-lg mx-auto mt-12">
         <div className="mx-auto h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center">
           <Lock className="h-8 w-8 text-destructive" />
         </div>
@@ -73,7 +73,7 @@ function MetricsContent() {
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
             <h1 className="text-3xl font-bold">Metrics</h1>
-            <Badge className="bg-gradient-brand text-primary-foreground border-0">HUMI</Badge>
+            <Badge className="bg-primary text-primary-foreground hover:bg-primary/90">HUMI</Badge>
           </div>
           <p className="text-muted-foreground text-sm">Today vs past 7 days, with an AI briefing from HUMI.</p>
         </div>
@@ -103,11 +103,11 @@ function HumiBriefing({
   data, loading, error,
 }: { data: HumiMetrics | undefined; loading: boolean; error: Error | null }) {
   return (
-    <div className="relative overflow-hidden rounded-3xl p-6 md:p-8 shadow-soft glass border border-primary/20">
-      <div className="absolute inset-0 bg-gradient-brand opacity-[0.06] pointer-events-none" />
+    <div className="relative overflow-hidden rounded-3xl p-6 md:p-8 shadow-soft bg-card border border-border border border-primary/20">
+      <div className="absolute inset-0 bg-primary opacity-[0.06] pointer-events-none" />
       <div className="relative">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-2xl bg-gradient-brand flex items-center justify-center shadow-glow">
+          <div className="h-10 w-10 rounded-2xl bg-primary flex items-center justify-center shadow-sm">
             <Sparkles className="h-5 w-5 text-primary-foreground" />
           </div>
           <div>
@@ -177,7 +177,7 @@ function TrendGrid({ data }: { data: HumiMetrics }) {
             : dir === "down" ? "text-rose-600 bg-rose-500/10"
             : "text-muted-foreground bg-muted";
           return (
-            <div key={i.label} className="glass rounded-2xl p-5 shadow-soft">
+            <div key={i.label} className="rounded-2xl bg-card border border-border p-5 shadow-soft">
               <div className="flex items-center justify-between text-xs text-muted-foreground uppercase tracking-wide">
                 {i.label}<i.Icon className="h-3.5 w-3.5" />
               </div>
@@ -212,7 +212,7 @@ function TotalsRow({ data }: { data: HumiMetrics }) {
       <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-2">Totals</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {items.map((i) => (
-          <div key={i.label} className="glass rounded-2xl p-5 shadow-soft">
+          <div key={i.label} className="rounded-2xl bg-card border border-border p-5 shadow-soft">
             <div className="text-xs text-muted-foreground uppercase tracking-wide">{i.label}</div>
             <div className="mt-1 text-3xl font-bold">{i.value}</div>
           </div>

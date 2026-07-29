@@ -38,7 +38,7 @@ export function CallOverlay({ status, peerName, peerAvatar, muted, onAccept, onD
             exit={{ scale: 0.95, opacity: 0 }}
             className="w-full max-w-sm rounded-3xl border border-amber-500/40 bg-black/90 p-8 text-center shadow-[0_0_60px_-15px_rgba(251,191,36,0.5)]"
           >
-            <div className="mx-auto h-24 w-24 rounded-full bg-gradient-brand grid place-items-center text-primary-foreground text-3xl font-bold overflow-hidden shadow-glow">
+            <div className="mx-auto h-24 w-24 rounded-full bg-primary grid place-items-center text-primary-foreground text-3xl font-bold overflow-hidden shadow-sm">
               {peerAvatar
                 ? <img src={peerAvatar} alt="" className="h-full w-full object-cover" />
                 : (peerName || "U").charAt(0)}

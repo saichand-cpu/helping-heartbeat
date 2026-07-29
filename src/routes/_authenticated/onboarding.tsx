@@ -80,7 +80,7 @@ function Onboarding() {
         onSubmit={submit}
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass rounded-3xl p-6 md:p-8 shadow-pop max-w-xl w-full space-y-5"
+        className="rounded-3xl bg-card border border-border p-6 md:p-8 shadow-pop max-w-xl w-full space-y-5"
       >
         <div className="flex items-center gap-2 text-sm text-primary">
           <Sparkles className="h-4 w-4" /> Let's set up your profile
@@ -120,7 +120,7 @@ function Onboarding() {
         <Button
           type="submit"
           disabled={saving || !fullName.trim() || !profession.trim() || (accountType === "business" && !orgType)}
-          className="w-full bg-gradient-brand text-primary-foreground border-0 shadow-glow"
+          className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
         >
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continue →"}
         </Button>

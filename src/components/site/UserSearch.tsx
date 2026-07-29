@@ -79,7 +79,7 @@ export function UserSearch() {
       </div>
 
       {open && q.trim() && (
-        <div className="absolute z-50 mt-2 w-full glass rounded-2xl shadow-pop overflow-hidden border border-border">
+        <div className="absolute z-50 mt-2 w-full rounded-2xl bg-card border border-border shadow-pop overflow-hidden border border-border">
           <div className="px-4 py-2 text-[11px] uppercase tracking-wider text-muted-foreground flex items-center gap-1 border-b border-border">
             <Users className="h-3 w-3" /> People
           </div>

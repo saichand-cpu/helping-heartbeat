@@ -115,7 +115,7 @@ export function PlanSummaryCard({ onManage }: { onManage?: () => void }) {
           ) : (
             <Button
               onClick={onManage}
-              className="bg-gradient-brand text-primary-foreground border-0 shadow-glow gap-1"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm gap-1"
             >
               <Crown className="h-4 w-4" /> Upgrade
             </Button>

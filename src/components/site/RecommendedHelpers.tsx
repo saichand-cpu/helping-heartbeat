@@ -84,7 +84,7 @@ export function RecommendedHelpers({
   if (!isOwner) return null;
 
   return (
-    <div className="glass rounded-3xl p-5 md:p-6 shadow-soft">
+    <div className="rounded-3xl bg-card border border-border p-5 md:p-6 shadow-soft">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
@@ -139,7 +139,7 @@ export function RecommendedHelpers({
                     loading="lazy"
                   />
                 ) : (
-                  <div className="h-12 w-12 rounded-full bg-gradient-brand" aria-hidden />
+                  <div className="h-12 w-12 rounded-full bg-primary" aria-hidden />
                 )}
                 <div className="absolute -bottom-1 -right-1 rounded-full bg-background text-[10px] font-bold px-1.5 py-0.5 border border-border">
                   {r.score}

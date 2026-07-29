@@ -27,7 +27,7 @@ function About() {
           Whether you need a tutor for an hour, a ride to the doctor, or a friendly voice during a hard week, HumanLink connects you with someone nearby who's ready to help. Our AI gently nudges you to be clear, kind and safe — and matches you with the right people, fast.
         </p>
         <div className="mt-10 flex gap-3">
-          <Link to="/auth"><Button className="bg-gradient-brand text-primary-foreground border-0 shadow-glow">Join HumanLink</Button></Link>
+          <Link to="/auth"><Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">Join HumanLink</Button></Link>
           <Link to="/requests"><Button variant="outline">Browse requests</Button></Link>
         </div>
       </section>

@@ -241,7 +241,7 @@ function PublicProfile() {
           "rounded-3xl p-6 md:p-8 text-primary-foreground shadow-pop relative overflow-hidden " +
           (isOrgNgo
             ? "bg-gradient-to-br from-emerald-700 via-emerald-600 to-emerald-800 border-2 border-emerald-400/60 shadow-[0_0_40px_-8px_rgba(16,185,129,0.7)]"
-            : "bg-gradient-brand")
+            : "bg-primary")
         }>
         <div className="absolute -bottom-10 -right-10 h-48 w-48 rounded-full bg-white/20 blur-3xl" />
         <div className="relative flex items-center gap-4">
@@ -314,7 +314,7 @@ function PublicProfile() {
 
 
       {/* Action bar */}
-      <div className="glass rounded-3xl p-5 shadow-soft space-y-3">
+      <div className="rounded-3xl bg-card border border-border p-5 shadow-soft space-y-3">
         <div className="flex flex-wrap items-center gap-2">
           <Button
             onClick={startChat}
@@ -399,7 +399,7 @@ function PublicProfile() {
 
       {/* Pending offers from this user (only shown to the requester) */}
       {incomingPending.length > 0 && (
-        <div className="glass rounded-3xl p-5 shadow-soft">
+        <div className="rounded-3xl bg-card border border-border p-5 shadow-soft">
           <h3 className="font-semibold mb-3">{display.split(" ")[0]} offered to help on:</h3>
           <ul className="space-y-2">
             {incomingPending.map((o) => (
@@ -407,7 +407,7 @@ function PublicProfile() {
                 <span className="text-sm truncate">{o.request_title}</span>
                 <div className="flex gap-2 shrink-0">
                   <Button size="sm" onClick={() => respondOffer(o.id, "accepted")} disabled={actioning === o.id}
-                    className="bg-gradient-brand text-primary-foreground border-0">
+                    className="bg-primary text-primary-foreground hover:bg-primary/90">
                     <Check className="h-3.5 w-3.5 mr-1" /> Accept
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => respondOffer(o.id, "declined")} disabled={actioning === o.id}>
@@ -422,7 +422,7 @@ function PublicProfile() {
 
       {/* Skills/Languages */}
       {(profile.skills?.length || profile.languages?.length) && !profile.incognito ? (
-        <div className="glass rounded-3xl p-5 shadow-soft space-y-3">
+        <div className="rounded-3xl bg-card border border-border p-5 shadow-soft space-y-3">
           {profile.skills?.length ? (
             <div>
               <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Skills</div>

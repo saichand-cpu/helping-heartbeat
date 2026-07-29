@@ -69,7 +69,7 @@ export function MockPaymentModal({
     <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) reset(); }}>
       <DialogContent className="max-w-md p-0 overflow-hidden">
         {/* Premium header */}
-        <div className="relative bg-gradient-brand text-primary-foreground p-6">
+        <div className="relative bg-primary text-primary-foreground p-6">
           <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_20%_20%,white,transparent_40%)]" />
           <DialogHeader className="relative">
             <DialogTitle className="text-primary-foreground flex items-center gap-2">
@@ -127,7 +127,7 @@ export function MockPaymentModal({
                 </div>
                 <p className="text-xs text-muted-foreground">A payment request will be sent to your UPI app.</p>
               </TabsContent>
-              <Button onClick={confirm} className="w-full mt-5 bg-gradient-brand text-primary-foreground border-0 shadow-glow">
+              <Button onClick={confirm} className="w-full mt-5 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">
                 Pay {amount}
               </Button>
               <p className="mt-3 text-[11px] text-muted-foreground text-center">

@@ -113,16 +113,16 @@ function LeaderboardPage() {
       <Navbar />
       <section className="mx-auto max-w-5xl px-4 md:px-6 py-12 md:py-20">
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass text-xs text-muted-foreground">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-card border border-border text-xs text-muted-foreground">
             <Trophy className="h-3.5 w-3.5 text-amber-500" /> Top helpers
           </div>
           <h1 className="mt-3 text-4xl md:text-6xl font-bold">
-            Karma <span className="text-gradient-brand">Leaderboard</span>
+            Karma <span className="text-primary">Leaderboard</span>
           </h1>
           <p className="mt-3 text-muted-foreground">Celebrating people who turn kindness into action.</p>
         </motion.div>
 
-        <div className="mt-8 glass rounded-2xl p-3 flex flex-wrap items-center gap-2 shadow-soft">
+        <div className="mt-8 rounded-2xl bg-card border border-border p-3 flex flex-wrap items-center gap-2 shadow-soft">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -142,7 +142,7 @@ function LeaderboardPage() {
                 key={r.v}
                 size="sm"
                 variant={range === r.v ? "default" : "ghost"}
-                className={range === r.v ? "bg-gradient-brand text-primary-foreground border-0" : ""}
+                className={range === r.v ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""}
                 onClick={() => setRange(r.v)}
               >
                 {r.label}
@@ -158,7 +158,7 @@ function LeaderboardPage() {
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="mt-10 glass rounded-2xl p-12 text-center shadow-soft">
+          <div className="mt-10 rounded-2xl bg-card border border-border p-12 text-center shadow-soft">
             <Trophy className="h-10 w-10 mx-auto text-muted-foreground" />
             <p className="mt-3 text-muted-foreground">No helpers found for this range.</p>
           </div>
@@ -191,7 +191,7 @@ function LeaderboardPage() {
                       <div className={`absolute top-3 right-3 ${accents[rankIdx].color}`}>
                         <A className="h-5 w-5" />
                       </div>
-                      <div className={`h-14 w-14 md:h-16 md:w-16 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground font-bold text-lg ring-4 ${accents[rankIdx].ring} ring-offset-2 ring-offset-card`}>
+                      <div className={`h-14 w-14 md:h-16 md:w-16 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-lg ring-4 ${accents[rankIdx].ring} ring-offset-2 ring-offset-card`}>
                         {h.avatar_url ? (
                           <img src={h.avatar_url} alt="" className="h-full w-full object-cover rounded-full" />
                         ) : (
@@ -220,10 +220,10 @@ function LeaderboardPage() {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.02 }}
-                  className="glass rounded-2xl p-3 flex items-center gap-3 shadow-soft"
+                  className="rounded-2xl bg-card border border-border p-3 flex items-center gap-3 shadow-soft"
                 >
                   <div className="w-8 text-center font-bold text-muted-foreground">#{i + 4}</div>
-                  <div className="h-10 w-10 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground text-sm font-bold">
+                  <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold">
                     {h.avatar_url ? (
                       <img src={h.avatar_url} alt="" className="h-full w-full object-cover rounded-full" />
                     ) : (

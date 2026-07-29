@@ -182,7 +182,7 @@ function ProfilePage() {
     }
   };
 
-  if (loading) return <div className="glass rounded-3xl h-96 animate-pulse" />;
+  if (loading) return <div className="rounded-3xl bg-card border border-border h-96 animate-pulse" />;
 
   const initial = (profile.full_name || "?").charAt(0).toUpperCase();
 
@@ -262,7 +262,7 @@ function ProfilePage() {
       {meId && <ProfileMediaGrid userId={meId} isOwner onCountChange={setPostCount} />}
 
       {/* Privacy: Incognito mode */}
-      <section className="glass rounded-3xl p-5 md:p-6 shadow-soft">
+      <section className="rounded-3xl bg-card border border-border p-5 md:p-6 shadow-soft">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
             <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
@@ -295,7 +295,7 @@ function ProfilePage() {
       </section>
 
       {/* Seeking co-founder */}
-      <section className="glass rounded-3xl p-5 md:p-6 shadow-soft space-y-4">
+      <section className="rounded-3xl bg-card border border-border p-5 md:p-6 shadow-soft space-y-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
             <div className="h-9 w-9 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
@@ -339,7 +339,7 @@ function ProfilePage() {
         <Storefront ownerId={meId} canManage unlocked={canStorefront} />
       )}
 
-      <form id="edit-profile-form" onSubmit={save} className="glass rounded-3xl p-6 md:p-8 space-y-5 shadow-soft">
+      <form id="edit-profile-form" onSubmit={save} className="rounded-3xl bg-card border border-border p-6 md:p-8 space-y-5 shadow-soft">
         <h2 className="text-xl font-semibold">Edit your profile</h2>
 
         <div>
@@ -442,7 +442,7 @@ function ProfilePage() {
         <Button
           type="submit"
           disabled={saving || !profile.profession.trim()}
-          className="bg-gradient-brand text-primary-foreground border-0 shadow-glow"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
         >
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save changes"}
         </Button>

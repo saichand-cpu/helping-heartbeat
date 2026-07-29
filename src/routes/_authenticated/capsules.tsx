@@ -94,13 +94,13 @@ function CapsulesPage() {
             Pool community karma toward a milestone. The capsule unlocks automatically.
           </p>
         </div>
-        <Button onClick={() => setCreating((v) => !v)} className="bg-gradient-brand text-primary-foreground border-0">
+        <Button onClick={() => setCreating((v) => !v)} className="bg-primary text-primary-foreground hover:bg-primary/90">
           <Plus className="h-4 w-4 mr-1" /> New capsule
         </Button>
       </header>
 
       {creating && (
-        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-3xl p-5 shadow-soft space-y-3">
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl bg-card border border-border p-5 shadow-soft space-y-3">
           <div>
             <Label className="text-xs">Title</Label>
             <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="500 meals for shelters by December" />
@@ -115,7 +115,7 @@ function CapsulesPage() {
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setCreating(false)}>Cancel</Button>
-            <Button onClick={create} className="bg-gradient-brand text-primary-foreground border-0">Create</Button>
+            <Button onClick={create} className="bg-primary text-primary-foreground hover:bg-primary/90">Create</Button>
           </div>
         </motion.div>
       )}
@@ -123,7 +123,7 @@ function CapsulesPage() {
       {items === null ? (
         <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-40 rounded-3xl" />)}</div>
       ) : items.length === 0 ? (
-        <div className="glass rounded-3xl p-12 text-center shadow-soft">
+        <div className="rounded-3xl bg-card border border-border p-12 text-center shadow-soft">
           <Lock className="h-10 w-10 mx-auto text-muted-foreground" />
           <p className="mt-3 text-muted-foreground">No capsules yet. Create the first community goal.</p>
         </div>
@@ -277,7 +277,7 @@ function ProofGallery({ capsule }: { capsule: Capsule }) {
             className="hidden"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); e.currentTarget.value = ""; }}
           />
-          <Button size="sm" disabled={uploading} onClick={() => fileRef.current?.click()} className="bg-gradient-brand text-primary-foreground border-0 w-full">
+          <Button size="sm" disabled={uploading} onClick={() => fileRef.current?.click()} className="bg-primary text-primary-foreground hover:bg-primary/90 w-full">
             {uploading ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Camera className="h-3.5 w-3.5 mr-1" />}
             Upload proof image
           </Button>

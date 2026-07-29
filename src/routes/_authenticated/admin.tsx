@@ -57,7 +57,7 @@ function AdminPage() {
 
   if (!isAdmin) {
     return (
-      <div className="glass rounded-3xl p-12 text-center shadow-soft max-w-lg mx-auto mt-12">
+      <div className="rounded-3xl bg-card border border-border p-12 text-center shadow-soft max-w-lg mx-auto mt-12">
         <div className="mx-auto h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center">
           <Lock className="h-8 w-8 text-destructive" />
         </div>
@@ -83,7 +83,7 @@ function AdminDashboard() {
           <div className="flex items-center gap-2">
             <Shield className="h-5 w-5 text-primary" />
             <h1 className="text-3xl font-bold">Admin</h1>
-            <Badge className="bg-gradient-brand text-primary-foreground border-0">Owner</Badge>
+            <Badge className="bg-primary text-primary-foreground hover:bg-primary/90">Owner</Badge>
           </div>
           <p className="text-muted-foreground text-sm">Manage users, content, plans, and payment details.</p>
         </div>
@@ -141,7 +141,7 @@ function StatsRow() {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
       {items.map((i) => (
-        <div key={i.label} className="glass rounded-2xl p-5 shadow-soft">
+        <div key={i.label} className="rounded-2xl bg-card border border-border p-5 shadow-soft">
           <div className="text-xs text-muted-foreground uppercase tracking-wide">{i.label}</div>
           <div className="mt-1 text-3xl font-bold">{i.value}</div>
         </div>
@@ -182,7 +182,7 @@ function UsersPanel() {
   };
 
   return (
-    <div className="glass rounded-2xl p-5 shadow-soft space-y-4">
+    <div className="rounded-2xl bg-card border border-border p-5 shadow-soft space-y-4">
       <div className="flex items-center gap-2">
         <Input placeholder="Search users..." value={q} onChange={(e) => setQ(e.target.value)} className="max-w-sm" />
         <div className="ml-auto text-sm text-muted-foreground">{filtered.length} users</div>
@@ -195,7 +195,7 @@ function UsersPanel() {
             const isAdmin = (u.user_roles ?? []).some((r: any) => r.role === "admin");
             return (
               <div key={u.id} className="flex items-center gap-3 py-3">
-                <div className="h-10 w-10 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground text-sm font-bold">
+                <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold">
                   {(u.full_name ?? "?").charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -246,7 +246,7 @@ function RequestsPanel() {
 
   if (loading) return <Skeleton className="h-40 w-full" />;
   return (
-    <div className="glass rounded-2xl p-5 shadow-soft divide-y divide-border">
+    <div className="rounded-2xl bg-card border border-border p-5 shadow-soft divide-y divide-border">
       {items.map((r) => (
         <div key={r.id} className="flex items-center gap-3 py-3 flex-wrap">
           <div className="flex-1 min-w-0">
@@ -317,13 +317,13 @@ function PlansPanel() {
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <Button onClick={add} className="bg-gradient-brand text-primary-foreground border-0">
+        <Button onClick={add} className="bg-primary text-primary-foreground hover:bg-primary/90">
           <Plus className="h-4 w-4 mr-1" /> Add plan
         </Button>
       </div>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {plans.map((p) => (
-          <div key={p.id} className="glass rounded-2xl p-5 shadow-soft space-y-3">
+          <div key={p.id} className="rounded-2xl bg-card border border-border p-5 shadow-soft space-y-3">
             <div className="flex items-center justify-between">
               <Input value={p.name} onChange={(e) => update(p.id, { name: e.target.value })} className="font-semibold" />
               <Switch checked={p.is_active} onCheckedChange={(v) => update(p.id, { is_active: v })} />
@@ -355,7 +355,7 @@ function PlansPanel() {
               />
             </div>
             <div className="flex gap-2">
-              <Button size="sm" onClick={() => save(p)} className="bg-gradient-brand text-primary-foreground border-0 flex-1">
+              <Button size="sm" onClick={() => save(p)} className="bg-primary text-primary-foreground hover:bg-primary/90 flex-1">
                 <Save className="h-4 w-4 mr-1" /> Save
               </Button>
               <Button size="sm" variant="ghost" onClick={() => remove(p.id)}>
@@ -406,7 +406,7 @@ function PaymentPanel() {
   );
 
   return (
-    <div className="glass rounded-2xl p-6 shadow-soft space-y-4 max-w-3xl">
+    <div className="rounded-2xl bg-card border border-border p-6 shadow-soft space-y-4 max-w-3xl">
       <div className="grid md:grid-cols-2 gap-3">
         {field("bank_name", "Bank name")}
         {field("account_holder", "Account holder")}
@@ -419,7 +419,7 @@ function PaymentPanel() {
         <Label className="text-xs">Payment instructions</Label>
         <Textarea rows={4} value={s.instructions ?? ""} onChange={(e) => setS({ ...s, instructions: e.target.value })} />
       </div>
-      <Button onClick={save} className="bg-gradient-brand text-primary-foreground border-0">
+      <Button onClick={save} className="bg-primary text-primary-foreground hover:bg-primary/90">
         <Save className="h-4 w-4 mr-1" /> Save settings
       </Button>
     </div>
@@ -519,7 +519,7 @@ function AdsPanel() {
           { label: "Overall CTR", value: `${overallCtr}%`, sub: "clicks / impressions", Icon: TrendingUp },
           { label: "Active ads", value: ads.filter((a) => a.active).length, sub: `${ads.length} total`, Icon: Megaphone },
         ].map((s) => (
-          <div key={s.label} className="glass rounded-2xl p-4 shadow-soft">
+          <div key={s.label} className="rounded-2xl bg-card border border-border p-4 shadow-soft">
             <div className="flex items-center justify-between text-xs text-muted-foreground uppercase tracking-wide">
               {s.label} <s.Icon className="h-3.5 w-3.5" />
             </div>
@@ -529,7 +529,7 @@ function AdsPanel() {
         ))}
       </div>
 
-      <div className="glass rounded-2xl p-5 shadow-soft space-y-3 max-w-2xl">
+      <div className="rounded-2xl bg-card border border-border p-5 shadow-soft space-y-3 max-w-2xl">
         <h3 className="font-semibold flex items-center gap-2"><Megaphone className="h-4 w-4" /> Create advertisement</h3>
         <div>
           <Label className="text-xs">Title</Label>
@@ -549,13 +549,13 @@ function AdsPanel() {
             <Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} />
           </div>
         </div>
-        <Button onClick={publish} className="bg-gradient-brand text-primary-foreground border-0">
+        <Button onClick={publish} className="bg-primary text-primary-foreground hover:bg-primary/90">
           <Plus className="h-4 w-4 mr-1" /> Publish ad
         </Button>
       </div>
 
       {loading ? <Skeleton className="h-40 w-full" /> : (
-        <div className="glass rounded-2xl p-5 shadow-soft divide-y divide-border">
+        <div className="rounded-2xl bg-card border border-border p-5 shadow-soft divide-y divide-border">
           {ads.map((a) => {
             const s = stats[a.id] ?? { impressions: 0, clicks: 0, impressions7d: 0, clicks7d: 0 };
             const ctr = s.impressions ? ((s.clicks / s.impressions) * 100).toFixed(2) : "0.00";
@@ -666,7 +666,7 @@ function ReportsPanel() {
   };
 
   return (
-    <div className="glass rounded-3xl p-5 shadow-soft space-y-4">
+    <div className="rounded-3xl bg-card border border-border p-5 shadow-soft space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold flex items-center gap-2"><Flag className="h-4 w-4" /> User Reports</h3>
         <div className="flex gap-2">

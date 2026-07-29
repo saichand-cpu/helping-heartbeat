@@ -51,7 +51,7 @@ export function ShareSheet({ open, onOpenChange, url, title = "HumanLink", text 
             ))}
           </div>
           {canNative && (
-            <Button onClick={native} className="w-full bg-gradient-brand text-primary-foreground border-0">
+            <Button onClick={native} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
               <Share2 className="h-4 w-4 mr-1" /> More apps…
             </Button>
           )}

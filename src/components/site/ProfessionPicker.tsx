@@ -47,7 +47,7 @@ export function ProfessionPicker({
               className={cn(
                 "px-3 py-1.5 rounded-full text-xs font-medium border transition-all",
                 active
-                  ? "bg-gradient-brand text-primary-foreground border-transparent shadow-glow"
+                  ? "bg-primary text-primary-foreground border-transparent shadow-sm"
                   : "bg-card border-border hover:border-primary/40 hover:bg-accent",
               )}
             >

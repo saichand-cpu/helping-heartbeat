@@ -140,7 +140,7 @@ function AdvancedSearch() {
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-24 lg:pb-6">
       {/* Header */}
-      <div className="rounded-3xl bg-gradient-brand p-6 md:p-8 text-primary-foreground shadow-pop relative overflow-hidden">
+      <div className="rounded-3xl bg-primary p-6 md:p-8 text-primary-foreground shadow-pop relative overflow-hidden">
         <div className="absolute -bottom-16 -right-16 h-56 w-56 rounded-full bg-white/20 blur-3xl" />
         <div className="relative flex items-start gap-3">
           <div className="h-11 w-11 rounded-2xl bg-white/20 grid place-items-center">
@@ -156,7 +156,7 @@ function AdvancedSearch() {
       </div>
 
       {/* Tabs */}
-      <div className="glass rounded-2xl p-1.5 flex gap-1 shadow-soft w-fit">
+      <div className="rounded-2xl bg-card border border-border p-1.5 flex gap-1 shadow-soft w-fit">
         <TabButton active={tab === "requests"} onClick={() => setTab("requests")} icon={<HeartHandshake className="h-4 w-4" />}>
           Requests
         </TabButton>
@@ -166,7 +166,7 @@ function AdvancedSearch() {
       </div>
 
       {/* Filter Panel */}
-      <div className="glass rounded-3xl p-5 shadow-soft space-y-4">
+      <div className="rounded-3xl bg-card border border-border p-5 shadow-soft space-y-4">
         <div className="grid md:grid-cols-[1fr_260px] gap-3">
           <div className="relative">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -311,7 +311,7 @@ function AdvancedSearch() {
             hint="Try widening your search — remove a skill, clear the city, or pick a different category."
             action={
               <Link to="/requests/new">
-                <Button className="bg-gradient-brand text-primary-foreground border-0 shadow-glow">
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">
                   <Plus className="h-4 w-4 mr-1" /> Create a request
                 </Button>
               </Link>
@@ -376,7 +376,7 @@ function TabButton({
       className={
         "inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl transition-all " +
         (active
-          ? "bg-gradient-brand text-primary-foreground shadow-glow"
+          ? "bg-primary text-primary-foreground shadow-sm"
           : "text-muted-foreground hover:text-foreground hover:bg-accent")
       }
     >
@@ -390,7 +390,7 @@ function EmptyState({
   title, hint, action,
 }: { title: string; hint: string; action?: React.ReactNode }) {
   return (
-    <div className="glass rounded-3xl p-12 text-center">
+    <div className="rounded-3xl bg-card border border-border p-12 text-center">
       <div className="h-14 w-14 mx-auto rounded-2xl bg-accent grid place-items-center text-muted-foreground">
         <Frown className="h-6 w-6" />
       </div>

@@ -103,10 +103,10 @@ export function Storefront({
   if (items.length === 0 && !canManage) return null;
 
   return (
-    <section className="glass rounded-3xl p-6 md:p-8 shadow-soft space-y-4">
+    <section className="rounded-3xl bg-card border border-border p-6 md:p-8 shadow-soft space-y-4">
       <header className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-xl bg-gradient-brand flex items-center justify-center text-primary-foreground">
+          <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground">
             <Store className="h-4 w-4" />
           </div>
           <div>
@@ -130,7 +130,7 @@ export function Storefront({
               Upgrade to showcase products or services on your profile.
             </p>
             <Link to="/pricing" className="inline-block mt-2">
-              <Button size="sm" className="bg-gradient-brand text-primary-foreground border-0 shadow-glow">
+              <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">
                 See plans
               </Button>
             </Link>
@@ -213,7 +213,7 @@ export function Storefront({
                 size="sm"
                 onClick={add}
                 disabled={!draft.title.trim() || saving}
-                className="bg-gradient-brand text-primary-foreground border-0"
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Save item"}
               </Button>

@@ -85,7 +85,7 @@ export function StoriesBar({ me }: { me: string | null }) {
   const myBundleIdx = bundles.findIndex((b) => b.author_id === me);
 
   return (
-    <div className="glass rounded-3xl p-3 shadow-soft">
+    <div className="rounded-3xl bg-card border border-border p-3 shadow-soft">
       <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
         {/* Add-story tile */}
         <button onClick={() => setComposerOpen(true)} className="shrink-0 flex flex-col items-center gap-1.5 group">
@@ -221,7 +221,7 @@ function StoryComposer({ open, onOpenChange, onPosted, me }: {
           <Button variant="outline" size="sm" disabled={busy} onClick={() => cameraRef.current?.click()}>Camera</Button>
           <div className="flex-1" />
           <Button onClick={publish} disabled={!stagedPath || busy}
-            className="bg-gradient-brand text-primary-foreground border-0">
+            className="bg-primary text-primary-foreground hover:bg-primary/90">
             {busy ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : null} Share
           </Button>
         </div>

@@ -53,8 +53,8 @@ export function FounderPortrait() {
 
   return (
     <div className="relative">
-      <div className="aspect-square rounded-[2rem] glass shadow-pop p-1 rotate-3 hover:rotate-0 transition-transform duration-500 ring-1 ring-amber-500/20">
-        <div className="h-full w-full rounded-[1.7rem] bg-gradient-brand flex items-center justify-center text-primary-foreground overflow-hidden">
+      <div className="aspect-square rounded-[2rem] bg-card border border-border shadow-pop p-1 rotate-3 hover:rotate-0 transition-transform duration-500 ring-1 ring-amber-500/20">
+        <div className="h-full w-full rounded-[1.7rem] bg-primary flex items-center justify-center text-primary-foreground overflow-hidden">
           {url ? (
             <img src={url} alt="L. Saichand, Founder of HumanLink" className="h-full w-full object-cover" />
           ) : (
@@ -69,12 +69,12 @@ export function FounderPortrait() {
       </div>
 
       {/* Verified Founder Node badge — hardcoded, uneditable */}
-      <div className="absolute -top-3 -right-3 glass rounded-full px-3 py-1.5 shadow-soft border border-amber-500/40 flex items-center gap-1.5">
+      <div className="absolute -top-3 -right-3 bg-card border border-border rounded-full px-3 py-1.5 shadow-soft border border-amber-500/40 flex items-center gap-1.5">
         <ShieldCheck className="h-3.5 w-3.5 text-amber-500" />
         <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Verified Founder Node</span>
       </div>
 
-      <div className="absolute -bottom-4 -left-4 glass rounded-2xl px-4 py-3 shadow-soft flex items-center gap-2">
+      <div className="absolute -bottom-4 -left-4 rounded-2xl bg-card border border-border px-4 py-3 shadow-soft flex items-center gap-2">
         <img src={logoAsset.url} alt="" className="h-6 w-6 rounded" />
         <div>
           <div className="text-xs text-muted-foreground">Hyderabad, Telangana</div>
@@ -96,7 +96,7 @@ export function FounderPortrait() {
             size="sm"
             onClick={() => fileRef.current?.click()}
             disabled={uploading}
-            className="absolute top-3 left-3 bg-gradient-to-r from-amber-500 to-amber-400 text-black hover:from-amber-400 hover:to-amber-300 border-0 shadow-glow font-semibold"
+            className="absolute top-3 left-3 bg-gradient-to-r from-amber-500 to-amber-400 text-black hover:from-amber-400 hover:to-amber-300 border-0 shadow-sm font-semibold"
           >
             {uploading ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Upload className="h-3.5 w-3.5 mr-1" />}
             Upload New Portrait

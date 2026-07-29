@@ -28,7 +28,7 @@ export class GlobalErrorBoundary extends Component<Props, State> {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <div className="max-w-md w-full text-center rounded-2xl border border-border bg-card p-8 shadow-pop">
-          <h1 className="text-2xl font-semibold tracking-tight text-gradient-brand">
+          <h1 className="text-2xl font-semibold tracking-tight text-primary">
             Something went off-script
           </h1>
           <p className="mt-3 text-sm text-muted-foreground">
@@ -37,7 +37,7 @@ export class GlobalErrorBoundary extends Component<Props, State> {
           <div className="mt-6 flex flex-wrap justify-center gap-2">
             <button
               onClick={this.reset}
-              className="rounded-xl bg-gradient-brand px-4 py-2 text-sm font-medium text-primary-foreground shadow-glow"
+              className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm"
             >
               Try again
             </button>

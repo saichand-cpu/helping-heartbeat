@@ -183,7 +183,7 @@ function SmartMatchPanel() {
   };
 
   return (
-    <div className="glass rounded-3xl p-6 shadow-soft">
+    <div className="rounded-3xl bg-card border border-border p-6 shadow-soft">
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -194,7 +194,7 @@ function SmartMatchPanel() {
             Our AI scans open requests against your skills, interests, and bio to find the best matches.
           </p>
         </div>
-        <Button onClick={go} disabled={loading} className="bg-gradient-brand text-primary-foreground border-0 shadow-glow">
+        <Button onClick={go} disabled={loading} className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">
           {loading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Sparkles className="h-4 w-4 mr-1" />}
           {matches ? "Re-run match" : "Run smart match"}
         </Button>
