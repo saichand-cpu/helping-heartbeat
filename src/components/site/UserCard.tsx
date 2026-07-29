@@ -141,7 +141,7 @@ export function UserCard({
                 disabled={busy}
                 className={cn(
                   "h-8 rounded-full px-3 text-xs",
-                  !following && "bg-gradient-brand text-primary-foreground border-0",
+                  !following && "bg-primary text-primary-foreground hover:bg-primary/90",
                 )}
               >
                 {busy ? <Loader2 className="h-3 w-3 animate-spin" /> :

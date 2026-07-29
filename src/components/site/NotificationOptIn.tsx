@@ -16,7 +16,7 @@ export function NotificationOptIn() {
           initial={{ opacity: 0, y: -8, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -8, scale: 0.98 }}
-          className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-background to-background p-5 shadow-glow"
+          className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-background to-background p-5 shadow-sm"
         >
           <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-primary/20 blur-3xl" />
           <button
@@ -27,7 +27,7 @@ export function NotificationOptIn() {
             <X className="h-4 w-4" />
           </button>
           <div className="flex items-start gap-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-brand text-primary-foreground shadow-glow">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
               <Bell className="h-5 w-5" />
             </div>
             <div className="flex-1">
@@ -41,7 +41,7 @@ export function NotificationOptIn() {
               <div className="mt-4 flex flex-wrap gap-2">
                 <Button
                   size="sm"
-                  className="bg-gradient-brand text-primary-foreground shadow-glow"
+                  className="bg-primary text-primary-foreground shadow-sm"
                   onClick={async () => {
                     const res = await request();
                     if (res === "granted") toast.success("Notifications enabled");

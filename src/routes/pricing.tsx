@@ -76,7 +76,7 @@ function Pricing() {
       <Navbar />
       <section className="mx-auto max-w-6xl px-6 py-20 md:py-28">
         <div className="text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass text-xs text-muted-foreground">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-card border border-border text-xs text-muted-foreground">
             <Sparkles className="h-3.5 w-3.5 text-primary" /> Instant verified badge on activation
           </div>
           <h1 className="mt-3 text-5xl md:text-6xl font-bold">Free for kindness. Always.</h1>
@@ -135,7 +135,7 @@ function Pricing() {
                 <Button
                   onClick={() => choose(c.key)}
                   className={cn(
-                    "mt-8 w-full border-0 shadow-glow",
+                    "mt-8 w-full border-0 shadow-sm",
                     isGold
                       ? "bg-amber-500 hover:bg-amber-500/90 text-black"
                       : "bg-emerald-500 hover:bg-emerald-500/90 text-black",

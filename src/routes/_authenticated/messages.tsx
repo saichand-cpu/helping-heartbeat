@@ -422,7 +422,7 @@ function MessagesPage() {
 
   return (
     <div className="pb-24 lg:pb-6">
-      <div className="glass rounded-3xl shadow-soft overflow-hidden grid md:grid-cols-[320px_1fr] h-[calc(100vh-140px)] min-h-[520px]">
+      <div className="rounded-3xl bg-card border border-border shadow-soft overflow-hidden grid md:grid-cols-[320px_1fr] h-[calc(100vh-140px)] min-h-[520px]">
         {/* List pane */}
         <aside className={cn("border-r border-border/40 overflow-y-auto", activeId && "hidden md:block")}>
           <div className="px-4 py-3 border-b border-border/40 space-y-2">
@@ -466,7 +466,7 @@ function MessagesPage() {
                     <Link
                       to="/profile/$userId"
                       params={{ userId: c.other_id }}
-                      className="relative h-11 w-11 rounded-full bg-gradient-brand grid place-items-center text-primary-foreground font-bold overflow-hidden shrink-0 hover:ring-2 hover:ring-primary/60 transition"
+                      className="relative h-11 w-11 rounded-full bg-primary grid place-items-center text-primary-foreground font-bold overflow-hidden shrink-0 hover:ring-2 hover:ring-primary/60 transition"
                       aria-label="Open profile"
                     >
                       {c.avatar_url ? <img src={c.avatar_url} alt="" className="h-full w-full object-cover" /> : (c.full_name || "U").charAt(0)}
@@ -784,7 +784,7 @@ export function Thread({ me, other, onBack, onStartCall, isPeerOnline }: { me: s
     <div className="flex flex-col min-h-0 h-full">
       <header className="px-4 py-3 border-b border-amber-500/30 flex items-center gap-3 bg-black/40">
         <Button variant="ghost" size="icon" className="md:hidden" onClick={onBack}><ArrowLeft className="h-4 w-4" /></Button>
-        <Link to="/profile/$userId" params={{ userId: other.other_id }} className="relative h-9 w-9 rounded-full bg-gradient-brand grid place-items-center text-primary-foreground text-sm font-bold overflow-hidden hover:ring-2 hover:ring-primary/60 transition" aria-label="Open profile">
+        <Link to="/profile/$userId" params={{ userId: other.other_id }} className="relative h-9 w-9 rounded-full bg-primary grid place-items-center text-primary-foreground text-sm font-bold overflow-hidden hover:ring-2 hover:ring-primary/60 transition" aria-label="Open profile">
           {other.avatar_url ? <img src={other.avatar_url} alt="" className="h-full w-full object-cover" /> : (other.full_name || "U").charAt(0)}
           {isPeerOnline && (
             <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-black" />
@@ -842,7 +842,7 @@ export function Thread({ me, other, onBack, onStartCall, isPeerOnline }: { me: s
                     <div className={cn(
                       "max-w-[78%] rounded-2xl px-3.5 py-2 text-sm shadow-soft",
                       mine
-                        ? "bg-gradient-brand text-primary-foreground rounded-br-sm"
+                        ? "bg-primary text-primary-foreground rounded-br-sm"
                         : "bg-card border border-border rounded-bl-sm",
                       m.pending && "opacity-70",
                       img && "p-1.5",
@@ -997,7 +997,7 @@ export function Thread({ me, other, onBack, onStartCall, isPeerOnline }: { me: s
           type="submit"
           disabled={!text.trim() || sending}
           size="icon"
-          className="h-10 w-10 bg-gradient-brand text-primary-foreground border-0 shadow-glow shrink-0"
+          className="h-10 w-10 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm shrink-0"
         >
           {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
         </Button>

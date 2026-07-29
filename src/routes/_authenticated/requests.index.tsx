@@ -161,14 +161,14 @@ function RequestsBrowse() {
 
   return (
     <div className="space-y-6 pb-24 lg:pb-6">
-      <div className="glass rounded-3xl p-6 shadow-soft">
+      <div className="rounded-3xl bg-card border border-border p-6 shadow-soft">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Help <span className="text-gradient-brand">Requests</span></h1>
+            <h1 className="text-3xl font-bold">Help <span className="text-primary">Requests</span></h1>
             <p className="text-sm text-muted-foreground mt-1">Find someone you can help today.</p>
           </div>
           <Link to="/requests/new">
-            <Button className="bg-gradient-brand text-primary-foreground border-0 shadow-glow"><Plus className="h-4 w-4 mr-1" /> New request</Button>
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"><Plus className="h-4 w-4 mr-1" /> New request</Button>
           </Link>
         </div>
         <div className="mt-5 grid md:grid-cols-[1fr_220px] gap-3">
@@ -200,7 +200,7 @@ function RequestsBrowse() {
                 className={
                   "text-xs font-semibold px-3 py-1.5 rounded-full border transition-all inline-flex items-center gap-1.5 " +
                   (active
-                    ? "bg-gradient-brand text-primary-foreground border-transparent shadow-glow"
+                    ? "bg-primary text-primary-foreground border-transparent shadow-sm"
                     : "border-border bg-card hover:bg-accent text-muted-foreground")
                 }
               >
@@ -214,7 +214,7 @@ function RequestsBrowse() {
 
 
       {!loading && filtered.length > 0 && (
-        <div className="glass rounded-3xl p-4 shadow-soft">
+        <div className="rounded-3xl bg-card border border-border p-4 shadow-soft">
           <div className="flex items-center gap-2 mb-3 px-1">
             <MapPin className="h-4 w-4 text-amber-400" />
             <h2 className="text-sm font-semibold">Requests on the map</h2>
@@ -238,11 +238,11 @@ function RequestsBrowse() {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="glass rounded-3xl p-12 text-center">
+        <div className="rounded-3xl bg-card border border-border p-12 text-center">
           <Sparkles className="h-8 w-8 mx-auto text-primary" />
           <h3 className="mt-3 text-xl font-semibold">No matching requests</h3>
           <p className="text-sm text-muted-foreground mt-1">Be the first to create one — your kindness inspires others.</p>
-          <Link to="/requests/new"><Button className="mt-4 bg-gradient-brand text-primary-foreground border-0 shadow-glow">Create request</Button></Link>
+          <Link to="/requests/new"><Button className="mt-4 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">Create request</Button></Link>
         </div>
       ) : (
         <div className="grid md:grid-cols-2 gap-4">
@@ -293,7 +293,7 @@ function RequestsBrowse() {
                     }}
                     disabled={r.requester_id === meId}
                     size="sm"
-                    className="bg-gradient-brand text-primary-foreground border-0 shadow-glow"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
                   >
                     <MessageCircle className="h-4 w-4 mr-1" /> Text
                   </Button>

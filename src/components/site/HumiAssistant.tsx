@@ -146,7 +146,7 @@ export function HumiAssistant() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label="Open HUMI assistant"
-        className="fixed bottom-44 right-4 lg:bottom-24 lg:right-6 z-50 h-14 w-14 rounded-full bg-gradient-to-br from-fuchsia-500 via-violet-500 to-indigo-500 text-white shadow-pop hover:shadow-glow grid place-items-center transition-transform hover:scale-105 active:scale-95"
+        className="fixed bottom-44 right-4 lg:bottom-24 lg:right-6 z-50 h-14 w-14 rounded-full bg-gradient-to-br from-fuchsia-500 via-violet-500 to-indigo-500 text-white shadow-pop hover:shadow-lg grid place-items-center transition-transform hover:scale-105 active:scale-95"
       >
         <Sparkles className="h-6 w-6" />
       </button>

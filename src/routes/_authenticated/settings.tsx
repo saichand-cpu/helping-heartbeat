@@ -68,7 +68,7 @@ function SettingsPage() {
 
       <div className="grid lg:grid-cols-[240px_1fr] gap-6">
         {/* Sidebar */}
-        <nav className="glass rounded-2xl p-2 h-fit lg:sticky lg:top-4 overflow-x-auto">
+        <nav className="rounded-2xl bg-card border border-border p-2 h-fit lg:sticky lg:top-4 overflow-x-auto">
           <div className="flex lg:flex-col gap-1 min-w-max lg:min-w-0">
             {SECTIONS.map((s) => {
               const Icon = s.icon;
@@ -78,7 +78,7 @@ function SettingsPage() {
                   key={s.id}
                   onClick={() => setSection(s.id)}
                   className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors whitespace-nowrap ${
-                    active ? "bg-gradient-brand text-primary-foreground shadow-glow" : "hover:bg-accent text-muted-foreground hover:text-foreground"
+                    active ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-accent text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
@@ -90,7 +90,7 @@ function SettingsPage() {
         </nav>
 
         {/* Content */}
-        <div className="glass rounded-2xl p-4 md:p-6">
+        <div className="rounded-2xl bg-card border border-border p-4 md:p-6">
           {section === "account" && <AccountSection />}
           {section === "security" && <SecuritySection />}
           {section === "privacy" && <PrivacySection />}
@@ -216,7 +216,7 @@ function AccountSection() {
         {form.cover_url ? (
           <img src={form.cover_url} alt="Cover" className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full bg-gradient-brand opacity-60" />
+          <div className="w-full h-full bg-primary opacity-60" />
         )}
         <button
           onClick={() => coverInput.current?.click()}
@@ -286,7 +286,7 @@ function AccountSection() {
         </Field>
       </div>
       <div className="mt-6 flex justify-end">
-        <Button onClick={save} disabled={saving} className="bg-gradient-brand text-primary-foreground border-0">
+        <Button onClick={save} disabled={saving} className="bg-primary text-primary-foreground hover:bg-primary/90">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save changes"}
         </Button>
       </div>
@@ -488,7 +488,7 @@ function PrivacySection() {
         <SwitchRow label="Allow profile indexing by search engines" checked={row.allow_profile_indexing} onChange={(v) => setRow({ ...row, allow_profile_indexing: v })} />
       </div>
       <div className="mt-6 flex justify-end">
-        <Button onClick={save} disabled={saving} className="bg-gradient-brand text-primary-foreground border-0">
+        <Button onClick={save} disabled={saving} className="bg-primary text-primary-foreground hover:bg-primary/90">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
         </Button>
       </div>
@@ -559,7 +559,7 @@ function NotificationsSection() {
         ))}
       </div>
       <div className="mt-6 flex justify-end">
-        <Button onClick={save} disabled={saving} className="bg-gradient-brand text-primary-foreground border-0">
+        <Button onClick={save} disabled={saving} className="bg-primary text-primary-foreground hover:bg-primary/90">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
         </Button>
       </div>
@@ -724,7 +724,7 @@ function PreferencesSection() {
         <Field label="Skills" className="md:col-span-2"><Input value={form.skills} onChange={(e) => setForm({ ...form, skills: e.target.value })} placeholder="Comma separated" /></Field>
       </div>
       <div className="mt-6 flex justify-end">
-        <Button onClick={save} disabled={saving} className="bg-gradient-brand text-primary-foreground border-0">
+        <Button onClick={save} disabled={saving} className="bg-primary text-primary-foreground hover:bg-primary/90">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
         </Button>
       </div>
@@ -744,7 +744,7 @@ function SubscriptionSection() {
           <p className="text-2xl font-bold capitalize">{godMode ? "God-mode (Admin)" : tier ?? "Free"}</p>
         </div>
         <div className="flex gap-2">
-          <Link to="/pricing"><Button className="bg-gradient-brand text-primary-foreground border-0">Upgrade plan</Button></Link>
+          <Link to="/pricing"><Button className="bg-primary text-primary-foreground hover:bg-primary/90">Upgrade plan</Button></Link>
         </div>
       </div>
       <div className="mt-6 grid md:grid-cols-2 gap-4">

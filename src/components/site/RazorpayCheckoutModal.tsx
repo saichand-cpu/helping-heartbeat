@@ -156,7 +156,7 @@ export function RazorpayCheckoutModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg p-0 overflow-hidden">
-        <div className="relative bg-gradient-brand text-primary-foreground p-6">
+        <div className="relative bg-primary text-primary-foreground p-6">
           <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_20%_20%,white,transparent_40%)]" />
           <DialogHeader className="relative">
             <DialogTitle className="text-primary-foreground flex items-center gap-2">
@@ -226,7 +226,7 @@ export function RazorpayCheckoutModal({
               <Button
                 onClick={subscribe}
                 disabled={loading}
-                className="mt-6 w-full bg-gradient-brand text-primary-foreground border-0 shadow-glow"
+                className="mt-6 w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
               >
                 {loading ? (
                   <>

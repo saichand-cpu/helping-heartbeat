@@ -75,8 +75,8 @@ function NewRequest() {
       <Link to="/requests" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4">
         <ArrowLeft className="h-4 w-4" /> Back to requests
       </Link>
-      <div className="glass rounded-3xl p-6 md:p-8 shadow-soft">
-        <h1 className="text-3xl font-bold">Ask for <span className="text-gradient-brand">help</span></h1>
+      <div className="rounded-3xl bg-card border border-border p-6 md:p-8 shadow-soft">
+        <h1 className="text-3xl font-bold">Ask for <span className="text-primary">help</span></h1>
         <p className="text-sm text-muted-foreground mt-1">Tell the community what you need. The clearer your story, the faster help arrives.</p>
 
         <form onSubmit={submit} className="mt-6 space-y-5">
@@ -115,7 +115,7 @@ function NewRequest() {
               <Input id="loc" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="City or neighborhood" />
             </div>
           </div>
-          <Button type="submit" disabled={loading} className="w-full h-11 bg-gradient-brand text-primary-foreground border-0 shadow-glow">
+          <Button type="submit" disabled={loading} className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Post request"}
           </Button>
         </form>

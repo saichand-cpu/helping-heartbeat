@@ -73,11 +73,11 @@ export function CoFounderCarousel() {
     <section className="mx-auto max-w-6xl px-6 pb-16">
       <div className="flex items-end justify-between mb-5">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full glass px-3 py-1 text-[11px] font-medium text-muted-foreground">
+          <div className="inline-flex items-center gap-2 rounded-full bg-card border border-border px-3 py-1 text-[11px] font-medium text-muted-foreground">
             <Handshake className="h-3.5 w-3.5 text-primary" /> Community
           </div>
           <h2 className="mt-3 text-3xl md:text-4xl font-bold tracking-tight">
-            🤝 Find a <span className="bg-gradient-brand bg-clip-text text-transparent">Co-Founder</span>
+            🤝 Find a <span className="bg-primary bg-clip-text text-transparent">Co-Founder</span>
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Real members who've flagged themselves as open to building together.
@@ -92,7 +92,7 @@ export function CoFounderCarousel() {
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <div className="glass rounded-3xl p-10 text-center">
+        <div className="rounded-3xl bg-card border border-border p-10 text-center">
           <p className="text-muted-foreground">
             No one is publicly seeking a co-founder yet. Turn on the flag from your profile to appear here.
           </p>

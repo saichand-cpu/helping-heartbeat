@@ -45,7 +45,7 @@ export function AccountTypeSelector({
                 active
                   ? isBusiness
                     ? "border-amber-500 bg-amber-500/10 shadow-[0_0_22px_-4px_rgba(245,158,11,0.55)]"
-                    : "border-transparent bg-gradient-brand text-primary-foreground shadow-glow"
+                    : "border-transparent bg-primary text-primary-foreground shadow-sm"
                   : "border-border bg-card hover:border-primary/40 hover:bg-accent",
               )}
             >

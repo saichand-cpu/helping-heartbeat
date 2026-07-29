@@ -98,7 +98,7 @@ function ResetPasswordPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="w-full max-w-md glass rounded-3xl p-8 shadow-pop"
+        className="w-full max-w-md rounded-3xl bg-card border border-border p-8 shadow-pop"
       >
         <div className="mb-6">
           <Logo />
@@ -119,7 +119,7 @@ function ResetPasswordPage() {
             </p>
             <Link
               to="/forgot-password"
-              className="inline-flex items-center justify-center w-full h-11 rounded-md bg-gradient-brand text-primary-foreground border-0 shadow-glow font-medium text-sm"
+              className="inline-flex items-center justify-center w-full h-11 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm font-medium text-sm"
             >
               Request new link
             </Link>
@@ -228,7 +228,7 @@ function ResetPasswordPage() {
               <Button
                 type="submit"
                 disabled={!canSubmit}
-                className="w-full h-11 bg-gradient-brand text-primary-foreground border-0 shadow-glow"
+                className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
               >
                 {loading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

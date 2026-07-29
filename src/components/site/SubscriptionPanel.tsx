@@ -93,7 +93,7 @@ export function SubscriptionPanel() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         className={cn(
-          "glass rounded-3xl p-6 shadow-soft relative overflow-hidden",
+          "rounded-3xl bg-card border border-border p-6 shadow-soft relative overflow-hidden",
           isActive && isGold && "border border-amber-500/40",
           isActive && sub?.tier === "ngo" && "border border-emerald-500/40",
         )}
@@ -169,7 +169,7 @@ export function SubscriptionPanel() {
                 </Button>
                 <Button
                   onClick={() => setOpenCheckout("pro")}
-                  className="bg-amber-500 hover:bg-amber-500/90 text-black border-0 shadow-glow"
+                  className="bg-amber-500 hover:bg-amber-500/90 text-black border-0 shadow-sm"
                 >
                   <Crown className="h-4 w-4 mr-1" /> Pro · ₹599
                 </Button>
@@ -179,7 +179,7 @@ export function SubscriptionPanel() {
         </div>
       </motion.div>
 
-      <div className="glass rounded-3xl p-6 shadow-soft">
+      <div className="rounded-3xl bg-card border border-border p-6 shadow-soft">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Receipt className="h-4 w-4 text-primary" /> Payment history
         </div>

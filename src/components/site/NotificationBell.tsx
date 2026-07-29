@@ -47,7 +47,7 @@ export function NotificationBell() {
           </AnimatePresence>
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-[340px] p-0 overflow-hidden glass border-border/60">
+      <PopoverContent align="end" className="w-[340px] p-0 overflow-hidden bg-card border border-border border-border/60">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
           <div className="text-sm font-semibold">Notifications</div>
           {unread > 0 && (
@@ -64,7 +64,7 @@ export function NotificationBell() {
               className={cn(
                 "px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors shrink-0",
                 filter === f.key
-                  ? "bg-gradient-brand text-primary-foreground border-transparent shadow-glow"
+                  ? "bg-primary text-primary-foreground border-transparent shadow-sm"
                   : "bg-card border-border text-muted-foreground hover:text-foreground hover:bg-accent",
               )}
             >

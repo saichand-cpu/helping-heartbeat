@@ -65,7 +65,7 @@ function Hero() {
           </motion.p>
           <motion.div variants={fadeUp} custom={3} className="flex flex-wrap gap-3">
             <Link to="/auth">
-              <Button size="lg" className="rounded-full h-12 px-7 text-base bg-primary text-primary-foreground hover:bg-primary/90 shadow-glow">
+              <Button size="lg" className="rounded-full h-12 px-7 text-base bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">
                 Get Started <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
@@ -375,7 +375,7 @@ function TopHelpers() {
         {helpers.map((h, i) => (
           <motion.div key={h.name} variants={fadeUp} custom={i} initial="hidden" whileInView="show" viewport={{ once: true }}
             className="rounded-3xl border border-border bg-card p-6 text-center hover:shadow-soft hover:-translate-y-1 transition-all">
-            <div className="mx-auto h-16 w-16 rounded-full bg-primary grid place-items-center text-primary-foreground text-xl font-bold shadow-glow">
+            <div className="mx-auto h-16 w-16 rounded-full bg-primary grid place-items-center text-primary-foreground text-xl font-bold shadow-sm">
               {h.name.charAt(0)}
             </div>
             <div className="mt-4 font-semibold">{h.name}</div>
@@ -550,7 +550,7 @@ function CTA() {
           <p className="mt-4 text-lg text-muted-foreground max-w-xl mx-auto">Join HumanLink today. Post a request, lend a hand, or both.</p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link to="/auth">
-              <Button size="lg" className="rounded-full h-12 px-7 bg-primary text-primary-foreground hover:bg-primary/90 shadow-glow">
+              <Button size="lg" className="rounded-full h-12 px-7 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">
                 Create your account <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>

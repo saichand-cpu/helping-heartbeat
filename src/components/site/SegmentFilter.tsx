@@ -37,7 +37,7 @@ export function SegmentFilter({
             className={cn(
               "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all",
               active
-                ? "bg-gradient-brand text-primary-foreground shadow-glow"
+                ? "bg-primary text-primary-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
