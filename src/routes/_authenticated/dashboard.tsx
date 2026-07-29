@@ -87,7 +87,7 @@ function Dashboard() {
 
       <SuggestedForYou />
 
-      <Tabs defaultValue="overview" className="space-y-4">
+      <Tabs value={tab} onValueChange={setTab} className="space-y-4">
         <TabsList className="glass">
           <TabsTrigger value="overview"><Sparkles className="h-4 w-4 mr-1" /> Overview</TabsTrigger>
           <TabsTrigger value="match"><Brain className="h-4 w-4 mr-1" /> AI Smart Match</TabsTrigger>
@@ -95,6 +95,7 @@ function Dashboard() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
+          <PlanSummaryCard onManage={() => setTab("subscription")} />
           <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
             {cards.map((c, i) => (
               <motion.div key={c.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
