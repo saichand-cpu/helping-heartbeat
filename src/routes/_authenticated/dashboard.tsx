@@ -26,6 +26,7 @@ type Profile = { full_name: string; karma_points: number; avatar_url: string | n
 function Dashboard() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [stats, setStats] = useState({ active: 0, accepted: 0, completed: 0, unread: 0 });
+  const [tab, setTab] = useState("overview");
 
   useEffect(() => {
     (async () => {
