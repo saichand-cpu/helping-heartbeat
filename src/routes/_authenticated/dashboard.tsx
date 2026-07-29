@@ -14,6 +14,7 @@ import { UserSearch } from "@/components/site/UserSearch";
 import { SuggestedForYou } from "@/components/site/SuggestedForYou";
 import { NotificationOptIn } from "@/components/site/NotificationOptIn";
 import { SubscriptionPanel } from "@/components/site/SubscriptionPanel";
+import { PlanSummaryCard } from "@/components/site/PlanSummaryCard";
 import { CreditCard } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
