@@ -51,32 +51,40 @@ function Dashboard() {
   }, []);
 
   const cards = [
-    { label: "Karma", value: profile?.karma_points ?? 0, icon: Award, color: "from-amber-400 to-orange-500" },
-    { label: "Active", value: stats.active, icon: Clock, color: "from-blue-400 to-indigo-500" },
-    { label: "Helping", value: stats.accepted, icon: HeartHandshake, color: "from-emerald-400 to-teal-500" },
-    { label: "Completed", value: stats.completed, icon: CheckCircle2, color: "from-violet-400 to-fuchsia-500" },
+    { label: "Karma points", value: profile?.karma_points ?? 0, icon: Award, tint: "text-amber-600 bg-amber-500/10" },
+    { label: "Active requests", value: stats.active, icon: Clock, tint: "text-primary bg-primary/10" },
+    { label: "Currently helping", value: stats.accepted, icon: HeartHandshake, tint: "text-emerald-600 bg-emerald-500/10" },
+    { label: "Completed", value: stats.completed, icon: CheckCircle2, tint: "text-violet-600 bg-violet-500/10" },
   ];
 
   return (
-    <div className="space-y-6 pb-24 lg:pb-6">
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-3xl p-6 md:p-8 shadow-soft">
+    <div className="space-y-6 pb-28 lg:pb-6">
+      {/* Hero */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+        className="rounded-3xl bg-card border border-border p-6 md:p-8 shadow-soft"
+      >
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <div className="text-sm text-muted-foreground">Welcome back</div>
-            <h1 className="text-3xl md:text-4xl font-bold mt-1">
-              Hi, <span className="text-gradient-brand">{profile?.full_name || "friend"}</span> 👋
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Welcome back</div>
+            <h1 className="text-3xl md:text-4xl font-semibold tracking-tight mt-1.5">
+              Hi, <span className="text-primary">{profile?.full_name || "friend"}</span> 👋
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">Ready to spread some kindness today?</p>
+            <p className="text-sm text-muted-foreground mt-1.5">Ready to spread some kindness today?</p>
           </div>
           <div className="flex gap-2">
             <Link to="/requests/new">
-              <Button className="bg-gradient-brand text-primary-foreground border-0 shadow-glow"><Plus className="h-4 w-4 mr-1" /> Ask for help</Button>
+              <Button className="h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-sm">
+                <Plus className="h-4 w-4 mr-1.5" /> Ask for help
+              </Button>
             </Link>
             <Link to="/requests">
-              <Button variant="outline">Browse requests</Button>
+              <Button variant="outline" className="h-10 rounded-xl">Browse</Button>
             </Link>
-            <Link to="/settings">
-              <Button variant="outline">Settings</Button>
+            <Link to="/settings" className="hidden sm:block">
+              <Button variant="outline" className="h-10 rounded-xl">Settings</Button>
             </Link>
           </div>
         </div>
@@ -88,41 +96,59 @@ function Dashboard() {
 
       <SuggestedForYou />
 
-      <Tabs value={tab} onValueChange={setTab} className="space-y-4">
-        <TabsList className="glass">
-          <TabsTrigger value="overview"><Sparkles className="h-4 w-4 mr-1" /> Overview</TabsTrigger>
-          <TabsTrigger value="match"><Brain className="h-4 w-4 mr-1" /> AI Smart Match</TabsTrigger>
-          <TabsTrigger value="subscription"><CreditCard className="h-4 w-4 mr-1" /> Subscription</TabsTrigger>
+      <Tabs value={tab} onValueChange={setTab} className="space-y-5">
+        <TabsList className="bg-muted rounded-2xl p-1 h-11">
+          <TabsTrigger value="overview" className="rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm h-9 px-4">
+            <Sparkles className="h-4 w-4 mr-1.5" /> Overview
+          </TabsTrigger>
+          <TabsTrigger value="match" className="rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm h-9 px-4">
+            <Brain className="h-4 w-4 mr-1.5" /> AI Smart Match
+          </TabsTrigger>
+          <TabsTrigger value="subscription" className="rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm h-9 px-4">
+            <CreditCard className="h-4 w-4 mr-1.5" /> Subscription
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
           <PlanSummaryCard onManage={() => setTab("subscription")} />
-          <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+
+          <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
             {cards.map((c, i) => (
-              <motion.div key={c.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                className="relative rounded-3xl border border-border bg-card p-5 overflow-hidden">
-                <div className={`absolute -top-8 -right-8 h-24 w-24 rounded-full bg-gradient-to-br ${c.color} opacity-20 blur-2xl`} />
-                <c.icon className="h-5 w-5 text-primary" />
-                <div className="mt-3 text-3xl font-bold">{c.value}</div>
-                <div className="text-xs text-muted-foreground">{c.label}</div>
+              <motion.div
+                key={c.label}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04, duration: 0.3 }}
+                className="rounded-2xl border border-border bg-card p-5 hover:shadow-soft transition-shadow"
+              >
+                <div className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${c.tint}`}>
+                  <c.icon className="h-5 w-5" />
+                </div>
+                <div className="mt-4 text-3xl font-semibold tracking-tight">{c.value}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">{c.label}</div>
               </motion.div>
             ))}
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-6">
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-3xl p-6 shadow-soft">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Sparkles className="h-4 w-4 text-primary" /> Community
+          <div className="grid lg:grid-cols-2 gap-4">
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl bg-card border border-border p-6 shadow-soft">
+              <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Sparkles className="h-5 w-5" />
               </div>
-              <h3 className="mt-2 text-xl font-semibold">Visit the global feed</h3>
+              <h3 className="mt-4 text-lg font-semibold tracking-tight">Visit the global feed</h3>
               <p className="text-sm text-muted-foreground mt-1">See updates, stories, and announcements from your community.</p>
-              <Link to="/feed" className="mt-4 inline-flex"><Button variant="outline" className="gap-1">Open feed <ArrowRight className="h-4 w-4" /></Button></Link>
+              <Link to="/feed" className="mt-4 inline-flex">
+                <Button variant="outline" className="rounded-xl gap-1">Open feed <ArrowRight className="h-4 w-4" /></Button>
+              </Link>
             </motion.div>
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl p-6 bg-gradient-brand text-primary-foreground shadow-pop relative overflow-hidden">
-              <MessageCircle className="h-6 w-6" />
-              <h3 className="mt-2 text-xl font-semibold">{stats.unread} unread messages</h3>
-              <p className="text-sm opacity-90 mt-1">Keep the conversations going. Kindness compounds.</p>
-              <Link to="/messages" className="mt-4 inline-flex"><Button variant="secondary" className="gap-1">Open inbox <ArrowRight className="h-4 w-4" /></Button></Link>
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl p-6 bg-gradient-to-br from-primary to-[#1d4ed8] text-primary-foreground shadow-pop relative overflow-hidden">
+              <div className="absolute -bottom-16 -right-10 h-56 w-56 rounded-full bg-white/10 blur-3xl" aria-hidden />
+              <MessageCircle className="h-7 w-7" />
+              <h3 className="mt-4 text-lg font-semibold tracking-tight">{stats.unread} unread {stats.unread === 1 ? "message" : "messages"}</h3>
+              <p className="text-sm text-white/85 mt-1">Keep the conversations going. Kindness compounds.</p>
+              <Link to="/messages" className="mt-4 inline-flex">
+                <Button className="rounded-xl bg-white text-primary hover:bg-white/90 gap-1">Open inbox <ArrowRight className="h-4 w-4" /></Button>
+              </Link>
             </motion.div>
           </div>
         </TabsContent>
