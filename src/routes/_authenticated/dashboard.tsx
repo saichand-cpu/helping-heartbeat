@@ -119,7 +119,7 @@ function Dashboard() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04, duration: 0.3 }}
-                className="rounded-2xl border border-border bg-card p-5 hover:shadow-soft transition-shadow"
+                className="rounded-2xl border border-border bg-card p-5 hover-lift"
               >
                 <div className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${c.tint}`}>
                   <c.icon className="h-5 w-5" />
@@ -216,7 +216,7 @@ function SmartMatchPanel() {
         <div className="mt-5 grid md:grid-cols-2 gap-4">
           {matches.map((m) => (
             <motion.div key={m.request_id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-              className="rounded-2xl border border-border bg-card p-4 flex gap-4">
+              className="rounded-2xl border border-border bg-card p-4 flex gap-4 hover-lift">
               <div className="relative h-16 w-16 shrink-0">
                 <svg viewBox="0 0 36 36" className="h-16 w-16 -rotate-90">
                   <circle cx="18" cy="18" r="15" fill="none" stroke="currentColor" className="text-muted opacity-30" strokeWidth="3" />
