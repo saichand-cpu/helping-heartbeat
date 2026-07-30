@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { useIsAdmin } from "@/hooks/use-role";
 import { HumiAssistant } from "@/components/site/HumiAssistant";
 import { NotificationBell } from "@/components/site/NotificationBell";
+import { PageTransition } from "@/components/motion/PageTransition";
 import {
   DropdownMenu,
   DropdownMenuContent,
