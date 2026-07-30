@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import {
   Heart, Sparkles, Users, MessageCircle, Award, Search, ShieldCheck,
   HandHeart, BrainCircuit, MapPin, Star, ArrowRight, Check, Quote,
-  Apple, Play, Building2, Stethoscope, GraduationCap, Utensils, Compass,
+  Apple, Play, Building2, Stethoscope, GraduationCap, Utensils, Compass, CheckCircle2,
 } from "lucide-react";
 import heroImg from "@/assets/hero-humanlink.jpg";
 import { Navbar } from "@/components/site/Navbar";
@@ -121,21 +121,26 @@ function Hero() {
   );
 }
 
-/* ---------- STATS ---------- */
+/* ---------- STATS BAR (reference style) ---------- */
 function Stats() {
   const items = [
-    { k: "120K+", v: "People helped" },
-    { k: "45K", v: "Requests solved" },
-    { k: "8,200", v: "Verified NGOs" },
-    { k: "60K", v: "Active volunteers" },
+    { k: "50K+", v: "People Helped", icon: HandHeart, tint: "text-primary bg-primary/10" },
+    { k: "10K+", v: "Volunteers", icon: Users, tint: "text-brand bg-brand/10" },
+    { k: "500+", v: "Verified NGOs", icon: Building2, tint: "text-warning bg-warning/10" },
+    { k: "25K+", v: "Requests Solved", icon: CheckCircle2, tint: "text-primary bg-primary/10" },
   ];
   return (
-    <Section className="!py-14">
-      <div className="rounded-3xl border border-border bg-card px-8 py-10 grid grid-cols-2 md:grid-cols-4 gap-8 shadow-soft">
+    <Section className="!pt-0 !pb-14">
+      <div className="rounded-2xl border border-border bg-card px-4 py-6 md:px-8 grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-border shadow-soft">
         {items.map((s) => (
-          <div key={s.v} className="text-center">
-            <div className="text-3xl md:text-4xl font-bold text-primary tabular-nums">{s.k}</div>
-            <div className="text-xs md:text-sm text-muted-foreground mt-1.5">{s.v}</div>
+          <div key={s.v} className="flex items-center gap-3 px-4 py-3">
+            <div className={`h-11 w-11 shrink-0 rounded-xl grid place-items-center ${s.tint}`}>
+              <s.icon className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-2xl font-bold tabular-nums leading-tight">{s.k}</div>
+              <div className="text-xs text-muted-foreground truncate">{s.v}</div>
+            </div>
           </div>
         ))}
       </div>
@@ -143,36 +148,39 @@ function Stats() {
   );
 }
 
-/* ---------- HOW IT WORKS ---------- */
+/* ---------- HOW IT WORKS (5-step flow) ---------- */
 function HowItWorks() {
   const steps = [
-    { icon: Search, title: "Post or browse", text: "Share what you need or scroll through real requests from people nearby." },
-    { icon: BrainCircuit, title: "AI matches help", text: "Our assistant finds the right helpers and improves your request in seconds." },
-    { icon: HandHeart, title: "Get help, give back", text: "Connect, chat, complete the task. Karma points unlock badges and trust." },
+    { icon: Search, title: "Describe", text: "Describe your problem in simple words." },
+    { icon: BrainCircuit, title: "AI Improves", text: "Our AI improves your request for better reach." },
+    { icon: Users, title: "Get Matched", text: "Nearby people & NGOs are notified." },
+    { icon: MessageCircle, title: "Connect", text: "Chat and coordinate instantly." },
+    { icon: Star, title: "Help & Review", text: "Help is completed. Leave a review." },
   ];
   return (
-    <Section>
-      <div className="max-w-2xl mb-14">
-        <Eyebrow>How HumanLink Works</Eyebrow>
-        <h2 className="mt-4 text-4xl md:text-5xl font-bold tracking-tight">Three steps to make kindness happen</h2>
-        <p className="mt-4 text-lg text-muted-foreground">From a stuck moment to a smile — in minutes.</p>
-      </div>
-      <div className="grid gap-6 md:grid-cols-3">
+    <Section className="!py-16">
+      <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center">How HumanLink Works</h2>
+      <div className="mt-12 grid gap-6 md:grid-cols-5">
         {steps.map((s, i) => (
           <motion.div key={s.title} variants={fadeUp} custom={i} initial="hidden" whileInView="show" viewport={{ once: true }}
-            className="rounded-3xl border border-border bg-card p-8 hover:shadow-soft hover:-translate-y-1 transition-all duration-300">
-            <div className="h-12 w-12 rounded-2xl bg-primary/10 grid place-items-center text-primary">
+            className="relative text-center px-2">
+            {i < steps.length - 1 && (
+              <ArrowRight className="hidden md:block absolute top-7 -right-4 h-5 w-5 text-border" aria-hidden />
+            )}
+            <div className="mx-auto h-14 w-14 rounded-2xl bg-accent grid place-items-center text-primary shadow-soft">
               <s.icon className="h-6 w-6" />
             </div>
-            <div className="mt-6 text-xs font-semibold text-muted-foreground tracking-wider">STEP {String(i + 1).padStart(2, "0")}</div>
-            <h3 className="mt-1.5 text-xl font-semibold">{s.title}</h3>
-            <p className="mt-2.5 text-sm text-muted-foreground leading-relaxed">{s.text}</p>
+            <div className="mt-5 text-sm font-semibold">
+              <span className="text-primary mr-1.5">{i + 1}</span>{s.title}
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground leading-relaxed">{s.text}</p>
           </motion.div>
         ))}
       </div>
     </Section>
   );
 }
+
 
 /* ---------- CATEGORIES ---------- */
 function Categories() {
