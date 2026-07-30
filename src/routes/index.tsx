@@ -588,18 +588,19 @@ function Landing() {
       <main>
         <Hero />
         <Stats />
-        <Categories />
         <HowItWorks />
+        <Testimonials />
+        <DownloadApp />
+        <Categories />
         <WhyHumanLink />
         <AIShowcase />
         <Impact />
         <SuccessStories />
         <TopHelpers />
         <LeadershipVoice />
-        <Testimonials />
-        <DownloadApp />
         <FAQ />
         <CTA />
+
       </main>
       <Footer />
     </div>
