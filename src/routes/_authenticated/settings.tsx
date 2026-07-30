@@ -670,7 +670,10 @@ function PreferencesSection() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await supabase.from("profiles").select("location, search_radius, availability, categories, skills, emergency_contact, preferred_language").eq("id", user.id).maybeSingle();
+      const [{ data }, { data: priv }] = await Promise.all([
+        supabase.from("profiles").select("location, search_radius, availability, categories, skills, preferred_language").eq("id", user.id).maybeSingle(),
+        supabase.from("profile_private").select("emergency_contact").eq("user_id", user.id).maybeSingle(),
+      ]);
       if (data) {
         const d = data as Record<string, unknown>;
         setForm({
@@ -679,7 +682,7 @@ function PreferencesSection() {
           availability: (d.availability as string) ?? "",
           categories: ((d.categories as string[]) ?? []).join(", "),
           skills: ((d.skills as string[]) ?? []).join(", "),
-          emergency_contact: (d.emergency_contact as string) ?? "",
+          emergency_contact: (priv?.emergency_contact as string) ?? "",
           preferred_language: (d.preferred_language as string) ?? "",
         });
       }
@@ -696,11 +699,14 @@ function PreferencesSection() {
       availability: form.availability || null,
       categories: form.categories.split(",").map((s) => s.trim()).filter(Boolean),
       skills: form.skills.split(",").map((s) => s.trim()).filter(Boolean),
-      emergency_contact: form.emergency_contact.trim() || null,
       preferred_language: form.preferred_language || null,
     }).eq("id", user.id);
+    const { error: privError } = await supabase.from("profile_private").upsert({
+      user_id: user.id,
+      emergency_contact: form.emergency_contact.trim() || null,
+    });
     setSaving(false);
-    if (error) return toast.error(error.message);
+    if (error || privError) return toast.error((error ?? privError)!.message);
     toast.success("Preferences saved");
   };
 
