@@ -136,22 +136,24 @@ function AccountSection() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const [{ data: p }, { data: c }] = await Promise.all([
+      const [{ data: p }, { data: c }, { data: pv }] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
         supabase.from("profile_contacts").select("phone").eq("user_id", user.id).maybeSingle(),
+        supabase.from("profile_private").select("date_of_birth, gender, address").eq("user_id", user.id).maybeSingle(),
       ]);
       if (p) {
         const pp = p as Record<string, unknown>;
+        const priv = (pv ?? {}) as Record<string, unknown>;
         setForm({
           full_name: (pp.full_name as string) ?? "",
           username: (pp.username as string) ?? "",
           bio: (pp.bio as string) ?? "",
           avatar_url: (pp.avatar_url as string) ?? "",
           cover_url: (pp.cover_url as string) ?? "",
-          date_of_birth: (pp.date_of_birth as string) ?? "",
-          gender: (pp.gender as string) ?? "",
+          date_of_birth: (priv.date_of_birth as string) ?? "",
+          gender: (priv.gender as string) ?? "",
           profession: (pp.profession as string) ?? "",
-          address: (pp.address as string) ?? "",
+          address: (priv.address as string) ?? "",
           country: (pp.country as string) ?? "",
           state: (pp.state as string) ?? "",
           city: (pp.city as string) ?? "",
