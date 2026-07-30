@@ -191,20 +191,23 @@ function AccountSection() {
       full_name: form.full_name.trim(),
       username: form.username.trim() || null,
       bio: form.bio.trim() || null,
-      date_of_birth: form.date_of_birth || null,
-      gender: form.gender || null,
       profession: form.profession.trim() || null,
-      address: form.address.trim() || null,
       country: form.country.trim() || null,
       state: form.state.trim() || null,
       city: form.city.trim() || null,
       preferred_language: form.preferred_language || null,
     }).eq("id", user.id);
+    const { error: privError } = await supabase.from("profile_private").upsert({
+      user_id: user.id,
+      date_of_birth: form.date_of_birth || null,
+      gender: form.gender || null,
+      address: form.address.trim() || null,
+    });
     if (phone.trim()) {
       await supabase.from("profile_contacts").upsert({ user_id: user.id, phone: phone.trim() });
     }
     setSaving(false);
-    if (error) return toast.error(error.message);
+    if (error || privError) return toast.error((error ?? privError)!.message);
     toast.success("Profile saved");
   };
 
