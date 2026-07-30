@@ -145,7 +145,9 @@ function AuthedLayout() {
         </div>
 
         <main className="min-h-[80vh]">
-          <Outlet />
+          <PageTransition>
+            <Outlet />
+          </PageTransition>
         </main>
 
         <HumiAssistant />
