@@ -57,44 +57,65 @@ function Dashboard() {
     { label: "Completed", value: stats.completed, icon: CheckCircle2, tint: "text-violet-600 bg-violet-500/10" },
   ];
 
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
+
+  const quick = [
+    { to: "/requests/new" as const, label: "Need Help", sub: "Create a help request", icon: HeartHandshake, tint: "bg-primary text-primary-foreground" },
+    { to: "/requests" as const, label: "Offer Help", sub: "Help someone in need", icon: Award, tint: "bg-brand text-white" },
+    { to: "/requests/new" as const, label: "Emergency", sub: "Get urgent assistance", icon: Clock, tint: "bg-destructive text-destructive-foreground" },
+  ];
+
   return (
     <div className="space-y-6 pb-28 lg:pb-6">
-      {/* Hero */}
+      {/* Greeting */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: "easeOut" }}
-        className="rounded-3xl bg-card border border-border p-6 md:p-8 shadow-soft"
+        className="space-y-1"
       >
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Welcome back</div>
-            <h1 className="text-3xl md:text-4xl font-semibold tracking-tight mt-1.5">
-              Hi, <span className="text-primary">{profile?.full_name || "friend"}</span> 👋
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1.5">Ready to spread some kindness today?</p>
-          </div>
-          <div className="flex gap-2">
-            <Link to="/requests/new">
-              <Button className="h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-sm">
-                <Plus className="h-4 w-4 mr-1.5" /> Ask for help
-              </Button>
-            </Link>
-            <Link to="/requests">
-              <Button variant="outline" className="h-10 rounded-xl">Browse</Button>
-            </Link>
-            <Link to="/settings" className="hidden sm:block">
-              <Button variant="outline" className="h-10 rounded-xl">Settings</Button>
-            </Link>
-          </div>
-        </div>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+          {greeting}, <span className="text-foreground">{profile?.full_name || "friend"}</span> 👋
+        </h1>
+        <p className="text-sm text-muted-foreground">How can we help today?</p>
       </motion.div>
+
+      {/* Quick actions */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {quick.map((q, i) => (
+          <motion.div key={q.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+            <Link to={q.to} className="block rounded-2xl border border-border bg-card p-5 shadow-soft hover-lift">
+              <div className={`h-10 w-10 rounded-full grid place-items-center ${q.tint}`}>
+                <q.icon className="h-5 w-5" />
+              </div>
+              <div className="mt-3.5 text-sm font-semibold">{q.label}</div>
+              <div className="text-xs text-muted-foreground mt-0.5">{q.sub}</div>
+            </Link>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* AI assistant banner */}
+      <div className="rounded-2xl border border-border bg-card p-5 shadow-soft flex items-center gap-4">
+        <div className="h-12 w-12 shrink-0 rounded-2xl bg-accent grid place-items-center text-primary">
+          <Sparkles className="h-6 w-6" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-base font-semibold text-primary">AI Assistant</div>
+          <div className="text-xs text-muted-foreground">How can I help you today?</div>
+        </div>
+        <Link to="/requests/new">
+          <Button className="rounded-full h-9 px-5 bg-primary text-primary-foreground hover:bg-primary/90">Ask AI</Button>
+        </Link>
+      </div>
 
       <NotificationOptIn />
 
       <UserSearch />
 
       <SuggestedForYou />
+
 
       <Tabs value={tab} onValueChange={setTab} className="space-y-5">
         <TabsList className="bg-muted rounded-2xl p-1 h-11">

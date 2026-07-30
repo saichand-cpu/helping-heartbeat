@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import {
   Heart, Sparkles, Users, MessageCircle, Award, Search, ShieldCheck,
   HandHeart, BrainCircuit, MapPin, Star, ArrowRight, Check, Quote,
-  Apple, Play, Building2, Stethoscope, GraduationCap, Utensils, Compass,
+  Apple, Play, Building2, Stethoscope, GraduationCap, Utensils, Compass, CheckCircle2,
 } from "lucide-react";
 import heroImg from "@/assets/hero-humanlink.jpg";
 import { Navbar } from "@/components/site/Navbar";
@@ -121,21 +121,26 @@ function Hero() {
   );
 }
 
-/* ---------- STATS ---------- */
+/* ---------- STATS BAR (reference style) ---------- */
 function Stats() {
   const items = [
-    { k: "120K+", v: "People helped" },
-    { k: "45K", v: "Requests solved" },
-    { k: "8,200", v: "Verified NGOs" },
-    { k: "60K", v: "Active volunteers" },
+    { k: "50K+", v: "People Helped", icon: HandHeart, tint: "text-primary bg-primary/10" },
+    { k: "10K+", v: "Volunteers", icon: Users, tint: "text-brand bg-brand/10" },
+    { k: "500+", v: "Verified NGOs", icon: Building2, tint: "text-warning bg-warning/10" },
+    { k: "25K+", v: "Requests Solved", icon: CheckCircle2, tint: "text-primary bg-primary/10" },
   ];
   return (
-    <Section className="!py-14">
-      <div className="rounded-3xl border border-border bg-card px-8 py-10 grid grid-cols-2 md:grid-cols-4 gap-8 shadow-soft">
+    <Section className="!pt-0 !pb-14">
+      <div className="rounded-2xl border border-border bg-card px-4 py-6 md:px-8 grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-border shadow-soft">
         {items.map((s) => (
-          <div key={s.v} className="text-center">
-            <div className="text-3xl md:text-4xl font-bold text-primary tabular-nums">{s.k}</div>
-            <div className="text-xs md:text-sm text-muted-foreground mt-1.5">{s.v}</div>
+          <div key={s.v} className="flex items-center gap-3 px-4 py-3">
+            <div className={`h-11 w-11 shrink-0 rounded-xl grid place-items-center ${s.tint}`}>
+              <s.icon className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-2xl font-bold tabular-nums leading-tight">{s.k}</div>
+              <div className="text-xs text-muted-foreground truncate">{s.v}</div>
+            </div>
           </div>
         ))}
       </div>
@@ -143,36 +148,39 @@ function Stats() {
   );
 }
 
-/* ---------- HOW IT WORKS ---------- */
+/* ---------- HOW IT WORKS (5-step flow) ---------- */
 function HowItWorks() {
   const steps = [
-    { icon: Search, title: "Post or browse", text: "Share what you need or scroll through real requests from people nearby." },
-    { icon: BrainCircuit, title: "AI matches help", text: "Our assistant finds the right helpers and improves your request in seconds." },
-    { icon: HandHeart, title: "Get help, give back", text: "Connect, chat, complete the task. Karma points unlock badges and trust." },
+    { icon: Search, title: "Describe", text: "Describe your problem in simple words." },
+    { icon: BrainCircuit, title: "AI Improves", text: "Our AI improves your request for better reach." },
+    { icon: Users, title: "Get Matched", text: "Nearby people & NGOs are notified." },
+    { icon: MessageCircle, title: "Connect", text: "Chat and coordinate instantly." },
+    { icon: Star, title: "Help & Review", text: "Help is completed. Leave a review." },
   ];
   return (
-    <Section>
-      <div className="max-w-2xl mb-14">
-        <Eyebrow>How HumanLink Works</Eyebrow>
-        <h2 className="mt-4 text-4xl md:text-5xl font-bold tracking-tight">Three steps to make kindness happen</h2>
-        <p className="mt-4 text-lg text-muted-foreground">From a stuck moment to a smile — in minutes.</p>
-      </div>
-      <div className="grid gap-6 md:grid-cols-3">
+    <Section className="!py-16">
+      <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center">How HumanLink Works</h2>
+      <div className="mt-12 grid gap-6 md:grid-cols-5">
         {steps.map((s, i) => (
           <motion.div key={s.title} variants={fadeUp} custom={i} initial="hidden" whileInView="show" viewport={{ once: true }}
-            className="rounded-3xl border border-border bg-card p-8 hover:shadow-soft hover:-translate-y-1 transition-all duration-300">
-            <div className="h-12 w-12 rounded-2xl bg-primary/10 grid place-items-center text-primary">
+            className="relative text-center px-2">
+            {i < steps.length - 1 && (
+              <ArrowRight className="hidden md:block absolute top-7 -right-4 h-5 w-5 text-border" aria-hidden />
+            )}
+            <div className="mx-auto h-14 w-14 rounded-2xl bg-accent grid place-items-center text-primary shadow-soft">
               <s.icon className="h-6 w-6" />
             </div>
-            <div className="mt-6 text-xs font-semibold text-muted-foreground tracking-wider">STEP {String(i + 1).padStart(2, "0")}</div>
-            <h3 className="mt-1.5 text-xl font-semibold">{s.title}</h3>
-            <p className="mt-2.5 text-sm text-muted-foreground leading-relaxed">{s.text}</p>
+            <div className="mt-5 text-sm font-semibold">
+              <span className="text-primary mr-1.5">{i + 1}</span>{s.title}
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground leading-relaxed">{s.text}</p>
           </motion.div>
         ))}
       </div>
     </Section>
   );
 }
+
 
 /* ---------- CATEGORIES ---------- */
 function Categories() {
@@ -440,30 +448,27 @@ function LeadershipVoice() {
   );
 }
 
-/* ---------- TESTIMONIALS ---------- */
+/* ---------- TRUSTED BY THOUSANDS ---------- */
 function Testimonials() {
   const t = [
-    { name: "Elena R.", role: "Volunteer, Madrid", text: "HumanLink turned my afternoons into something meaningful. I've met incredible people." },
-    { name: "Jamal P.", role: "Community organizer", text: "We used HumanLink during the floods to coordinate help in real time. It saved lives." },
-    { name: "Hana K.", role: "Student", text: "Tutoring requests on HumanLink helped me find a mentor. Now I help others too." },
+    { name: "Rahul Sharma", initials: "RS", text: "I got a blood donor in just 30 minutes. HumanLink is a lifesaver!" },
+    { name: "NGO Hope", initials: "NH", text: "We received amazing volunteers for our NGO campaign." },
+    { name: "GreenTech Pvt Ltd", initials: "GT", text: "HumanLink helps our CSR programs reach the right people." },
   ];
   return (
-    <Section>
-      <div className="max-w-2xl mb-14 mx-auto text-center">
-        <Eyebrow>Testimonials</Eyebrow>
-        <h2 className="mt-4 text-4xl md:text-5xl font-bold tracking-tight">Loved by the kindest people</h2>
-      </div>
-      <div className="grid gap-5 md:grid-cols-3">
+    <Section className="!py-16">
+      <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center">Trusted by Thousands</h2>
+      <div className="mt-10 grid gap-5 md:grid-cols-3">
         {t.map((x, i) => (
           <motion.div key={x.name} variants={fadeUp} custom={i} initial="hidden" whileInView="show" viewport={{ once: true }}
-            className="rounded-3xl border border-border bg-card p-7">
+            className="rounded-2xl border border-border bg-card p-6 shadow-soft">
             <div className="flex gap-0.5">
-              {Array.from({ length: 5 }).map((_, k) => <Star key={k} className="h-4 w-4 fill-warning text-warning" />)}
+              {Array.from({ length: 5 }).map((_, k) => <Star key={k} className="h-3.5 w-3.5 fill-warning text-warning" />)}
             </div>
-            <p className="mt-4 text-[15px] leading-relaxed">"{x.text}"</p>
-            <div className="mt-6">
-              <div className="text-sm font-semibold">{x.name}</div>
-              <div className="text-xs text-muted-foreground">{x.role}</div>
+            <p className="mt-3 text-sm leading-relaxed text-foreground/90">"{x.text}"</p>
+            <div className="mt-5 flex items-center gap-3">
+              <div className="h-9 w-9 rounded-full bg-primary/10 text-primary grid place-items-center text-xs font-bold">{x.initials}</div>
+              <div className="text-sm font-medium">— {x.name}</div>
             </div>
           </motion.div>
         ))}
@@ -472,37 +477,47 @@ function Testimonials() {
   );
 }
 
-/* ---------- DOWNLOAD APP ---------- */
+/* ---------- DOWNLOAD APP (blue banner) ---------- */
 function DownloadApp() {
   return (
-    <Section>
-      <div className="rounded-3xl border border-border bg-gradient-soft p-10 md:p-14 grid md:grid-cols-2 gap-10 items-center">
-        <div>
-          <Eyebrow tone="brand">Mobile App</Eyebrow>
-          <h2 className="mt-4 text-4xl md:text-5xl font-bold tracking-tight">Kindness in your pocket</h2>
-          <p className="mt-4 text-lg text-muted-foreground">Get instant notifications, one-tap SOS, live location sharing, and AI matching — anywhere.</p>
+    <Section className="!py-14">
+      <div className="rounded-2xl bg-primary text-primary-foreground p-8 md:p-12 grid md:grid-cols-2 gap-10 items-center overflow-hidden relative">
+        <div className="absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-white/10 blur-3xl" aria-hidden />
+        <div className="relative">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Take HumanLink With You</h2>
+          <p className="mt-3 text-sm md:text-base text-primary-foreground/85 max-w-md">
+            Download the app and help people anytime, anywhere.
+          </p>
           <div className="mt-7 flex flex-wrap gap-3">
-            <Button size="lg" className="rounded-full h-12 px-6 bg-foreground text-background hover:bg-foreground/90">
-              <Apple className="mr-2 h-5 w-5" /> App Store
+            <Button size="lg" className="rounded-xl h-12 px-5 bg-foreground text-background hover:bg-foreground/90 justify-start">
+              <Apple className="mr-2 h-5 w-5" />
+              <span className="text-left leading-tight">
+                <span className="block text-[10px] opacity-80">Download on the</span>
+                <span className="block text-sm font-semibold">App Store</span>
+              </span>
             </Button>
-            <Button size="lg" variant="outline" className="rounded-full h-12 px-6 border-border">
-              <Play className="mr-2 h-5 w-5" /> Google Play
+            <Button size="lg" className="rounded-xl h-12 px-5 bg-foreground text-background hover:bg-foreground/90 justify-start">
+              <Play className="mr-2 h-5 w-5" />
+              <span className="text-left leading-tight">
+                <span className="block text-[10px] opacity-80">GET IT ON</span>
+                <span className="block text-sm font-semibold">Google Play</span>
+              </span>
             </Button>
           </div>
         </div>
         <div className="relative mx-auto">
-          <div className="w-64 h-[520px] rounded-[3rem] bg-card border-8 border-foreground/90 shadow-pop p-3 relative">
-            <div className="absolute top-3 left-1/2 -translate-x-1/2 h-5 w-24 rounded-full bg-foreground/90" />
-            <div className="h-full w-full rounded-[2.2rem] bg-gradient-hero p-5 pt-10 space-y-3 overflow-hidden">
-              <div className="text-xs font-semibold text-muted-foreground">Good afternoon</div>
-              <div className="text-xl font-bold">How can we help?</div>
-              <div className="rounded-2xl bg-card border border-border p-3 shadow-soft mt-3">
-                <div className="flex items-center gap-2 text-xs text-primary font-semibold"><Sparkles className="h-3 w-3" /> AI SUGGESTION</div>
-                <div className="mt-1 text-sm font-medium">3 helpers near you</div>
+          <div className="w-56 h-[420px] rounded-[2.5rem] bg-card border-8 border-foreground/90 shadow-pop p-3 relative">
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 h-4 w-20 rounded-full bg-foreground/90" />
+            <div className="h-full w-full rounded-[1.8rem] bg-secondary p-4 pt-9 space-y-2.5 overflow-hidden">
+              <div className="text-[10px] font-semibold text-muted-foreground">Good afternoon</div>
+              <div className="text-lg font-bold text-foreground">How can we help?</div>
+              <div className="rounded-xl bg-card border border-border p-2.5 shadow-soft">
+                <div className="flex items-center gap-1.5 text-[10px] text-primary font-semibold"><Sparkles className="h-3 w-3" /> AI ASSISTANT</div>
+                <div className="mt-1 text-xs font-medium text-foreground">3 helpers near you</div>
               </div>
-              <div className="rounded-2xl bg-primary text-primary-foreground p-3 text-sm font-medium">Need Help Now</div>
-              <div className="rounded-2xl bg-brand text-white p-3 text-sm font-medium">Offer Help</div>
-              <div className="rounded-2xl bg-destructive/90 text-destructive-foreground p-3 text-sm font-medium">Emergency SOS</div>
+              <div className="rounded-xl bg-primary text-primary-foreground p-2.5 text-xs font-medium">Need Help</div>
+              <div className="rounded-xl bg-brand text-white p-2.5 text-xs font-medium">Offer Help</div>
+              <div className="rounded-xl bg-destructive text-destructive-foreground p-2.5 text-xs font-medium">Emergency</div>
             </div>
           </div>
         </div>
@@ -510,6 +525,7 @@ function DownloadApp() {
     </Section>
   );
 }
+
 
 /* ---------- FAQ ---------- */
 function FAQ() {
@@ -572,18 +588,19 @@ function Landing() {
       <main>
         <Hero />
         <Stats />
-        <Categories />
         <HowItWorks />
+        <Testimonials />
+        <DownloadApp />
+        <Categories />
         <WhyHumanLink />
         <AIShowcase />
         <Impact />
         <SuccessStories />
         <TopHelpers />
         <LeadershipVoice />
-        <Testimonials />
-        <DownloadApp />
         <FAQ />
         <CTA />
+
       </main>
       <Footer />
     </div>
