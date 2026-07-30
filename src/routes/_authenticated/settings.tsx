@@ -136,22 +136,24 @@ function AccountSection() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const [{ data: p }, { data: c }] = await Promise.all([
+      const [{ data: p }, { data: c }, { data: pv }] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
         supabase.from("profile_contacts").select("phone").eq("user_id", user.id).maybeSingle(),
+        supabase.from("profile_private").select("date_of_birth, gender, address").eq("user_id", user.id).maybeSingle(),
       ]);
       if (p) {
         const pp = p as Record<string, unknown>;
+        const priv = (pv ?? {}) as Record<string, unknown>;
         setForm({
           full_name: (pp.full_name as string) ?? "",
           username: (pp.username as string) ?? "",
           bio: (pp.bio as string) ?? "",
           avatar_url: (pp.avatar_url as string) ?? "",
           cover_url: (pp.cover_url as string) ?? "",
-          date_of_birth: (pp.date_of_birth as string) ?? "",
-          gender: (pp.gender as string) ?? "",
+          date_of_birth: (priv.date_of_birth as string) ?? "",
+          gender: (priv.gender as string) ?? "",
           profession: (pp.profession as string) ?? "",
-          address: (pp.address as string) ?? "",
+          address: (priv.address as string) ?? "",
           country: (pp.country as string) ?? "",
           state: (pp.state as string) ?? "",
           city: (pp.city as string) ?? "",
@@ -189,20 +191,23 @@ function AccountSection() {
       full_name: form.full_name.trim(),
       username: form.username.trim() || null,
       bio: form.bio.trim() || null,
-      date_of_birth: form.date_of_birth || null,
-      gender: form.gender || null,
       profession: form.profession.trim() || null,
-      address: form.address.trim() || null,
       country: form.country.trim() || null,
       state: form.state.trim() || null,
       city: form.city.trim() || null,
       preferred_language: form.preferred_language || null,
     }).eq("id", user.id);
+    const { error: privError } = await supabase.from("profile_private").upsert({
+      user_id: user.id,
+      date_of_birth: form.date_of_birth || null,
+      gender: form.gender || null,
+      address: form.address.trim() || null,
+    });
     if (phone.trim()) {
       await supabase.from("profile_contacts").upsert({ user_id: user.id, phone: phone.trim() });
     }
     setSaving(false);
-    if (error) return toast.error(error.message);
+    if (error || privError) return toast.error((error ?? privError)!.message);
     toast.success("Profile saved");
   };
 
@@ -665,7 +670,10 @@ function PreferencesSection() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await supabase.from("profiles").select("location, search_radius, availability, categories, skills, emergency_contact, preferred_language").eq("id", user.id).maybeSingle();
+      const [{ data }, { data: priv }] = await Promise.all([
+        supabase.from("profiles").select("location, search_radius, availability, categories, skills, preferred_language").eq("id", user.id).maybeSingle(),
+        supabase.from("profile_private").select("emergency_contact").eq("user_id", user.id).maybeSingle(),
+      ]);
       if (data) {
         const d = data as Record<string, unknown>;
         setForm({
@@ -674,7 +682,7 @@ function PreferencesSection() {
           availability: (d.availability as string) ?? "",
           categories: ((d.categories as string[]) ?? []).join(", "),
           skills: ((d.skills as string[]) ?? []).join(", "),
-          emergency_contact: (d.emergency_contact as string) ?? "",
+          emergency_contact: (priv?.emergency_contact as string) ?? "",
           preferred_language: (d.preferred_language as string) ?? "",
         });
       }
@@ -691,11 +699,14 @@ function PreferencesSection() {
       availability: form.availability || null,
       categories: form.categories.split(",").map((s) => s.trim()).filter(Boolean),
       skills: form.skills.split(",").map((s) => s.trim()).filter(Boolean),
-      emergency_contact: form.emergency_contact.trim() || null,
       preferred_language: form.preferred_language || null,
     }).eq("id", user.id);
+    const { error: privError } = await supabase.from("profile_private").upsert({
+      user_id: user.id,
+      emergency_contact: form.emergency_contact.trim() || null,
+    });
     setSaving(false);
-    if (error) return toast.error(error.message);
+    if (error || privError) return toast.error((error ?? privError)!.message);
     toast.success("Preferences saved");
   };
 

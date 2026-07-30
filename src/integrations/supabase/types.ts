@@ -796,10 +796,39 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_private: {
+        Row: {
+          address: string | null
+          created_at: string
+          date_of_birth: string | null
+          emergency_contact: string | null
+          gender: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          emergency_contact?: string | null
+          gender?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          emergency_contact?: string | null
+          gender?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           account_type: string
-          address: string | null
           availability: string | null
           avatar_url: string | null
           bio: string | null
@@ -809,12 +838,9 @@ export type Database = {
           country: string | null
           cover_url: string | null
           created_at: string
-          date_of_birth: string | null
           deactivated_at: string | null
-          emergency_contact: string | null
           full_name: string
           fundraising_link: string | null
-          gender: string | null
           id: string
           incognito: boolean
           interests: string[] | null
@@ -844,7 +870,6 @@ export type Database = {
         }
         Insert: {
           account_type?: string
-          address?: string | null
           availability?: string | null
           avatar_url?: string | null
           bio?: string | null
@@ -854,12 +879,9 @@ export type Database = {
           country?: string | null
           cover_url?: string | null
           created_at?: string
-          date_of_birth?: string | null
           deactivated_at?: string | null
-          emergency_contact?: string | null
           full_name?: string
           fundraising_link?: string | null
-          gender?: string | null
           id: string
           incognito?: boolean
           interests?: string[] | null
@@ -889,7 +911,6 @@ export type Database = {
         }
         Update: {
           account_type?: string
-          address?: string | null
           availability?: string | null
           avatar_url?: string | null
           bio?: string | null
@@ -899,12 +920,9 @@ export type Database = {
           country?: string | null
           cover_url?: string | null
           created_at?: string
-          date_of_birth?: string | null
           deactivated_at?: string | null
-          emergency_contact?: string | null
           full_name?: string
           fundraising_link?: string | null
-          gender?: string | null
           id?: string
           incognito?: boolean
           interests?: string[] | null
@@ -1360,7 +1378,6 @@ export type Database = {
         Args: { _plan_id: string }
         Returns: {
           account_type: string
-          address: string | null
           availability: string | null
           avatar_url: string | null
           bio: string | null
@@ -1370,12 +1387,9 @@ export type Database = {
           country: string | null
           cover_url: string | null
           created_at: string
-          date_of_birth: string | null
           deactivated_at: string | null
-          emergency_contact: string | null
           full_name: string
           fundraising_link: string | null
-          gender: string | null
           id: string
           incognito: boolean
           interests: string[] | null
@@ -1409,6 +1423,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      can_view_follow_list: {
+        Args: { _owner: string; _viewer: string; _which: string }
+        Returns: boolean
       }
       contribute_to_capsule: {
         Args: { _amount: number; _capsule_id: string }
