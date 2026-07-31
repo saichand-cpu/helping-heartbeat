@@ -31,7 +31,7 @@ export const SEGMENT_OPTIONS: {
   label: string;
   dot: string;
 }[] = [
-  { value: "all", label: "All", dot: "bg-white/60" },
+  { value: "all", label: "All", dot: "bg-muted-foreground" },
   { value: "personal", label: "Personal Needs", dot: "bg-blue-500" },
-  { value: "business", label: "Verified Businesses", dot: "bg-amber-500" },
+  { value: "business", label: "Verified Businesses", dot: "bg-primary" },
 ];

@@ -186,9 +186,9 @@ function RequestsBrowse() {
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           {([
-            { v: "all", label: "All causes", dot: "bg-white/40" },
+            { v: "all", label: "All causes", dot: "bg-muted-foreground" },
             { v: "ngo", label: "♥ NGOs & Community", dot: "bg-emerald-500" },
-            { v: "business", label: "★ Businesses", dot: "bg-amber-500" },
+            { v: "business", label: "★ Businesses", dot: "bg-primary" },
             { v: "personal", label: "• People", dot: "bg-blue-500" },
           ] as const).map(({ v, label, dot }) => {
             const active = seg === v;
@@ -271,7 +271,7 @@ function RequestsBrowse() {
                         title={r.requester_id === meId ? "Remove request" : "Admin archive"}
                         className={r.requester_id === meId
                           ? "h-8 w-8 rounded-lg text-red-500 hover:text-red-400 hover:bg-red-500/10"
-                          : "h-8 w-8 rounded-lg text-amber-400 hover:text-amber-300 hover:bg-amber-500/10"}
+                          : "h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-accent"}
                       >
                         {r.requester_id === meId ? <Trash2 className="h-4 w-4" /> : <ShieldAlert className="h-4 w-4" />}
                       </Button>
