@@ -77,7 +77,7 @@ export function CallOverlay({ status, peerName, peerAvatar, muted, onAccept, onD
                       onClick={onToggleMute}
                       size="icon"
                       variant="outline"
-                      className="h-12 w-12 rounded-full border-amber-500/40 text-amber-400 hover:bg-amber-500/10"
+                      className="h-12 w-12 rounded-full border-border text-foreground hover:bg-accent"
                       aria-label={muted ? "Unmute" : "Mute"}
                     >
                       {muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}

@@ -251,7 +251,7 @@ function PublicProfile() {
               (isOrgNgo
                 ? "ring-4 ring-emerald-300/80 shadow-[0_0_24px_-4px_rgba(16,185,129,0.9)]"
                 : isBusiness
-                  ? "ring-4 ring-amber-300/90 shadow-[0_0_28px_-2px_rgba(245,158,11,0.95)] outline outline-2 outline-offset-2 outline-amber-400/70"
+                  ? "ring-2 ring-primary-foreground/50"
                   : "")
             }>
               {profile.incognito ? <EyeOff className="h-8 w-8" /> :
@@ -270,13 +270,13 @@ function PublicProfile() {
                 </span>
               )}
               {isBusiness && !isOrgNgo && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 text-amber-950 text-[10px] font-black uppercase tracking-wider px-2 py-1 shadow-[0_0_12px_rgba(245,158,11,0.9)]">
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary-foreground/15 text-primary-foreground text-[10px] font-semibold uppercase tracking-wider px-2 py-1">
                   <ShieldCheck className="h-3 w-3" /> Pro
                 </span>
               )}
             </div>
             {isBusiness && profile?.profession && !profile.incognito && (
-              <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-amber-400/95 text-amber-950 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide shadow-[0_0_14px_-2px_rgba(245,158,11,0.8)]">
+              <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-primary-foreground/15 text-primary-foreground px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide">
                 <Briefcase className="h-3 w-3" /> {profile.profession}
               </div>
             )}
