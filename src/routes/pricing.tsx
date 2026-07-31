@@ -108,13 +108,13 @@ function Pricing() {
                 className={cn(
                   "rounded-3xl p-8 border relative overflow-hidden",
                   isGold
-                    ? "border-amber-500/60 bg-gradient-to-br from-amber-500/15 via-card to-card shadow-[0_0_35px_-10px_rgba(245,158,11,0.5)]"
+                    ? "border-primary/60 bg-primary/5 shadow-pop"
                     : "border-emerald-500/60 bg-gradient-to-br from-emerald-500/15 via-card to-card shadow-[0_0_35px_-10px_rgba(16,185,129,0.5)]",
                 )}
               >
                 <div className="flex items-center gap-2 text-sm opacity-90">
                   {isGold ? (
-                    <Crown className="h-4 w-4 text-amber-500" />
+                    <Crown className="h-4 w-4 text-primary" />
                   ) : (
                     <HeartHandshake className="h-4 w-4 text-emerald-500" />
                   )}
@@ -128,7 +128,7 @@ function Pricing() {
                 <ul className="mt-6 space-y-2 text-sm">
                   {c.perks.map((p) => (
                     <li key={p} className="flex gap-2">
-                      <Check className={cn("h-4 w-4", isGold ? "text-amber-500" : "text-emerald-500")} /> {p}
+                      <Check className={cn("h-4 w-4", isGold ? "text-primary" : "text-emerald-500")} /> {p}
                     </li>
                   ))}
                 </ul>
@@ -137,7 +137,7 @@ function Pricing() {
                   className={cn(
                     "mt-8 w-full border-0 shadow-sm",
                     isGold
-                      ? "bg-amber-500 hover:bg-amber-500/90 text-black"
+                      ? "bg-primary hover:bg-primary/90 text-primary-foreground"
                       : "bg-emerald-500 hover:bg-emerald-500/90 text-black",
                   )}
                 >

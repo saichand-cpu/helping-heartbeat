@@ -138,7 +138,7 @@ function CapsulesPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className={`relative rounded-3xl border p-5 shadow-soft overflow-hidden ${
-                  unlocked ? "border-amber-400/60 bg-gradient-to-br from-amber-500/10 via-card to-primary/10" : "border-border bg-card"
+                  unlocked ? "border-primary/40 bg-primary/5" : "border-border bg-card"
                 }`}
               >
                 <div className="flex items-start justify-between gap-3">
@@ -147,7 +147,7 @@ function CapsulesPage() {
                     {c.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-3">{c.description}</p>}
                   </div>
                   {unlocked ? (
-                    <Unlock className="h-5 w-5 text-amber-500 shrink-0" />
+                    <Unlock className="h-5 w-5 text-primary shrink-0" />
                   ) : (
                     <Lock className="h-5 w-5 text-muted-foreground shrink-0" />
                   )}
@@ -161,7 +161,7 @@ function CapsulesPage() {
                 </div>
                 {unlocked ? (
                   <div className="mt-4 space-y-3">
-                    <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-400/20 to-primary/20 text-sm border border-amber-400/40">
+                    <div className="p-4 rounded-2xl bg-primary/10 text-sm border border-primary/30">
                       <div className="font-semibold mb-1">🎉 Unlocked!</div>
                       Unlocked on {new Date(c.unlocked_at!).toLocaleDateString()} — thank you, community.
                     </div>
@@ -246,7 +246,7 @@ function ProofGallery({ capsule }: { capsule: Capsule }) {
       {proofs.length > 0 ? (
         <div className="grid grid-cols-2 gap-2">
           {proofs.map((p) => (
-            <div key={p.id} className="relative rounded-xl overflow-hidden border border-amber-400/30 bg-card group">
+            <div key={p.id} className="relative rounded-xl overflow-hidden border border-border bg-card group">
               {signed[p.id] ? (
                 <img src={signed[p.id]} alt={p.caption ?? "proof"} className="w-full h-32 object-cover" />
               ) : <div className="w-full h-32 bg-muted animate-pulse" />}
@@ -263,7 +263,7 @@ function ProofGallery({ capsule }: { capsule: Capsule }) {
         <p className="text-xs text-muted-foreground">No proof shared yet.</p>
       )}
       {isOwner && (
-        <div className="rounded-2xl border border-dashed border-amber-400/50 p-3 space-y-2 bg-amber-500/[0.03]">
+        <div className="rounded-2xl border border-dashed border-border p-3 space-y-2 bg-muted/40">
           <Input
             placeholder="Caption (optional)"
             value={caption}

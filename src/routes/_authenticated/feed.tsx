@@ -249,7 +249,7 @@ function FeedPage() {
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-2">
             {isAdmin && (
-              <label className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
+              <label className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Switch checked={announce} onCheckedChange={setAnnounce} />
                 <Megaphone className="h-3.5 w-3.5" /> Official
               </label>
@@ -345,7 +345,7 @@ function PostCard({
   }, [post.image_url]);
 
   const announcementClass = post.is_announcement
-    ? "ring-2 ring-amber-400/70 shadow-[0_0_24px_-4px_rgba(245,158,11,0.6)] bg-gradient-to-br from-primary/[0.04] via-card to-amber-500/[0.04]"
+    ? "ring-1 ring-primary/30 bg-card"
     : "bg-card";
 
   return (
@@ -356,7 +356,7 @@ function PostCard({
       className={`rounded-3xl border border-border p-5 shadow-soft ${announcementClass}`}
     >
       {post.is_announcement && (
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-primary to-amber-500 text-white text-[11px] font-bold uppercase tracking-wide mb-3">
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary text-primary-foreground text-[11px] font-semibold uppercase tracking-wide mb-3">
           <Megaphone className="h-3 w-3" /> Official Announcement
         </div>
       )}
@@ -548,7 +548,7 @@ function AdCard({ ad }: { ad: Ad }) {
       target="_blank"
       rel="noopener noreferrer"
       onClick={onClick}
-      className="block rounded-3xl border border-dashed border-primary/40 bg-gradient-to-br from-primary/5 to-amber-500/5 p-5 hover:shadow-pop transition"
+      className="block rounded-3xl border border-dashed border-primary/40 bg-primary/5 p-5 hover:shadow-pop transition"
     >
       <div className="flex items-center justify-between mb-2">
         <span className="text-[10px] uppercase tracking-wider text-muted-foreground bg-background/60 px-2 py-0.5 rounded-full">Sponsored</span>

@@ -68,7 +68,7 @@ export function UserCard({
           isNgo
             ? "border-emerald-500/40 shadow-[0_0_20px_-8px_rgba(16,185,129,0.6)]"
             : isBusiness
-              ? "border-amber-400/40 shadow-[0_0_20px_-8px_rgba(245,158,11,0.6)]"
+              ? "border-amber-400/40"
               : "border-border",
           compact ? "p-3" : "p-5",
         )}
@@ -77,7 +77,7 @@ export function UserCard({
           <div className="relative shrink-0">
             <Avatar className={cn(
               compact ? "h-11 w-11" : "h-14 w-14",
-              isBusiness ? "ring-2 ring-amber-400/70" : isNgo ? "ring-2 ring-emerald-400/70" : "ring-2 ring-primary/20",
+              isBusiness ? "ring-2 ring-amber-400/50" : isNgo ? "ring-2 ring-emerald-400/70" : "ring-2 ring-primary/20",
             )}>
               {id.avatar_url && <AvatarImage src={id.avatar_url} />}
               <AvatarFallback className={compact ? "text-sm" : "text-lg"}>{id.initial}</AvatarFallback>
@@ -151,7 +151,7 @@ export function UserCard({
               <Button
                 size="sm"
                 onClick={message}
-                className="h-8 rounded-full px-3 text-xs bg-[hsl(220_90%_56%)] hover:bg-[hsl(220_90%_50%)] text-white border-0"
+                className="h-8 rounded-full px-3 text-xs bg-primary hover:bg-primary/90 text-primary-foreground border-0"
               >
                 <MessageCircle className="h-3 w-3 mr-1" /> Message
               </Button>

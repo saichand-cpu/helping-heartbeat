@@ -36,7 +36,7 @@ export function CallOverlay({ status, peerName, peerAvatar, muted, onAccept, onD
             initial={{ scale: 0.92, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0 }}
-            className="w-full max-w-sm rounded-3xl border border-amber-500/40 bg-black/90 p-8 text-center shadow-[0_0_60px_-15px_rgba(251,191,36,0.5)]"
+            className="w-full max-w-sm rounded-3xl border border-white/15 bg-black/90 p-8 text-center shadow-pop"
           >
             <div className="mx-auto h-24 w-24 rounded-full bg-primary grid place-items-center text-primary-foreground text-3xl font-bold overflow-hidden shadow-sm">
               {peerAvatar
@@ -44,7 +44,7 @@ export function CallOverlay({ status, peerName, peerAvatar, muted, onAccept, onD
                 : (peerName || "U").charAt(0)}
             </div>
             <div className="mt-5 text-lg font-semibold text-white truncate">{peerName || "User"}</div>
-            <div className="mt-1 text-xs uppercase tracking-wider text-amber-400 flex items-center justify-center gap-2">
+            <div className="mt-1 text-xs uppercase tracking-wider text-white/70 flex items-center justify-center gap-2">
               {(status === "ringing-out" || status === "connecting") && <Loader2 className="h-3 w-3 animate-spin" />}
               {status === "connected" && <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />}
               {label}
@@ -77,7 +77,7 @@ export function CallOverlay({ status, peerName, peerAvatar, muted, onAccept, onD
                       onClick={onToggleMute}
                       size="icon"
                       variant="outline"
-                      className="h-12 w-12 rounded-full border-amber-500/40 text-amber-400 hover:bg-amber-500/10"
+                      className="h-12 w-12 rounded-full border-border text-foreground hover:bg-accent"
                       aria-label={muted ? "Unmute" : "Mute"}
                     >
                       {muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}

@@ -491,14 +491,14 @@ function MessagesPage() {
                         <span className="text-[10px] text-muted-foreground">{c?.time ? new Date(c.time).toLocaleDateString() : ""}</span>
                       </div>
                       {c?.profession && (
-                        <div className="text-[10px] text-amber-500/90 truncate">{c.profession}</div>
+                        <div className="text-[10px] text-muted-foreground truncate">{c.profession}</div>
                       )}
                       <div className="flex items-center gap-2">
                         <div className="text-xs text-muted-foreground truncate flex-1">
                           {parseImage(c.last) ? "📷 Photo" : parseLocation(c.last) ? "📍 Location" : parseCall(c.last) ? "📞 Call" : c.last}
                         </div>
                         {c.unread > 0 && (
-                          <span className="text-[10px] font-bold rounded-full bg-amber-500 text-black px-1.5 py-0.5 shadow-[0_0_8px_rgba(245,158,11,0.7)]">
+                          <span className="text-[10px] font-semibold rounded-full bg-primary text-primary-foreground px-1.5 py-0.5">
                             {c.unread}
                           </span>
                         )}
@@ -957,7 +957,7 @@ export function Thread({ me, other, onBack, onStartCall, isPeerOnline }: { me: s
           disabled={sharingLoc || sending}
           size="icon"
           variant="outline"
-          className="h-10 w-10 shrink-0 border-amber-500/40 text-amber-400 hover:bg-amber-500/10"
+          className="h-10 w-10 shrink-0 border-border text-foreground hover:bg-accent"
           aria-label="Share location"
           title="Share your current location"
         >

@@ -327,7 +327,7 @@ function RequestDetailsPage() {
               {request.location && (
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <MapPin className="h-4 w-4 text-amber-400" />
+                    <MapPin className="h-4 w-4 text-primary" />
                     <h3 className="text-sm font-semibold">Location</h3>
                   </div>
                   {pins?.length ? (
@@ -407,7 +407,7 @@ function RequestDetailsPage() {
                     <PhoneCall className="h-4 w-4 mr-1" /> Call
                   </Button>
                   {phone ? (
-                    <Button asChild variant="outline" size="sm" className="border-amber-500/40 text-amber-400 hover:bg-amber-500/10">
+                    <Button asChild variant="outline" size="sm" className="border-border text-foreground hover:bg-accent">
                       <a href={`tel:${phone}`}><Phone className="h-4 w-4 mr-1" /> {phone}</a>
                     </Button>
                   ) : (

@@ -15,7 +15,7 @@ export function VerifiedBadge({
       title={tier ? `${tier} verified` : "Verified"}
       className={cn(
         "inline-flex items-center justify-center rounded-full",
-        isPro && "text-amber-500 drop-shadow-[0_0_4px_rgba(245,158,11,0.6)]",
+        isPro && "text-amber-500",
         isNgo && "text-emerald-500 drop-shadow-[0_0_4px_rgba(16,185,129,0.6)]",
         !isPro && !isNgo && "text-primary",
         className,

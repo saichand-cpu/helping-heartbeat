@@ -192,7 +192,7 @@ function ProfilePage() {
       <div className="rounded-3xl bg-card border border-border p-5 md:p-6 shadow-pop">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 sm:gap-8">
           <div className="relative group shrink-0">
-            <div className="h-24 w-24 md:h-28 md:w-28 rounded-full overflow-hidden bg-gradient-to-br from-[hsl(220_90%_56%)] to-[hsl(220_95%_65%)] grid place-items-center text-white text-3xl font-bold ring-2 ring-[hsl(45_90%_55%)]/50">
+            <div className="h-24 w-24 md:h-28 md:w-28 rounded-full overflow-hidden bg-gradient-to-br from-primary to-primary grid place-items-center text-primary-foreground text-3xl font-bold ring-2 ring-border">
               {profile.avatar_url ? (
                 <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
               ) : initial}
@@ -201,7 +201,7 @@ function ProfilePage() {
               type="button"
               onClick={() => avatarInputRef.current?.click()}
               disabled={uploadingAvatar}
-              className="absolute inset-0 rounded-full bg-black/60 opacity-0 group-hover:opacity-100 transition grid place-items-center text-white"
+              className="absolute inset-0 rounded-full bg-black/60 opacity-0 group-hover:opacity-100 transition grid place-items-center text-primary-foreground"
               aria-label="Change profile picture"
             >
               {uploadingAvatar ? <Loader2 className="h-5 w-5 animate-spin" /> : <Camera className="h-5 w-5" />}
@@ -216,8 +216,8 @@ function ProfilePage() {
           </div>
           <div className="flex-1 min-w-0 w-full">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <h1 className="text-2xl md:text-3xl font-bold text-white truncate">{profile.full_name || "Your profile"}</h1>
-              {profile.verified && <ShieldCheck className="h-5 w-5 text-[hsl(220_95%_70%)]" />}
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground truncate">{profile.full_name || "Your profile"}</h1>
+              {profile.verified && <ShieldCheck className="h-5 w-5 text-primary" />}
             </div>
             <div className="grid grid-cols-3 gap-2 mt-4 max-w-md">
               {[
@@ -226,14 +226,14 @@ function ProfilePage() {
                 { n: follow.followingCount, l: "Following" },
               ].map((s) => (
                 <div key={s.l} className="text-center">
-                  <div className="text-xl md:text-2xl font-black text-white tabular-nums">{s.n.toLocaleString()}</div>
-                  <div className="text-[10px] uppercase tracking-[0.15em] text-[hsl(45_90%_60%)] mt-0.5 font-semibold">{s.l}</div>
+                  <div className="text-xl md:text-2xl font-black text-foreground tabular-nums">{s.n.toLocaleString()}</div>
+                  <div className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground mt-0.5 font-semibold">{s.l}</div>
                 </div>
               ))}
             </div>
-            <div className="mt-4 space-y-1 text-sm text-white/85">
+            <div className="mt-4 space-y-1 text-sm text-muted-foreground">
               {profile.location && (
-                <div className="inline-flex items-center gap-1 text-white/70">
+                <div className="inline-flex items-center gap-1 text-muted-foreground">
                   <MapPin className="h-3.5 w-3.5" /> {profile.location}
                 </div>
               )}
@@ -250,7 +250,7 @@ function ProfilePage() {
               <Button
                 type="button"
                 onClick={() => document.getElementById("edit-profile-form")?.scrollIntoView({ behavior: "smooth" })}
-                className="bg-[hsl(220_90%_56%)] hover:bg-[hsl(220_90%_50%)] text-white border-0 shadow-[0_0_20px_-4px_hsl(220_90%_56%/0.7)]"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground border-0 shadow-sm"
               >
                 Edit Bio
               </Button>

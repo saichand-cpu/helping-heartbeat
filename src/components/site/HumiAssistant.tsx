@@ -146,7 +146,7 @@ export function HumiAssistant() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label="Open HUMI assistant"
-        className="fixed bottom-44 right-4 lg:bottom-24 lg:right-6 z-50 h-14 w-14 rounded-full bg-gradient-to-br from-fuchsia-500 via-violet-500 to-indigo-500 text-white shadow-pop hover:shadow-lg grid place-items-center transition-transform hover:scale-105 active:scale-95"
+        className="fixed bottom-44 right-4 lg:bottom-24 lg:right-6 z-50 h-14 w-14 rounded-full bg-gradient-to-br from-primary to-primary text-primary-foreground shadow-pop hover:shadow-lg grid place-items-center transition-transform hover:scale-105 active:scale-95"
       >
         <Sparkles className="h-6 w-6" />
       </button>
@@ -162,7 +162,7 @@ export function HumiAssistant() {
           >
             {/* Header */}
             <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-gradient-to-r from-fuchsia-500/10 via-violet-500/10 to-indigo-500/10">
-              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-fuchsia-500 to-indigo-500 grid place-items-center text-white">
+              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-primary grid place-items-center text-primary-foreground">
                 <Sparkles className="h-5 w-5" />
               </div>
               <div className="flex-1 min-w-0">
@@ -181,7 +181,7 @@ export function HumiAssistant() {
             <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
               {messages.length === 0 && (
                 <div className="text-center text-sm text-muted-foreground space-y-3 mt-6">
-                  <div className="mx-auto h-14 w-14 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-indigo-500 grid place-items-center text-white">
+                  <div className="mx-auto h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-primary grid place-items-center text-primary-foreground">
                     <Sparkles className="h-7 w-7" />
                   </div>
                   <p className="font-medium text-foreground">Hi, I'm HUMI ✨</p>
@@ -267,7 +267,7 @@ export function HumiAssistant() {
                   size="icon"
                   onClick={send}
                   disabled={!input.trim() && attachments.length === 0}
-                  className="bg-gradient-to-br from-fuchsia-500 to-indigo-500 text-white border-0"
+                  className="bg-primary text-primary-foreground border-0"
                   aria-label="Send"
                 >
                   <Send className="h-4 w-4" />

@@ -39,7 +39,7 @@ export function NotificationBell() {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 exit={{ scale: 0 }}
-                className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 text-[10px] font-bold text-black grid place-items-center shadow-[0_0_10px_rgba(245,158,11,0.7)] animate-pulse"
+                className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-gradient-to-br from-primary to-primary text-[10px] font-bold text-primary-foreground grid place-items-center"
               >
                 {unread > 99 ? "99+" : unread}
               </motion.span>
@@ -89,12 +89,12 @@ export function NotificationBell() {
                       exit={{ opacity: 0 }}
                       className={cn(
                         "flex items-start gap-3 px-4 py-3 hover:bg-accent/40 transition-colors",
-                        !n.read && "bg-amber-500/[0.04]",
+                        !n.read && "bg-primary/[0.04]",
                       )}
                     >
                       <div className={cn(
                         "mt-1.5 h-2 w-2 rounded-full shrink-0",
-                        n.read ? "bg-muted-foreground/30" : "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]",
+                        n.read ? "bg-muted-foreground/30" : "bg-primary",
                       )} />
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium truncate">{n?.title ?? "Notification"}</div>

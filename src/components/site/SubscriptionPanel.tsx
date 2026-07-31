@@ -169,7 +169,7 @@ export function SubscriptionPanel() {
                 </Button>
                 <Button
                   onClick={() => setOpenCheckout("pro")}
-                  className="bg-amber-500 hover:bg-amber-500/90 text-black border-0 shadow-sm"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground border-0 shadow-sm"
                 >
                   <Crown className="h-4 w-4 mr-1" /> Pro · ₹599
                 </Button>
