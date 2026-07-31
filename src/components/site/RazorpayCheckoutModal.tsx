@@ -190,7 +190,7 @@ export function RazorpayCheckoutModal({
                         "text-left rounded-2xl border p-4 transition-all",
                         isActive
                           ? isGold
-                            ? "border-amber-500 bg-amber-500/10 shadow-[0_0_22px_-4px_rgba(245,158,11,0.55)]"
+                            ? "border-amber-500/60 bg-amber-500/10"
                             : "border-emerald-500 bg-emerald-500/10 shadow-[0_0_22px_-4px_rgba(16,185,129,0.55)]"
                           : "border-border bg-card hover:border-primary/40",
                       )}
