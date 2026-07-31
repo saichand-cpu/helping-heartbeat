@@ -156,10 +156,10 @@ function PublicProfile() {
   if (!profile) return (
     <div className="max-w-3xl mx-auto">
       <div className="rounded-3xl bg-card border border-border p-12 text-center shadow-pop">
-        <div className="h-24 w-24 mx-auto rounded-full bg-white/[0.04] border border-[hsl(45_90%_55%)]/30 grid place-items-center text-white/40 text-3xl mb-4">?</div>
-        <h2 className="text-xl font-bold text-white mb-1">User Profile Not Found</h2>
-        <p className="text-sm text-white/60 mb-5">This account may have been removed or the link is broken.</p>
-        <Link to="/requests"><Button variant="outline" className="border-[hsl(45_90%_55%)]/40 text-white hover:bg-white/5"><ArrowLeft className="h-4 w-4 mr-1" /> Back to requests</Button></Link>
+        <div className="h-24 w-24 mx-auto rounded-full bg-muted/50 border border-border grid place-items-center text-muted-foreground text-3xl mb-4">?</div>
+        <h2 className="text-xl font-bold text-foreground mb-1">User Profile Not Found</h2>
+        <p className="text-sm text-muted-foreground mb-5">This account may have been removed or the link is broken.</p>
+        <Link to="/requests"><Button variant="outline" className="border-border text-foreground hover:bg-accent"><ArrowLeft className="h-4 w-4 mr-1" /> Back to requests</Button></Link>
       </div>
     </div>
   );
@@ -281,7 +281,7 @@ function PublicProfile() {
               </div>
             )}
             {orgMeta && !profile.incognito && (
-              <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-black/25 backdrop-blur px-2.5 py-1 text-[11px] font-semibold text-white/95 border border-white/20">
+              <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-black/25 backdrop-blur px-2.5 py-1 text-[11px] font-semibold text-muted-foreground border border-white/20">
                 {orgMeta.short} • {orgMeta.label}
               </div>
             )}
@@ -320,7 +320,7 @@ function PublicProfile() {
             onClick={startChat}
             disabled={messaging}
             size="lg"
-            className="h-12 px-6 text-base font-semibold bg-[hsl(220_90%_56%)] hover:bg-[hsl(220_90%_50%)] text-white border-0 shadow-[0_0_24px_-4px_hsl(220_90%_56%/0.7)] hover:shadow-[0_0_32px_-4px_hsl(220_90%_56%/0.9)] transition-all"
+            className="h-12 px-6 text-base font-semibold bg-primary hover:bg-primary/90 text-primary-foreground border-0 shadow-sm hover:shadow-md transition-all"
           >
             {messaging ? <Loader2 className="h-5 w-5 mr-2 animate-spin" /> : <MessageCircle className="h-5 w-5 mr-2" />}
             Message
@@ -332,7 +332,7 @@ function PublicProfile() {
                 onClick={volunteer}
                 disabled={messaging}
                 size="lg"
-                className="h-12 px-5 text-base font-semibold bg-emerald-500 hover:bg-emerald-600 text-white border-0 shadow-[0_0_24px_-4px_rgba(16,185,129,0.8)]"
+                className="h-12 px-5 text-base font-semibold bg-emerald-500 hover:bg-emerald-600 text-primary-foreground border-0 shadow-[0_0_24px_-4px_rgba(16,185,129,0.8)]"
               >
                 <HandHeart className="h-5 w-5 mr-2" /> Volunteer
               </Button>
@@ -340,7 +340,7 @@ function PublicProfile() {
                 onClick={() => setShowDonate((s) => !s)}
                 size="lg"
                 variant="outline"
-                className="h-12 px-5 text-base font-semibold border-[hsl(220_90%_56%)]/60 text-[hsl(220_95%_70%)] hover:bg-[hsl(220_90%_56%)]/10"
+                className="h-12 px-5 text-base font-semibold border-[hsl(220_90%_56%)]/60 text-primary hover:bg-primary/10"
               >
                 <Heart className="h-5 w-5 mr-2" /> Support Cause
               </Button>
@@ -385,7 +385,7 @@ function PublicProfile() {
                 </Button>
               </div>
             ) : (
-              <p className="text-sm text-white/70">
+              <p className="text-sm text-muted-foreground">
                 This NGO hasn't added a public donation link yet. Message them directly to offer support.
               </p>
             )}
@@ -448,7 +448,7 @@ function PublicProfile() {
             <Building2 className="h-4 w-4 text-amber-400" />
             <h2 className="text-sm font-black uppercase tracking-wider text-amber-300">Business Details</h2>
           </div>
-          <div className="grid sm:grid-cols-2 gap-2 text-sm text-white/90">
+          <div className="grid sm:grid-cols-2 gap-2 text-sm text-muted-foreground">
             <div className="flex items-center gap-2"><Briefcase className="h-4 w-4 text-amber-400/80" /> {profile.profession || "Service Provider"}</div>
             <div className="flex items-center gap-2"><Clock className="h-4 w-4 text-amber-400/80" /> {profile.operational_hours || "9 AM - 6 PM"}</div>
             {profile.website_url && (
@@ -609,16 +609,16 @@ function ReviewsSection({ targetId, targetName, me }: { targetId: string; target
     <div className="rounded-3xl bg-card border border-border p-5 md:p-6 shadow-pop">
       <div className="flex items-center justify-between gap-3 mb-4">
         <div className="flex items-center gap-2">
-          <Star className="h-5 w-5 text-[hsl(45_90%_60%)] fill-[hsl(45_90%_60%)]" />
-          <h2 className="text-lg font-bold text-white">User Reviews</h2>
+          <Star className="h-5 w-5 text-amber-500 fill-amber-500" />
+          <h2 className="text-lg font-bold text-foreground">User Reviews</h2>
         </div>
-        <div className="text-sm text-white/70">
-          <span className="text-white font-semibold tabular-nums">{avg}</span> · {rows.length} review{rows.length === 1 ? "" : "s"}
+        <div className="text-sm text-muted-foreground">
+          <span className="text-foreground font-semibold tabular-nums">{avg}</span> · {rows.length} review{rows.length === 1 ? "" : "s"}
         </div>
       </div>
 
       {me && me !== targetId && (
-        <div className="rounded-2xl border border-[hsl(45_90%_55%)]/30 bg-white/[0.02] p-4 mb-5 space-y-3">
+        <div className="rounded-2xl border border-border bg-muted/50 p-4 mb-5 space-y-3">
           <div className="flex items-center gap-1">
             {[1, 2, 3, 4, 5].map((n) => (
               <button
@@ -628,10 +628,10 @@ function ReviewsSection({ targetId, targetName, me }: { targetId: string; target
                 aria-label={`Rate ${n} star${n === 1 ? "" : "s"}`}
                 className="p-1 hover:scale-110 transition-transform"
               >
-                <Star className={`h-5 w-5 ${n <= rating ? "fill-[hsl(45_90%_60%)] text-[hsl(45_90%_60%)]" : "text-white/30"}`} />
+                <Star className={`h-5 w-5 ${n <= rating ? "fill-amber-500 text-amber-500" : "text-muted-foreground"}`} />
               </button>
             ))}
-            <span className="text-xs text-white/60 ml-2">{rating}/5</span>
+            <span className="text-xs text-muted-foreground ml-2">{rating}/5</span>
           </div>
           <Textarea
             value={comment}
@@ -645,7 +645,7 @@ function ReviewsSection({ targetId, targetName, me }: { targetId: string; target
             <Button
               onClick={submit}
               disabled={submitting || !comment.trim()}
-              className="bg-[hsl(220_90%_56%)] hover:bg-[hsl(220_90%_50%)] text-white border-0 shadow-[0_0_20px_-4px_hsl(220_90%_56%/0.7)]"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground border-0 shadow-sm"
             >
               {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
               Post review
@@ -657,22 +657,22 @@ function ReviewsSection({ targetId, targetName, me }: { targetId: string; target
       {loading ? (
         <div className="space-y-2">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-20 rounded-2xl bg-white/[0.03] animate-pulse" />
+            <div key={i} className="h-20 rounded-2xl bg-muted/50 animate-pulse" />
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <div className="py-10 text-center text-sm text-white/60">
+        <div className="py-10 text-center text-sm text-muted-foreground">
           No reviews yet — be the first to share how {targetName.split(" ")[0]} helped you.
         </div>
       ) : (
         <ul className="space-y-3">
           {rows.map((r) => (
-            <li key={r.id} className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+            <li key={r.id} className="rounded-2xl border border-border bg-muted/50 p-4">
               <div className="flex items-start gap-3">
                 <Link
                   to="/profile/$userId"
                   params={{ userId: r.reviewer_id }}
-                  className="h-10 w-10 rounded-full bg-gradient-to-br from-[hsl(220_90%_56%)] to-[hsl(220_95%_65%)] grid place-items-center text-white text-sm font-bold overflow-hidden shrink-0 hover:ring-2 hover:ring-[hsl(220_90%_56%)]/60 transition"
+                  className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-primary grid place-items-center text-white text-sm font-bold overflow-hidden shrink-0 hover:ring-2 hover:ring-primary/60 transition"
                 >
                   {r.reviewer_avatar ? (
                     <img src={r.reviewer_avatar} alt="" className="h-full w-full object-cover" />
@@ -685,27 +685,27 @@ function ReviewsSection({ targetId, targetName, me }: { targetId: string; target
                     <Link
                       to="/profile/$userId"
                       params={{ userId: r.reviewer_id }}
-                      className="text-sm font-semibold text-[hsl(220_95%_70%)] hover:underline truncate"
+                      className="text-sm font-semibold text-primary hover:underline truncate"
                     >
                       {r.reviewer_name || "User"}
                     </Link>
                     <div className="flex items-center gap-1 shrink-0">
                       {Array.from({ length: 5 }).map((_, i) => (
-                        <Star key={i} className={`h-3.5 w-3.5 ${i < (r.rating || 0) ? "fill-[hsl(45_90%_60%)] text-[hsl(45_90%_60%)]" : "text-white/20"}`} />
+                        <Star key={i} className={`h-3.5 w-3.5 ${i < (r.rating || 0) ? "fill-amber-500 text-amber-500" : "text-muted-foreground"}`} />
                       ))}
                     </div>
                   </div>
-                  <div className="text-[11px] text-white/50 mt-0.5">
+                  <div className="text-[11px] text-muted-foreground mt-0.5">
                     {new Date(r.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
                   </div>
                   {r.comment && (
-                    <p className="text-sm text-white/85 mt-2 whitespace-pre-wrap break-words">{r.comment}</p>
+                    <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap break-words">{r.comment}</p>
                   )}
                 </div>
                 {me === r.reviewer_id && (
                   <button
                     onClick={() => remove(r.id)}
-                    className="text-white/40 hover:text-red-400 transition"
+                    className="text-muted-foreground hover:text-red-400 transition"
                     aria-label="Delete review"
                     title="Delete"
                   >
@@ -726,19 +726,19 @@ function FollowBlock({ targetId }: { targetId: string }) {
   return (
     <div className="rounded-3xl bg-card border border-border p-5 shadow-pop flex flex-wrap items-center justify-between gap-4">
       <div className="grid grid-cols-2 gap-3 flex-1 min-w-[240px]">
-        <div className="rounded-2xl border border-[hsl(45_90%_55%)]/30 bg-white/[0.02] px-4 py-3 text-center">
-          <div className="text-2xl md:text-3xl font-black text-[hsl(220_95%_70%)] tabular-nums">
+        <div className="rounded-2xl border border-border bg-muted/50 px-4 py-3 text-center">
+          <div className="text-2xl md:text-3xl font-black text-primary tabular-nums">
             {followers.toLocaleString()}
           </div>
-          <div className="text-[11px] uppercase tracking-[0.15em] text-[hsl(45_90%_60%)] mt-0.5 font-semibold">
+          <div className="text-[11px] uppercase tracking-[0.15em] text-amber-500 mt-0.5 font-semibold">
             Followers
           </div>
         </div>
-        <div className="rounded-2xl border border-[hsl(45_90%_55%)]/30 bg-white/[0.02] px-4 py-3 text-center">
-          <div className="text-2xl md:text-3xl font-black text-[hsl(220_95%_70%)] tabular-nums">
+        <div className="rounded-2xl border border-border bg-muted/50 px-4 py-3 text-center">
+          <div className="text-2xl md:text-3xl font-black text-primary tabular-nums">
             {followingCount.toLocaleString()}
           </div>
-          <div className="text-[11px] uppercase tracking-[0.15em] text-[hsl(45_90%_60%)] mt-0.5 font-semibold">
+          <div className="text-[11px] uppercase tracking-[0.15em] text-amber-500 mt-0.5 font-semibold">
             Following
           </div>
         </div>
@@ -749,7 +749,7 @@ function FollowBlock({ targetId }: { targetId: string }) {
           disabled={busy || loading}
           className={following
             ? "bg-card border border-border text-foreground hover:bg-accent"
-            : "bg-[hsl(220_90%_56%)] hover:bg-[hsl(220_90%_50%)] text-white border-0 shadow-[0_0_20px_-4px_hsl(220_90%_56%/0.7)]"}
+            : "bg-primary hover:bg-primary/90 text-primary-foreground border-0 shadow-sm"}
         >
           {following ? <UserCheck className="h-4 w-4 mr-1" /> : <UserPlus className="h-4 w-4 mr-1" />}
           {following ? "Following" : "Follow"}

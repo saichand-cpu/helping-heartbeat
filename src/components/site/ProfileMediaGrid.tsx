@@ -100,7 +100,7 @@ export function ProfileMediaGrid({
           <Button
             onClick={() => setUploadOpen(true)}
             size="sm"
-            className="bg-[hsl(220_90%_56%)] hover:bg-[hsl(220_90%_50%)] text-white border-0 shadow-[0_0_20px_-4px_hsl(220_90%_56%/0.7)]"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground border-0 shadow-sm"
           >
             <Plus className="h-4 w-4 mr-1" /> New post
           </Button>
@@ -110,11 +110,11 @@ export function ProfileMediaGrid({
       {loading ? (
         <div className="grid grid-cols-3 gap-1 md:gap-1.5">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="aspect-square rounded-md bg-white/[0.04] animate-pulse" />
+            <div key={i} className="aspect-square rounded-md bg-muted/50 animate-pulse" />
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div className="py-14 text-center text-sm text-white/60">
+        <div className="py-14 text-center text-sm text-muted-foreground">
           {isOwner ? "You haven't posted any photos or videos yet." : "No posts to show yet."}
         </div>
       ) : (
@@ -123,7 +123,7 @@ export function ProfileMediaGrid({
             <button
               key={it.id}
               onClick={() => { setSelected(it); setOpen(true); }}
-              className="relative aspect-square overflow-hidden rounded-md bg-white/[0.04] group focus:outline-none focus:ring-2 focus:ring-[hsl(220_90%_56%)]"
+              className="relative aspect-square overflow-hidden rounded-md bg-muted/50 group focus:outline-none focus:ring-2 focus:ring-primary"
             >
               {it.resolved ? (
                 it.kind === "video" ? (
@@ -137,7 +137,7 @@ export function ProfileMediaGrid({
                   <img src={it.resolved} alt="" className="h-full w-full object-cover" loading="lazy" />
                 )
               ) : (
-                <div className="grid place-items-center h-full text-white/30 text-xs">no media</div>
+                <div className="grid place-items-center h-full text-muted-foreground text-xs">no media</div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition" />
             </button>
@@ -185,7 +185,7 @@ function Lightbox({
         <div className="p-4 space-y-2 text-white">
           {item?.body && <p className="text-sm whitespace-pre-wrap break-words">{item.body}</p>}
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-white/50">
+            <span className="text-[11px] text-muted-foreground">
               {item ? new Date(item.created_at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : ""}
             </span>
             {canDelete && (
@@ -265,7 +265,7 @@ function NewPostDialog({
           onChange={(e) => setFile(e.target.files?.[0] ?? null)}
         />
         {previewUrl ? (
-          <div className="rounded-xl overflow-hidden bg-white/[0.03] border border-white/10">
+          <div className="rounded-xl overflow-hidden bg-muted/50 border border-border">
             {kind === "video" ? (
               <video src={previewUrl} controls className="max-h-72 w-full" />
             ) : (
@@ -276,14 +276,14 @@ function NewPostDialog({
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            className="w-full rounded-xl border border-dashed border-[hsl(45_90%_55%)]/40 py-12 grid place-items-center text-white/70 hover:text-white hover:border-[hsl(45_90%_55%)]/70 transition"
+            className="w-full rounded-xl border border-dashed border-border py-12 grid place-items-center text-muted-foreground hover:text-foreground  transition"
           >
             <ImagePlus className="h-8 w-8 mb-2" />
             <span className="text-sm">Choose photo or video</span>
           </button>
         )}
         {file && (
-          <Button variant="ghost" size="sm" onClick={() => setFile(null)} className="w-fit text-white/70 hover:text-white">
+          <Button variant="ghost" size="sm" onClick={() => setFile(null)} className="w-fit text-muted-foreground hover:text-foreground">
             <X className="h-3.5 w-3.5 mr-1" /> Change file
           </Button>
         )}
@@ -296,13 +296,13 @@ function NewPostDialog({
           className=""
         />
         <div className="flex justify-end gap-2">
-          <Button variant="ghost" onClick={() => onOpenChange(false)} className="text-white/70 hover:text-white">
+          <Button variant="ghost" onClick={() => onOpenChange(false)} className="text-muted-foreground hover:text-foreground">
             Cancel
           </Button>
           <Button
             onClick={submit}
             disabled={submitting || !file}
-            className="bg-[hsl(220_90%_56%)] hover:bg-[hsl(220_90%_50%)] text-white border-0 shadow-[0_0_20px_-4px_hsl(220_90%_56%/0.7)]"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground border-0 shadow-sm"
           >
             {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
             Publish
