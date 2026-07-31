@@ -333,7 +333,7 @@ function RequestDetailsPage() {
                   {pins?.length ? (
                     <LeafletMap pins={pins} height={220} />
                   ) : (
-                    <div className="h-[220px] rounded-2xl border border-amber-500/20 bg-black/60 grid place-items-center text-xs text-muted-foreground animate-pulse">
+                    <div className="h-[220px] rounded-2xl border border-border bg-muted grid place-items-center text-xs text-muted-foreground animate-pulse">
                       Locating…
                     </div>
                   )}

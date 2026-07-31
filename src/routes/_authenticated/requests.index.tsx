@@ -216,14 +216,14 @@ function RequestsBrowse() {
       {!loading && filtered.length > 0 && (
         <div className="rounded-3xl bg-card border border-border p-4 shadow-soft">
           <div className="flex items-center gap-2 mb-3 px-1">
-            <MapPin className="h-4 w-4 text-amber-400" />
+            <MapPin className="h-4 w-4 text-primary" />
             <h2 className="text-sm font-semibold">Requests on the map</h2>
             <span className="text-xs text-muted-foreground">· {pins?.length ?? 0} located</span>
           </div>
           {pins?.length ? (
             <LeafletMap pins={pins} height={240} />
           ) : (
-            <div className="h-[240px] rounded-2xl border border-amber-500/20 bg-black/60 grid place-items-center text-xs text-muted-foreground animate-pulse">
+            <div className="h-[240px] rounded-2xl border border-border bg-muted grid place-items-center text-xs text-muted-foreground animate-pulse">
               Locating requests…
             </div>
           )}
@@ -284,7 +284,7 @@ function RequestsBrowse() {
                   <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {r.location || "Anywhere"}</span>
                   <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {new Date(r.created_at).toLocaleDateString()}</span>
                 </div>
-                <div className="mt-3 grid grid-cols-3 gap-2 rounded-2xl border border-amber-500/25 bg-black p-2" onClick={(e) => e.stopPropagation()}>
+                <div className="mt-4 grid grid-cols-3 gap-2 rounded-2xl border border-border bg-muted/50 p-2" onClick={(e) => e.stopPropagation()}>
                   <Button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -293,7 +293,7 @@ function RequestsBrowse() {
                     }}
                     disabled={r.requester_id === meId}
                     size="sm"
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
+                    className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
                   >
                     <MessageCircle className="h-4 w-4 mr-1" /> Text
                   </Button>
@@ -302,18 +302,18 @@ function RequestsBrowse() {
                     disabled={r.requester_id === meId}
                     size="sm"
                     variant="outline"
-                    className="border-amber-400/70 text-amber-300 hover:bg-amber-500/10 shadow-[0_0_18px_-6px_rgba(251,191,36,0.7)]"
+                    className="rounded-xl border-border bg-card hover:bg-accent"
                   >
                     <PhoneCall className="h-4 w-4 mr-1" /> Call
                   </Button>
                   {phones?.[r.requester_id] ? (
-                    <Button asChild size="sm" variant="outline" className="border-white/15 bg-black text-white hover:bg-white/5">
+                    <Button asChild size="sm" variant="outline" className="rounded-xl border-border bg-card hover:bg-accent">
                       <a href={`tel:${phones?.[r.requester_id] ?? ""}`} onClick={(e) => e.stopPropagation()}>
                         <Phone className="h-4 w-4 mr-1" /> Phone
                       </a>
                     </Button>
                   ) : (
-                    <Button size="sm" variant="outline" disabled className="border-white/10 bg-black/60 text-muted-foreground">
+                    <Button size="sm" variant="outline" disabled className="rounded-xl border-border bg-card text-muted-foreground">
                       <Phone className="h-4 w-4 mr-1" /> Phone
                     </Button>
                   )}

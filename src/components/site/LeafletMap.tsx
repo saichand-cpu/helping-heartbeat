@@ -20,7 +20,7 @@ export function LeafletMap(props: Props) {
   const height = props.height ?? 260;
   const fallback = (
     <div
-      className={"rounded-2xl overflow-hidden border border-amber-500/30 bg-black " + (props.className ?? "")}
+      className={"rounded-2xl overflow-hidden border border-border bg-muted " + (props.className ?? "")}
       style={{ height }}
     />
   );

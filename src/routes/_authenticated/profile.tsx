@@ -189,7 +189,7 @@ function ProfilePage() {
   return (
     <div className="max-w-3xl mx-auto pb-24 lg:pb-6 space-y-6">
       {/* Instagram-style header */}
-      <div className="rounded-3xl bg-black border border-[hsl(45_90%_55%)]/40 p-5 md:p-6 shadow-pop">
+      <div className="rounded-3xl bg-card border border-border p-5 md:p-6 shadow-pop">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 sm:gap-8">
           <div className="relative group shrink-0">
             <div className="h-24 w-24 md:h-28 md:w-28 rounded-full overflow-hidden bg-gradient-to-br from-[hsl(220_90%_56%)] to-[hsl(220_95%_65%)] grid place-items-center text-white text-3xl font-bold ring-2 ring-[hsl(45_90%_55%)]/50">

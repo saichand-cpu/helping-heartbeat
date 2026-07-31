@@ -93,7 +93,7 @@ export function ProfileMediaGrid({
   };
 
   return (
-    <div className="rounded-3xl bg-black border border-[hsl(45_90%_55%)]/40 p-4 md:p-5 shadow-pop">
+    <div className="rounded-3xl bg-card border border-border p-4 md:p-5 shadow-pop">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-bold text-white tracking-wide">Media</h2>
         {isOwner && (
@@ -172,7 +172,7 @@ function Lightbox({
 }) {
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-3xl bg-black border border-[hsl(45_90%_55%)]/40 p-0 overflow-hidden">
+      <DialogContent className="max-w-3xl bg-card border border-border p-0 overflow-hidden">
         {item?.resolved && (
           <div className="bg-black">
             {item.kind === "video" ? (
@@ -255,7 +255,7 @@ function NewPostDialog({
 
   return (
     <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) reset(); }}>
-      <DialogContent className="max-w-lg bg-black border border-[hsl(45_90%_55%)]/40 text-white">
+      <DialogContent className="max-w-lg bg-card border border-border">
         <h3 className="text-lg font-bold">New post</h3>
         <input
           ref={fileRef}
@@ -293,7 +293,7 @@ function NewPostDialog({
           placeholder="Write a caption…"
           rows={3}
           maxLength={500}
-          className="bg-black/60 border-white/10 text-white placeholder:text-white/40"
+          className=""
         />
         <div className="flex justify-end gap-2">
           <Button variant="ghost" onClick={() => onOpenChange(false)} className="text-white/70 hover:text-white">
