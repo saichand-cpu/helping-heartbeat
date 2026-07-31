@@ -95,7 +95,7 @@ export default function LeafletMapImpl({ pins, className, height = 260, center, 
   return (
     <div
       ref={ref}
-      className={"rounded-2xl overflow-hidden border border-amber-500/30 bg-black " + (className ?? "")}
+      className={"rounded-2xl overflow-hidden border border-border bg-muted " + (className ?? "")}
       style={{ height }}
     />
   );

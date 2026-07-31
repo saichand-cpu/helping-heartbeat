@@ -782,7 +782,7 @@ export function Thread({ me, other, onBack, onStartCall, isPeerOnline }: { me: s
 
   return (
     <div className="flex flex-col min-h-0 h-full">
-      <header className="px-4 py-3 border-b border-amber-500/30 flex items-center gap-3 bg-black/40">
+      <header className="px-4 py-3 border-b border-border flex items-center gap-3 bg-card">
         <Button variant="ghost" size="icon" className="md:hidden" onClick={onBack}><ArrowLeft className="h-4 w-4" /></Button>
         <Link to="/profile/$userId" params={{ userId: other.other_id }} className="relative h-9 w-9 rounded-full bg-primary grid place-items-center text-primary-foreground text-sm font-bold overflow-hidden hover:ring-2 hover:ring-primary/60 transition" aria-label="Open profile">
           {other.avatar_url ? <img src={other.avatar_url} alt="" className="h-full w-full object-cover" /> : (other.full_name || "U").charAt(0)}
@@ -917,7 +917,7 @@ export function Thread({ me, other, onBack, onStartCall, isPeerOnline }: { me: s
 
       <form
         onSubmit={(e) => { e.preventDefault(); send(); }}
-        className="border-t border-amber-500/30 p-3 flex items-center gap-2 bg-black/50 backdrop-blur"
+        className="border-t border-border p-3 flex items-center gap-2 bg-card"
       >
         <input
           ref={fileRef}

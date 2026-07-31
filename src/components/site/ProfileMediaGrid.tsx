@@ -293,7 +293,7 @@ function NewPostDialog({
           placeholder="Write a caption…"
           rows={3}
           maxLength={500}
-          className="bg-black/60 border-white/10 text-white placeholder:text-white/40"
+          className=""
         />
         <div className="flex justify-end gap-2">
           <Button variant="ghost" onClick={() => onOpenChange(false)} className="text-white/70 hover:text-white">

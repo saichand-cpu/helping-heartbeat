@@ -376,7 +376,7 @@ function PublicProfile() {
                   href={profile.fundraising_link}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex-1 min-w-[220px] truncate rounded-xl bg-black/30 border border-white/10 px-3 py-2 text-sm text-[hsl(220_95%_75%)] hover:underline"
+                  className="flex-1 min-w-[220px] truncate rounded-xl bg-muted border border-border px-3 py-2 text-sm text-primary hover:underline"
                 >
                   {profile.fundraising_link}
                 </a>
@@ -639,7 +639,7 @@ function ReviewsSection({ targetId, targetName, me }: { targetId: string; target
             placeholder={`Share your experience with ${targetName.split(" ")[0]}…`}
             rows={3}
             maxLength={800}
-            className="bg-black/60 border-white/10 text-white placeholder:text-white/40"
+            className=""
           />
           <div className="flex justify-end">
             <Button
@@ -748,7 +748,7 @@ function FollowBlock({ targetId }: { targetId: string }) {
           onClick={toggle}
           disabled={busy || loading}
           className={following
-            ? "bg-black border border-[hsl(45_90%_55%)]/60 text-white hover:bg-[hsl(45_90%_55%)]/10"
+            ? "bg-card border border-border text-foreground hover:bg-accent"
             : "bg-[hsl(220_90%_56%)] hover:bg-[hsl(220_90%_50%)] text-white border-0 shadow-[0_0_20px_-4px_hsl(220_90%_56%/0.7)]"}
         >
           {following ? <UserCheck className="h-4 w-4 mr-1" /> : <UserPlus className="h-4 w-4 mr-1" />}
