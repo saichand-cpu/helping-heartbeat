@@ -160,7 +160,7 @@ function SuggestionCard({
         variant={isFollowing ? "outline" : "default"}
         className={
           isFollowing
-            ? "mt-2 w-full h-8 text-xs border-amber-500/50 text-amber-600 dark:text-amber-400"
+            ? "mt-2 w-full h-8 text-xs border-border text-foreground"
             : "mt-2 w-full h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90"
         }
       >
