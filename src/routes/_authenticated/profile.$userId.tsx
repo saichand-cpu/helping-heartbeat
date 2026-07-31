@@ -149,13 +149,13 @@ function PublicProfile() {
 
   if (loading) return (
     <div className="max-w-3xl mx-auto space-y-4">
-      <div className="rounded-3xl bg-black border border-[hsl(45_90%_55%)]/40 h-56 animate-pulse" />
-      <div className="rounded-3xl bg-black border border-[hsl(45_90%_55%)]/40 h-40 animate-pulse" />
+      <div className="rounded-3xl bg-card border border-border h-56 animate-pulse" />
+      <div className="rounded-3xl bg-card border border-border h-40 animate-pulse" />
     </div>
   );
   if (!profile) return (
     <div className="max-w-3xl mx-auto">
-      <div className="rounded-3xl bg-black border border-[hsl(45_90%_55%)]/40 p-12 text-center shadow-pop">
+      <div className="rounded-3xl bg-card border border-border p-12 text-center shadow-pop">
         <div className="h-24 w-24 mx-auto rounded-full bg-white/[0.04] border border-[hsl(45_90%_55%)]/30 grid place-items-center text-white/40 text-3xl mb-4">?</div>
         <h2 className="text-xl font-bold text-white mb-1">User Profile Not Found</h2>
         <p className="text-sm text-white/60 mb-5">This account may have been removed or the link is broken.</p>
@@ -443,7 +443,7 @@ function PublicProfile() {
       ) : null}
 
       {isBusiness && !profile.incognito && (
-        <div className="rounded-3xl bg-black border border-amber-400/40 p-5 shadow-[0_0_28px_-8px_rgba(245,158,11,0.55)] space-y-2">
+        <div className="rounded-3xl bg-card border border-border p-5 shadow-[0_0_28px_-8px_rgba(245,158,11,0.55)] space-y-2">
           <div className="flex items-center gap-2 mb-1">
             <Building2 className="h-4 w-4 text-amber-400" />
             <h2 className="text-sm font-black uppercase tracking-wider text-amber-300">Business Details</h2>
@@ -606,7 +606,7 @@ function ReviewsSection({ targetId, targetName, me }: { targetId: string; target
   const avg = rows.length ? (rows.reduce((a, r) => a + (r.rating || 0), 0) / rows.length).toFixed(1) : "—";
 
   return (
-    <div className="rounded-3xl bg-black border border-[hsl(45_90%_55%)]/40 p-5 md:p-6 shadow-pop">
+    <div className="rounded-3xl bg-card border border-border p-5 md:p-6 shadow-pop">
       <div className="flex items-center justify-between gap-3 mb-4">
         <div className="flex items-center gap-2">
           <Star className="h-5 w-5 text-[hsl(45_90%_60%)] fill-[hsl(45_90%_60%)]" />
@@ -724,7 +724,7 @@ function ReviewsSection({ targetId, targetName, me }: { targetId: string; target
 function FollowBlock({ targetId }: { targetId: string }) {
   const { following, followers, followingCount, busy, toggle, isMe, loading } = useFollow(targetId);
   return (
-    <div className="rounded-3xl bg-black border border-[hsl(45_90%_55%)]/40 p-5 shadow-pop flex flex-wrap items-center justify-between gap-4">
+    <div className="rounded-3xl bg-card border border-border p-5 shadow-pop flex flex-wrap items-center justify-between gap-4">
       <div className="grid grid-cols-2 gap-3 flex-1 min-w-[240px]">
         <div className="rounded-2xl border border-[hsl(45_90%_55%)]/30 bg-white/[0.02] px-4 py-3 text-center">
           <div className="text-2xl md:text-3xl font-black text-[hsl(220_95%_70%)] tabular-nums">
