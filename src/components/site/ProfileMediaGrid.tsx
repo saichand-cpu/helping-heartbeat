@@ -95,7 +95,7 @@ export function ProfileMediaGrid({
   return (
     <div className="rounded-3xl bg-card border border-border p-4 md:p-5 shadow-pop">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold text-white tracking-wide">Media</h2>
+        <h2 className="text-lg font-bold text-foreground tracking-wide">Media</h2>
         {isOwner && (
           <Button
             onClick={() => setUploadOpen(true)}
@@ -182,7 +182,7 @@ function Lightbox({
             )}
           </div>
         )}
-        <div className="p-4 space-y-2 text-white">
+        <div className="p-4 space-y-2 text-foreground">
           {item?.body && <p className="text-sm whitespace-pre-wrap break-words">{item.body}</p>}
           <div className="flex items-center justify-between">
             <span className="text-[11px] text-muted-foreground">

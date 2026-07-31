@@ -340,7 +340,7 @@ function PublicProfile() {
                 onClick={() => setShowDonate((s) => !s)}
                 size="lg"
                 variant="outline"
-                className="h-12 px-5 text-base font-semibold border-[hsl(220_90%_56%)]/60 text-primary hover:bg-primary/10"
+                className="h-12 px-5 text-base font-semibold border-primary/60 text-primary hover:bg-primary/10"
               >
                 <Heart className="h-5 w-5 mr-2" /> Support Cause
               </Button>
@@ -443,16 +443,16 @@ function PublicProfile() {
       ) : null}
 
       {isBusiness && !profile.incognito && (
-        <div className="rounded-3xl bg-card border border-border p-5 shadow-[0_0_28px_-8px_rgba(245,158,11,0.55)] space-y-2">
+        <div className="rounded-3xl bg-card border border-border p-5 shadow-soft space-y-2">
           <div className="flex items-center gap-2 mb-1">
-            <Building2 className="h-4 w-4 text-amber-400" />
-            <h2 className="text-sm font-black uppercase tracking-wider text-amber-300">Business Details</h2>
+            <Building2 className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-black uppercase tracking-wider text-foreground">Business Details</h2>
           </div>
           <div className="grid sm:grid-cols-2 gap-2 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2"><Briefcase className="h-4 w-4 text-amber-400/80" /> {profile.profession || "Service Provider"}</div>
-            <div className="flex items-center gap-2"><Clock className="h-4 w-4 text-amber-400/80" /> {profile.operational_hours || "9 AM - 6 PM"}</div>
+            <div className="flex items-center gap-2"><Briefcase className="h-4 w-4 text-muted-foreground" /> {profile.profession || "Service Provider"}</div>
+            <div className="flex items-center gap-2"><Clock className="h-4 w-4 text-muted-foreground" /> {profile.operational_hours || "9 AM - 6 PM"}</div>
             {profile.website_url && (
-              <a href={profile.website_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-amber-300 hover:underline sm:col-span-2 truncate">
+              <a href={profile.website_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-primary hover:underline sm:col-span-2 truncate">
                 <Globe className="h-4 w-4" /> {profile.website_url}
               </a>
             )}
@@ -464,7 +464,7 @@ function PublicProfile() {
         <>
           <ReviewsSection targetId={profile.id} targetName={display} me={me} />
           <div>
-            <div className="text-xs font-black uppercase tracking-[0.2em] text-amber-400 mb-2 px-1">Work Portfolio</div>
+            <div className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground mb-2 px-1">Work Portfolio</div>
             <ProfileMediaGrid userId={profile.id} isOwner={false} />
           </div>
         </>
@@ -672,7 +672,7 @@ function ReviewsSection({ targetId, targetName, me }: { targetId: string; target
                 <Link
                   to="/profile/$userId"
                   params={{ userId: r.reviewer_id }}
-                  className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-primary grid place-items-center text-white text-sm font-bold overflow-hidden shrink-0 hover:ring-2 hover:ring-primary/60 transition"
+                  className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-primary grid place-items-center text-primary-foreground text-sm font-bold overflow-hidden shrink-0 hover:ring-2 hover:ring-primary/60 transition"
                 >
                   {r.reviewer_avatar ? (
                     <img src={r.reviewer_avatar} alt="" className="h-full w-full object-cover" />
