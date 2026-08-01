@@ -48,7 +48,12 @@ type Person = {
 function AdvancedSearch() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("requests");
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(() => {
+    if (typeof window === "undefined") return "";
+    const seed = sessionStorage.getItem("humi:prefill:search");
+    if (seed) sessionStorage.removeItem("humi:prefill:search");
+    return seed ?? "";
+  });
   const [city, setCity] = useState("");
   const [category, setCategory] = useState<string>("all");
   const [userType, setUserType] = useState<UserType>("all");
