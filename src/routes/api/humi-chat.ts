@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
+import { ACTIONS_DELIMITER, agentById, detectEmergency } from "@/lib/humi-agents";
 
 type Attachment = {
   name: string;
@@ -13,15 +14,42 @@ type IncomingMessage = {
   attachments?: Attachment[];
 };
 
-type Body = { messages: IncomingMessage[] };
+type Body = { messages: IncomingMessage[]; agent?: string; emergency?: boolean };
 
-const SYSTEM_PROMPT = `You are HUMI, the warm in-app AI companion for HumanLink — a kindness platform where people request and offer help.
-- Be concise, friendly, and supportive. Use simple language and short paragraphs.
-- When the user shares a resume, medical report, photo, screenshot, or document, read it carefully and offer next steps grounded in what you actually see.
-- For resumes: highlight 3-5 matching help opportunities, communities, or skills to share on HumanLink.
-- For medical reports: give a plain-English summary, suggest follow-up questions for a doctor, and remind the user you are not a medical professional.
-- For requests for help on the platform: suggest categories, urgency, who to reach out to, and how to phrase the request kindly.
-- Use markdown (headings, bullets, **bold**). Never invent personal data.`;
+const BASE_PROMPT = `You are HUMI — HumanLink's AI operating system for human life. HumanLink is a kindness platform where people request help, offer help, donate, and connect with volunteers, NGOs and local businesses.
+
+Your philosophy on EVERY reply:
+1. Understand the user's real intent, not just the literal question.
+2. Give the best possible answer — complete, specific, and immediately usable.
+3. Do the work when you can (write the draft, the code, the plan, the email) instead of describing how to do it.
+4. Recommend concrete next actions.
+5. Connect the user to HumanLink when it genuinely helps (help requests, helpers, NGOs, donations, jobs, communities).
+6. Keep going until the user's real-world goal is reachable.
+
+Voice: intelligent, warm, calm, honest, non-judgmental, never robotic, never padded with filler. Short paragraphs.
+
+Formatting: rich markdown — headings, bullets, **bold**, tables, and fenced code blocks with a language tag. Never wrap the whole reply in a code block.
+
+Files: when the user attaches a resume, report, photo, screenshot or document, read it carefully and ground every claim in what you actually see.
+
+Safety: health content is information, never diagnosis. Legal content is information, never advice. Flag scams, fraud, harassment and unsafe content when you notice them.
+
+ACTIONS — end EVERY reply with a single line, after all prose:
+${ACTIONS_DELIMITER} [{"kind":"...","label":"...","payload":{}}]
+Rules for that line:
+- 2 to 4 actions, most useful first, labels under 32 characters.
+- Valid kinds: "create_request" (payload: title, description, category one of education|medical|food|transport|technology|elder_care|child_care|jobs|donations|emergency|other, urgency one of low|normal|high|emergency), "emergency_request" (same payload, urgency emergency), "find_helpers" (payload: q), "find_ngos" (payload: q), "open_feed", "open_messages", "open_leaderboard", "prompt" (payload: text — the exact follow-up message to send next).
+- Always include at least one "prompt" action that moves the goal forward.
+- Output raw JSON on that line. No code fence, no commentary after it.`;
+
+const EMERGENCY_PROMPT = `
+EMERGENCY MODE IS ACTIVE. The user may be in danger.
+- Lead with the single most important safety step, in bold, in the first line.
+- Give clear, numbered, calm first-aid or safety guidance appropriate to the situation.
+- Tell them to call local emergency services immediately (India: 112 · ambulance 108 · police 100 · fire 101) when life is at risk.
+- If there is any sign of self-harm or suicidal thinking, respond with warmth first, remind them they are not alone, and share India's Tele-MANAS helpline 14416 / KIRAN 1800-599-0019.
+- Keep it short. No preamble, no essays.
+- Your first action MUST be "emergency_request" so they can broadcast to nearby helpers on HumanLink.`;
 
 function toMultimodalContent(m: IncomingMessage) {
   const parts: Array<Record<string, unknown>> = [];
@@ -37,8 +65,7 @@ function toMultimodalContent(m: IncomingMessage) {
     }
   }
   if (parts.length === 0) parts.push({ type: "text", text: "" });
-  // If only a single text part, gateway accepts a plain string too.
-  if (parts.length === 1 && parts[0].type === "text") {
+  if (parts.length === 1 && parts[0]!.type === "text") {
     return (parts[0] as { text: string }).text;
   }
   return parts;
@@ -75,7 +102,21 @@ export const Route = createFileRoute("/api/humi-chat")({
         } catch {
           return new Response("Invalid JSON", { status: 400 });
         }
-        const messages = (body.messages ?? []).slice(-20).map((m) => ({
+
+        const incoming = (body.messages ?? []).slice(-24);
+        const lastUser = [...incoming].reverse().find((m) => m.role === "user");
+        const emergency = Boolean(body.emergency) || detectEmergency(lastUser?.content ?? "");
+        const agent = agentById(body.agent ?? "general");
+
+        const system = [
+          BASE_PROMPT,
+          `\nActive agent: ${agent.name}. ${agent.prompt}`,
+          emergency ? EMERGENCY_PROMPT : "",
+        ]
+          .filter(Boolean)
+          .join("\n");
+
+        const messages = incoming.map((m) => ({
           role: m.role,
           content: toMultimodalContent(m),
         }));
@@ -88,18 +129,20 @@ export const Route = createFileRoute("/api/humi-chat")({
             "X-Lovable-AIG-SDK": "fetch",
           },
           body: JSON.stringify({
-            model: "google/gemini-3-flash-preview",
+            model: "google/gemini-3.6-flash",
             stream: true,
-            messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
+            messages: [{ role: "system", content: system }, ...messages],
           }),
         });
 
         if (!res.ok || !res.body) {
           const text = await res.text().catch(() => "");
+          if (res.status === 429) return new Response("HUMI is busy right now. Try again in a moment.", { status: 429 });
+          if (res.status === 402) return new Response("AI credits are exhausted. Please add credits.", { status: 402 });
           return new Response(text || "Upstream error", { status: res.status || 500 });
         }
 
-        // Transform OpenAI-style SSE to a simple text/event-stream of just delta tokens.
+        // Transform OpenAI-style SSE to a plain stream of delta tokens.
         const decoder = new TextDecoder();
         const encoder = new TextEncoder();
         const reader = res.body.getReader();
@@ -148,6 +191,7 @@ export const Route = createFileRoute("/api/humi-chat")({
             "Content-Type": "text/plain; charset=utf-8",
             "Cache-Control": "no-cache, no-transform",
             "X-Accel-Buffering": "no",
+            "X-Humi-Emergency": emergency ? "1" : "0",
           },
         });
       },
