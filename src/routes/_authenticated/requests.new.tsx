@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Sparkles, Loader2, ArrowLeft } from "lucide-react";
 import { Link } from "@tanstack/react-router";
@@ -31,6 +31,23 @@ function NewRequest() {
   const [location, setLocation] = useState("");
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
+
+  // Prefill from a HUMI suggested action.
+  useEffect(() => {
+    const raw = sessionStorage.getItem("humi:prefill:request");
+    if (!raw) return;
+    sessionStorage.removeItem("humi:prefill:request");
+    try {
+      const p = JSON.parse(raw) as Partial<Record<"title" | "description" | "category" | "urgency", string>>;
+      if (p.title) setTitle(p.title);
+      if (p.description) setDescription(p.description);
+      if (p.category && categories.includes(p.category)) setCategory(p.category);
+      if (p.urgency && urgencies.includes(p.urgency)) setUrgency(p.urgency);
+      toast.success("HUMI filled this in for you — review and post");
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();

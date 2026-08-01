@@ -29,10 +29,12 @@ import { Route as AuthenticatedCapsulesRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAdminMetricsRouteImport } from './routes/_authenticated/admin-metrics'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedRequestsIndexRouteImport } from './routes/_authenticated/requests.index'
+import { Route as AuthenticatedHumiIndexRouteImport } from './routes/_authenticated/humi.index'
 import { Route as AuthenticatedAdminDashboardIndexRouteImport } from './routes/_authenticated/admin-dashboard.index'
 import { Route as AuthenticatedRequestsNewRouteImport } from './routes/_authenticated/requests.new'
 import { Route as AuthenticatedRequestsRequestIdRouteImport } from './routes/_authenticated/requests.$requestId'
 import { Route as AuthenticatedProfileUserIdRouteImport } from './routes/_authenticated/profile.$userId'
+import { Route as AuthenticatedHumiThreadIdRouteImport } from './routes/_authenticated/humi.$threadId'
 import { Route as AuthenticatedAdminDashboardMetricsRouteImport } from './routes/_authenticated/admin-dashboard.metrics'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -136,6 +138,11 @@ const AuthenticatedRequestsIndexRoute =
     path: '/requests/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHumiIndexRoute = AuthenticatedHumiIndexRouteImport.update({
+  id: '/humi/',
+  path: '/humi/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAdminDashboardIndexRoute =
   AuthenticatedAdminDashboardIndexRouteImport.update({
     id: '/admin-dashboard/',
@@ -159,6 +166,12 @@ const AuthenticatedProfileUserIdRoute =
     id: '/$userId',
     path: '/$userId',
     getParentRoute: () => AuthenticatedProfileRoute,
+  } as any)
+const AuthenticatedHumiThreadIdRoute =
+  AuthenticatedHumiThreadIdRouteImport.update({
+    id: '/humi/$threadId',
+    path: '/humi/$threadId',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAdminDashboardMetricsRoute =
   AuthenticatedAdminDashboardMetricsRouteImport.update({
@@ -187,10 +200,12 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/api/humi-chat': typeof ApiHumiChatRoute
   '/admin-dashboard/metrics': typeof AuthenticatedAdminDashboardMetricsRoute
+  '/humi/$threadId': typeof AuthenticatedHumiThreadIdRoute
   '/profile/$userId': typeof AuthenticatedProfileUserIdRoute
   '/requests/$requestId': typeof AuthenticatedRequestsRequestIdRoute
   '/requests/new': typeof AuthenticatedRequestsNewRoute
   '/admin-dashboard/': typeof AuthenticatedAdminDashboardIndexRoute
+  '/humi/': typeof AuthenticatedHumiIndexRoute
   '/requests/': typeof AuthenticatedRequestsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -213,10 +228,12 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/api/humi-chat': typeof ApiHumiChatRoute
   '/admin-dashboard/metrics': typeof AuthenticatedAdminDashboardMetricsRoute
+  '/humi/$threadId': typeof AuthenticatedHumiThreadIdRoute
   '/profile/$userId': typeof AuthenticatedProfileUserIdRoute
   '/requests/$requestId': typeof AuthenticatedRequestsRequestIdRoute
   '/requests/new': typeof AuthenticatedRequestsNewRoute
   '/admin-dashboard': typeof AuthenticatedAdminDashboardIndexRoute
+  '/humi': typeof AuthenticatedHumiIndexRoute
   '/requests': typeof AuthenticatedRequestsIndexRoute
 }
 export interface FileRoutesById {
@@ -241,10 +258,12 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/api/humi-chat': typeof ApiHumiChatRoute
   '/_authenticated/admin-dashboard/metrics': typeof AuthenticatedAdminDashboardMetricsRoute
+  '/_authenticated/humi/$threadId': typeof AuthenticatedHumiThreadIdRoute
   '/_authenticated/profile/$userId': typeof AuthenticatedProfileUserIdRoute
   '/_authenticated/requests/$requestId': typeof AuthenticatedRequestsRequestIdRoute
   '/_authenticated/requests/new': typeof AuthenticatedRequestsNewRoute
   '/_authenticated/admin-dashboard/': typeof AuthenticatedAdminDashboardIndexRoute
+  '/_authenticated/humi/': typeof AuthenticatedHumiIndexRoute
   '/_authenticated/requests/': typeof AuthenticatedRequestsIndexRoute
 }
 export interface FileRouteTypes {
@@ -269,10 +288,12 @@ export interface FileRouteTypes {
     | '/settings'
     | '/api/humi-chat'
     | '/admin-dashboard/metrics'
+    | '/humi/$threadId'
     | '/profile/$userId'
     | '/requests/$requestId'
     | '/requests/new'
     | '/admin-dashboard/'
+    | '/humi/'
     | '/requests/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -295,10 +316,12 @@ export interface FileRouteTypes {
     | '/settings'
     | '/api/humi-chat'
     | '/admin-dashboard/metrics'
+    | '/humi/$threadId'
     | '/profile/$userId'
     | '/requests/$requestId'
     | '/requests/new'
     | '/admin-dashboard'
+    | '/humi'
     | '/requests'
   id:
     | '__root__'
@@ -322,10 +345,12 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/api/humi-chat'
     | '/_authenticated/admin-dashboard/metrics'
+    | '/_authenticated/humi/$threadId'
     | '/_authenticated/profile/$userId'
     | '/_authenticated/requests/$requestId'
     | '/_authenticated/requests/new'
     | '/_authenticated/admin-dashboard/'
+    | '/_authenticated/humi/'
     | '/_authenticated/requests/'
   fileRoutesById: FileRoutesById
 }
@@ -483,6 +508,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRequestsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/humi/': {
+      id: '/_authenticated/humi/'
+      path: '/humi'
+      fullPath: '/humi/'
+      preLoaderRoute: typeof AuthenticatedHumiIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin-dashboard/': {
       id: '/_authenticated/admin-dashboard/'
       path: '/admin-dashboard'
@@ -510,6 +542,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/profile/$userId'
       preLoaderRoute: typeof AuthenticatedProfileUserIdRouteImport
       parentRoute: typeof AuthenticatedProfileRoute
+    }
+    '/_authenticated/humi/$threadId': {
+      id: '/_authenticated/humi/$threadId'
+      path: '/humi/$threadId'
+      fullPath: '/humi/$threadId'
+      preLoaderRoute: typeof AuthenticatedHumiThreadIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin-dashboard/metrics': {
       id: '/_authenticated/admin-dashboard/metrics'
@@ -544,9 +583,11 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSearchRoute: typeof AuthenticatedSearchRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedAdminDashboardMetricsRoute: typeof AuthenticatedAdminDashboardMetricsRoute
+  AuthenticatedHumiThreadIdRoute: typeof AuthenticatedHumiThreadIdRoute
   AuthenticatedRequestsRequestIdRoute: typeof AuthenticatedRequestsRequestIdRoute
   AuthenticatedRequestsNewRoute: typeof AuthenticatedRequestsNewRoute
   AuthenticatedAdminDashboardIndexRoute: typeof AuthenticatedAdminDashboardIndexRoute
+  AuthenticatedHumiIndexRoute: typeof AuthenticatedHumiIndexRoute
   AuthenticatedRequestsIndexRoute: typeof AuthenticatedRequestsIndexRoute
 }
 
@@ -563,9 +604,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedAdminDashboardMetricsRoute:
     AuthenticatedAdminDashboardMetricsRoute,
+  AuthenticatedHumiThreadIdRoute: AuthenticatedHumiThreadIdRoute,
   AuthenticatedRequestsRequestIdRoute: AuthenticatedRequestsRequestIdRoute,
   AuthenticatedRequestsNewRoute: AuthenticatedRequestsNewRoute,
   AuthenticatedAdminDashboardIndexRoute: AuthenticatedAdminDashboardIndexRoute,
+  AuthenticatedHumiIndexRoute: AuthenticatedHumiIndexRoute,
   AuthenticatedRequestsIndexRoute: AuthenticatedRequestsIndexRoute,
 }
 
@@ -586,13 +629,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -49,6 +49,7 @@ const primaryNav = [
 ];
 
 const secondaryNav = [
+  { to: "/humi" as const, label: "HUMI AI", icon: Sparkles },
   { to: "/capsules" as const, label: "Capsules", icon: Sparkles },
   { to: "/leaderboard" as const, label: "Leaderboard", icon: Trophy },
   { to: "/profile" as const, label: "Profile", icon: UserIcon },
