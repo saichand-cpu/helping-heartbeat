@@ -79,20 +79,45 @@ export const Route = createFileRoute("/api/humi-chat")({
         const authHeader = request.headers.get("authorization") ?? "";
         const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
         if (!token || token.split(".").length !== 3) {
-          return new Response("Unauthorized", { status: 401 });
+          console.error("[humi-chat] missing or malformed bearer token");
+          return new Response("Your session isn't signed in. Please sign in again to chat with HUMI.", {
+            status: 401,
+          });
         }
         const supabaseUrl = process.env.SUPABASE_URL;
         const supabasePub = process.env.SUPABASE_PUBLISHABLE_KEY;
         if (!supabaseUrl || !supabasePub) {
+          console.error("[humi-chat] Supabase env not configured");
           return new Response("Auth not configured", { status: 500 });
         }
         const sb = createClient(supabaseUrl, supabasePub, {
           auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
         });
-        const { data: claims, error: claimsErr } = await sb.auth.getClaims(token);
-        if (claimsErr || !claims?.claims?.sub) {
-          return new Response("Unauthorized", { status: 401 });
+
+        // Asymmetric JWKS verification first; fall back to getUser() for
+        // legacy HS256 access tokens that cannot be verified locally.
+        let userId: string | undefined;
+        const claimsResult = await sb.auth.getClaims(token).catch((e) => {
+          console.error("[humi-chat] getClaims threw", e);
+          return null;
+        });
+        if (claimsResult && !claimsResult.error && claimsResult.data?.claims?.sub) {
+          userId = claimsResult.data.claims.sub as string;
+        } else {
+          const { data: userData, error: userErr } = await sb.auth.getUser(token);
+          if (userErr || !userData?.user?.id) {
+            console.error("[humi-chat] token rejected", {
+              claimsError: claimsResult?.error?.message,
+              userError: userErr?.message,
+            });
+            return new Response("Your session expired. Please sign in again to continue with HUMI.", {
+              status: 401,
+            });
+          }
+          userId = userData.user.id;
         }
+        console.log("[humi-chat] authenticated", userId);
+
 
         const key = process.env.LOVABLE_API_KEY;
         if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
