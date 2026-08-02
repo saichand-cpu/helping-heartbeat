@@ -1502,6 +1502,10 @@ export type Database = {
         Args: { _owner: string; _viewer: string; _which: string }
         Returns: boolean
       }
+      can_view_profile: {
+        Args: { _owner: string; _viewer: string }
+        Returns: boolean
+      }
       contribute_to_capsule: {
         Args: { _amount: number; _capsule_id: string }
         Returns: {
