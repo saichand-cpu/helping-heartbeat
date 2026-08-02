@@ -77,7 +77,9 @@ export const Route = createFileRoute("/api/humi-chat")({
       POST: async ({ request }) => {
         // ── Auth gate: require a valid Supabase bearer token ─────────────
         const authHeader = request.headers.get("authorization") ?? "";
-        const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+        const token = authHeader.startsWith("Bearer ")
+          ? authHeader.slice(7).trim()
+          : "";
         if (!token) {
           return new Response("Login required to chat with HUMI.", {
             status: 401,
@@ -97,9 +99,10 @@ export const Route = createFileRoute("/api/humi-chat")({
         // asymmetric access tokens while rejecting expired or foreign tokens.
         const { data: userData, error: userError } = await sb.auth.getUser(token);
         if (userError || !userData.user) {
-          return new Response("Authentication expired. HUMI will retry after refreshing your session.", {
-            status: 401,
-          });
+          return new Response(
+            "Authentication expired. HUMI will retry after refreshing your session.",
+            { status: 401 },
+          );
         }
 
         const key = process.env.LOVABLE_API_KEY;
