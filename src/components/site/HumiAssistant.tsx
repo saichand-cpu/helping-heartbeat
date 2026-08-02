@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 type Attachment = { name: string; mime: string; dataUrl: string };
 type Msg = {
@@ -90,14 +90,10 @@ export function HumiAssistant() {
     const ctrl = new AbortController();
     abortRef.current = ctrl;
     try {
-      const { data: sess } = await supabase.auth.getSession();
-      const token = sess.session?.access_token;
-      if (!token) throw new Error("Sign in to use HUMI");
-      const res = await fetch("/api/humi-chat", {
+      const res = await authenticatedFetch("/api/humi-chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           messages: next.map((m) => ({ role: m.role, content: m.content, attachments: m.attachments })),
