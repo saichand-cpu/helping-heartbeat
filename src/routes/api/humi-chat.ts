@@ -77,9 +77,7 @@ export const Route = createFileRoute("/api/humi-chat")({
       POST: async ({ request }) => {
         // ── Auth gate: require a valid Supabase bearer token ─────────────
         const authHeader = request.headers.get("authorization") ?? "";
-        const token = authHeader.startsWith("Bearer ")
-          ? authHeader.slice(7).trim()
-          : "";
+        const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
         if (!token) {
           return new Response("Login required to chat with HUMI.", {
             status: 401,

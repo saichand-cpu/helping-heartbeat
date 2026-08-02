@@ -13,8 +13,7 @@ async function getAccessToken(forceRefresh: boolean): Promise<string | null> {
   if (error || !data.session) return null;
 
   const expiresAt = data.session.expires_at ?? 0;
-  const expiresSoon =
-    expiresAt <= Math.floor(Date.now() / 1000) + REFRESH_WINDOW_SECONDS;
+  const expiresSoon = expiresAt <= Math.floor(Date.now() / 1000) + REFRESH_WINDOW_SECONDS;
   if (!expiresSoon) return data.session.access_token;
 
   const refreshed = await supabase.auth.refreshSession();
@@ -23,10 +22,7 @@ async function getAccessToken(forceRefresh: boolean): Promise<string | null> {
 }
 
 /** Makes an authenticated request and retries once with a refreshed session on 401. */
-export async function authenticatedFetch(
-  input: RequestInfo | URL,
-  init: RequestInit = {},
-) {
+export async function authenticatedFetch(input: RequestInfo | URL, init: RequestInit = {}) {
   const request = async (forceRefresh: boolean) => {
     const token = await getAccessToken(forceRefresh);
     if (!token) return null;
