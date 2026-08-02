@@ -146,8 +146,10 @@ export const Route = createFileRoute("/api/humi-chat")({
 
         if (!res.ok || !res.body) {
           const text = await res.text().catch(() => "");
-          if (res.status === 429) return new Response("HUMI is busy right now. Try again in a moment.", { status: 429 });
-          if (res.status === 402) return new Response("AI credits are exhausted. Please add credits.", { status: 402 });
+          if (res.status === 429)
+            return new Response("HUMI is busy right now. Try again in a moment.", { status: 429 });
+          if (res.status === 402)
+            return new Response("AI credits are exhausted. Please add credits.", { status: 402 });
           return new Response(text || "Upstream error", { status: res.status || 500 });
         }
 
