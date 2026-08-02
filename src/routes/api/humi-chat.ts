@@ -78,9 +78,8 @@ export const Route = createFileRoute("/api/humi-chat")({
         // ── Auth gate: require a valid Supabase bearer token ─────────────
         const authHeader = request.headers.get("authorization") ?? "";
         const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
-        if (!token || token.split(".").length !== 3) {
-          console.error("[humi-chat] missing or malformed bearer token");
-          return new Response("Your session isn't signed in. Please sign in again to chat with HUMI.", {
+        if (!token) {
+          return new Response("Login required to chat with HUMI.", {
             status: 401,
           });
         }
@@ -94,30 +93,14 @@ export const Route = createFileRoute("/api/humi-chat")({
           auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
         });
 
-        // Asymmetric JWKS verification first; fall back to getUser() for
-        // legacy HS256 access tokens that cannot be verified locally.
-        let userId: string | undefined;
-        const claimsResult = await sb.auth.getClaims(token).catch((e) => {
-          console.error("[humi-chat] getClaims threw", e);
-          return null;
-        });
-        if (claimsResult && !claimsResult.error && claimsResult.data?.claims?.sub) {
-          userId = claimsResult.data.claims.sub as string;
-        } else {
-          const { data: userData, error: userErr } = await sb.auth.getUser(token);
-          if (userErr || !userData?.user?.id) {
-            console.error("[humi-chat] token rejected", {
-              claimsError: claimsResult?.error?.message,
-              userError: userErr?.message,
-            });
-            return new Response("Your session expired. Please sign in again to continue with HUMI.", {
-              status: 401,
-            });
-          }
-          userId = userData.user.id;
+        // Validate against Auth on every request. This accepts both legacy and
+        // asymmetric access tokens while rejecting expired or foreign tokens.
+        const { data: userData, error: userError } = await sb.auth.getUser(token);
+        if (userError || !userData.user) {
+          return new Response("Authentication expired. HUMI will retry after refreshing your session.", {
+            status: 401,
+          });
         }
-        console.log("[humi-chat] authenticated", userId);
-
 
         const key = process.env.LOVABLE_API_KEY;
         if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });

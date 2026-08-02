@@ -6,7 +6,6 @@ import {
   Sparkles, ArrowRight, HeartHandshake, Users, Building2, Newspaper, MessageCircle, Trophy, Square, PanelLeft,
 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -23,6 +22,7 @@ import {
   type HumiAttachment, type HumiDbMessage, type HumiThread,
 } from "@/lib/humi-threads";
 import { setPendingSend, takePendingSend } from "@/lib/humi-pending";
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 const MAX_FILE_BYTES = 6 * 1024 * 1024;
 
@@ -189,21 +189,15 @@ export function HumiWorkspace({ threadId }: { threadId?: string }) {
 
   const runStream = useCallback(
     async (tid: string, history: UiMessage[], isEmergency: boolean) => {
-      const { data: s } = await supabase.auth.getSession();
-      const token = s.session?.access_token;
-      if (!token) {
-        toast.error("Please sign in again");
-        return;
-      }
       const controller = new AbortController();
       abortRef.current = controller;
       setBusy(true);
       setStreaming("");
 
       try {
-        const res = await fetch("/api/humi-chat", {
+        const res = await authenticatedFetch("/api/humi-chat", {
           method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          headers: { "Content-Type": "application/json" },
           signal: controller.signal,
           body: JSON.stringify({
             agent,
@@ -241,7 +235,8 @@ export function HumiWorkspace({ threadId }: { threadId?: string }) {
         speakOut(text);
         void refreshThreads();
       } catch (e) {
-        if ((e as Error).name !== "AbortError") toast.error("HUMI hit a snag. Try again.");
+        if ((e as Error).name === "AbortError") return;
+        toast.error((e as Error).message === "LOGIN_REQUIRED" ? "Please sign in to use HUMI" : "HUMI hit a snag. Try again.");
       } finally {
         setBusy(false);
         abortRef.current = null;
