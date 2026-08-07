@@ -18,6 +18,7 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
+import { Route as RefundCancellationRouteImport } from './routes/refund-cancellation'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TermsOfServiceRouteImport } from './routes/terms-of-service'
 import { Route as UserSafetyRouteImport } from './routes/user-safety'
@@ -83,6 +84,11 @@ const PricingRoute = PricingRouteImport.update({
 const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
   id: '/privacy-policy',
   path: '/privacy-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RefundCancellationRoute = RefundCancellationRouteImport.update({
+  id: '/refund-cancellation',
+  path: '/refund-cancellation',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -213,6 +219,7 @@ export interface FileRoutesByFullPath {
   '/leaderboard': typeof LeaderboardRoute
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
+  '/refund-cancellation': typeof RefundCancellationRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms-of-service': typeof TermsOfServiceRoute
   '/user-safety': typeof UserSafetyRoute
@@ -245,6 +252,7 @@ export interface FileRoutesByTo {
   '/leaderboard': typeof LeaderboardRoute
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
+  '/refund-cancellation': typeof RefundCancellationRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms-of-service': typeof TermsOfServiceRoute
   '/user-safety': typeof UserSafetyRoute
@@ -279,6 +287,7 @@ export interface FileRoutesById {
   '/leaderboard': typeof LeaderboardRoute
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
+  '/refund-cancellation': typeof RefundCancellationRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms-of-service': typeof TermsOfServiceRoute
   '/user-safety': typeof UserSafetyRoute
@@ -313,6 +322,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/pricing'
     | '/privacy-policy'
+    | '/refund-cancellation'
     | '/reset-password'
     | '/terms-of-service'
     | '/user-safety'
@@ -345,6 +355,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/pricing'
     | '/privacy-policy'
+    | '/refund-cancellation'
     | '/reset-password'
     | '/terms-of-service'
     | '/user-safety'
@@ -378,6 +389,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/pricing'
     | '/privacy-policy'
+    | '/refund-cancellation'
     | '/reset-password'
     | '/terms-of-service'
     | '/user-safety'
@@ -412,6 +424,7 @@ export interface RootRouteChildren {
   LeaderboardRoute: typeof LeaderboardRoute
   PricingRoute: typeof PricingRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
+  RefundCancellationRoute: typeof RefundCancellationRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsOfServiceRoute: typeof TermsOfServiceRoute
   UserSafetyRoute: typeof UserSafetyRoute
@@ -481,6 +494,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy-policy'
       fullPath: '/privacy-policy'
       preLoaderRoute: typeof PrivacyPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/refund-cancellation': {
+      id: '/refund-cancellation'
+      path: '/refund-cancellation'
+      fullPath: '/refund-cancellation'
+      preLoaderRoute: typeof RefundCancellationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -705,6 +725,7 @@ const rootRouteChildren: RootRouteChildren = {
   LeaderboardRoute: LeaderboardRoute,
   PricingRoute: PricingRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
+  RefundCancellationRoute: RefundCancellationRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TermsOfServiceRoute: TermsOfServiceRoute,
   UserSafetyRoute: UserSafetyRoute,
