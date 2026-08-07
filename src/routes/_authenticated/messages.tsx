@@ -141,7 +141,7 @@ function MessagesPage() {
   // Ensure the deep-linked peer appears in the conversation list even before the first message.
   useEffect(() => {
     const uid = selectedUserId;
-    if (!isValidUserId(uid)) return;
+    if (!uid || !isValidUserId(uid)) return;
     supabase.from("profiles").select("id, full_name, avatar_url, profession").eq("id", uid).maybeSingle().then(({ data }) => {
       if (!data) return;
       setConvos((prev) => {
