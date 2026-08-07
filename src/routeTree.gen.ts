@@ -17,6 +17,7 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as TermsOfServiceRouteImport } from './routes/terms-of-service'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAdminMetricsRouteImport } from './routes/_authenticated/admin-metrics'
 import { Route as AuthenticatedCapsulesRouteImport } from './routes/_authenticated/capsules'
@@ -74,6 +75,11 @@ const PricingRoute = PricingRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsOfServiceRoute = TermsOfServiceRouteImport.update({
+  id: '/terms-of-service',
+  path: '/terms-of-service',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
@@ -188,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/leaderboard': typeof LeaderboardRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/terms-of-service': typeof TermsOfServiceRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/admin-metrics': typeof AuthenticatedAdminMetricsRoute
   '/capsules': typeof AuthenticatedCapsulesRoute
@@ -216,6 +223,7 @@ export interface FileRoutesByTo {
   '/leaderboard': typeof LeaderboardRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/terms-of-service': typeof TermsOfServiceRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/admin-metrics': typeof AuthenticatedAdminMetricsRoute
   '/capsules': typeof AuthenticatedCapsulesRoute
@@ -246,6 +254,7 @@ export interface FileRoutesById {
   '/leaderboard': typeof LeaderboardRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/terms-of-service': typeof TermsOfServiceRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/admin-metrics': typeof AuthenticatedAdminMetricsRoute
   '/_authenticated/capsules': typeof AuthenticatedCapsulesRoute
@@ -276,6 +285,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/pricing'
     | '/reset-password'
+    | '/terms-of-service'
     | '/admin'
     | '/admin-metrics'
     | '/capsules'
@@ -304,6 +314,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/pricing'
     | '/reset-password'
+    | '/terms-of-service'
     | '/admin'
     | '/admin-metrics'
     | '/capsules'
@@ -333,6 +344,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/pricing'
     | '/reset-password'
+    | '/terms-of-service'
     | '/_authenticated/admin'
     | '/_authenticated/admin-metrics'
     | '/_authenticated/capsules'
@@ -363,6 +375,7 @@ export interface RootRouteChildren {
   LeaderboardRoute: typeof LeaderboardRoute
   PricingRoute: typeof PricingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  TermsOfServiceRoute: typeof TermsOfServiceRoute
   ApiHumiChatRoute: typeof ApiHumiChatRoute
 }
 
@@ -422,6 +435,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms-of-service': {
+      id: '/terms-of-service'
+      path: '/terms-of-service'
+      fullPath: '/terms-of-service'
+      preLoaderRoute: typeof TermsOfServiceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
@@ -624,6 +644,7 @@ const rootRouteChildren: RootRouteChildren = {
   LeaderboardRoute: LeaderboardRoute,
   PricingRoute: PricingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  TermsOfServiceRoute: TermsOfServiceRoute,
   ApiHumiChatRoute: ApiHumiChatRoute,
 }
 export const routeTree = rootRouteImport
