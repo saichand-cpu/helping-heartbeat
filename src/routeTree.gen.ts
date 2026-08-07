@@ -19,6 +19,7 @@ import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as RefundCancellationRouteImport } from './routes/refund-cancellation'
+import { Route as ReportAndGrievanceRouteImport } from './routes/report-and-grievance'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TermsOfServiceRouteImport } from './routes/terms-of-service'
 import { Route as UserSafetyRouteImport } from './routes/user-safety'
@@ -89,6 +90,11 @@ const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
 const RefundCancellationRoute = RefundCancellationRouteImport.update({
   id: '/refund-cancellation',
   path: '/refund-cancellation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportAndGrievanceRoute = ReportAndGrievanceRouteImport.update({
+  id: '/report-and-grievance',
+  path: '/report-and-grievance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -220,6 +226,7 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/refund-cancellation': typeof RefundCancellationRoute
+  '/report-and-grievance': typeof ReportAndGrievanceRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms-of-service': typeof TermsOfServiceRoute
   '/user-safety': typeof UserSafetyRoute
@@ -253,6 +260,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/refund-cancellation': typeof RefundCancellationRoute
+  '/report-and-grievance': typeof ReportAndGrievanceRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms-of-service': typeof TermsOfServiceRoute
   '/user-safety': typeof UserSafetyRoute
@@ -288,6 +296,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/refund-cancellation': typeof RefundCancellationRoute
+  '/report-and-grievance': typeof ReportAndGrievanceRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms-of-service': typeof TermsOfServiceRoute
   '/user-safety': typeof UserSafetyRoute
@@ -323,6 +332,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy-policy'
     | '/refund-cancellation'
+    | '/report-and-grievance'
     | '/reset-password'
     | '/terms-of-service'
     | '/user-safety'
@@ -356,6 +366,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy-policy'
     | '/refund-cancellation'
+    | '/report-and-grievance'
     | '/reset-password'
     | '/terms-of-service'
     | '/user-safety'
@@ -390,6 +401,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy-policy'
     | '/refund-cancellation'
+    | '/report-and-grievance'
     | '/reset-password'
     | '/terms-of-service'
     | '/user-safety'
@@ -425,6 +437,7 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   RefundCancellationRoute: typeof RefundCancellationRoute
+  ReportAndGrievanceRoute: typeof ReportAndGrievanceRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsOfServiceRoute: typeof TermsOfServiceRoute
   UserSafetyRoute: typeof UserSafetyRoute
@@ -501,6 +514,13 @@ declare module '@tanstack/react-router' {
       path: '/refund-cancellation'
       fullPath: '/refund-cancellation'
       preLoaderRoute: typeof RefundCancellationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/report-and-grievance': {
+      id: '/report-and-grievance'
+      path: '/report-and-grievance'
+      fullPath: '/report-and-grievance'
+      preLoaderRoute: typeof ReportAndGrievanceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -726,6 +746,7 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   RefundCancellationRoute: RefundCancellationRoute,
+  ReportAndGrievanceRoute: ReportAndGrievanceRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TermsOfServiceRoute: TermsOfServiceRoute,
   UserSafetyRoute: UserSafetyRoute,
