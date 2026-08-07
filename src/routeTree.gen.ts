@@ -20,6 +20,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TermsOfServiceRouteImport } from './routes/terms-of-service'
+import { Route as UserSafetyRouteImport } from './routes/user-safety'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAdminMetricsRouteImport } from './routes/_authenticated/admin-metrics'
 import { Route as AuthenticatedCapsulesRouteImport } from './routes/_authenticated/capsules'
@@ -92,6 +93,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const TermsOfServiceRoute = TermsOfServiceRouteImport.update({
   id: '/terms-of-service',
   path: '/terms-of-service',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UserSafetyRoute = UserSafetyRouteImport.update({
+  id: '/user-safety',
+  path: '/user-safety',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
@@ -209,6 +215,7 @@ export interface FileRoutesByFullPath {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms-of-service': typeof TermsOfServiceRoute
+  '/user-safety': typeof UserSafetyRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/admin-metrics': typeof AuthenticatedAdminMetricsRoute
   '/capsules': typeof AuthenticatedCapsulesRoute
@@ -240,6 +247,7 @@ export interface FileRoutesByTo {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms-of-service': typeof TermsOfServiceRoute
+  '/user-safety': typeof UserSafetyRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/admin-metrics': typeof AuthenticatedAdminMetricsRoute
   '/capsules': typeof AuthenticatedCapsulesRoute
@@ -273,6 +281,7 @@ export interface FileRoutesById {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms-of-service': typeof TermsOfServiceRoute
+  '/user-safety': typeof UserSafetyRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/admin-metrics': typeof AuthenticatedAdminMetricsRoute
   '/_authenticated/capsules': typeof AuthenticatedCapsulesRoute
@@ -306,6 +315,7 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/reset-password'
     | '/terms-of-service'
+    | '/user-safety'
     | '/admin'
     | '/admin-metrics'
     | '/capsules'
@@ -337,6 +347,7 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/reset-password'
     | '/terms-of-service'
+    | '/user-safety'
     | '/admin'
     | '/admin-metrics'
     | '/capsules'
@@ -369,6 +380,7 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/reset-password'
     | '/terms-of-service'
+    | '/user-safety'
     | '/_authenticated/admin'
     | '/_authenticated/admin-metrics'
     | '/_authenticated/capsules'
@@ -402,6 +414,7 @@ export interface RootRouteChildren {
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsOfServiceRoute: typeof TermsOfServiceRoute
+  UserSafetyRoute: typeof UserSafetyRoute
   ApiHumiChatRoute: typeof ApiHumiChatRoute
 }
 
@@ -482,6 +495,13 @@ declare module '@tanstack/react-router' {
       path: '/terms-of-service'
       fullPath: '/terms-of-service'
       preLoaderRoute: typeof TermsOfServiceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/user-safety': {
+      id: '/user-safety'
+      path: '/user-safety'
+      fullPath: '/user-safety'
+      preLoaderRoute: typeof UserSafetyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
@@ -687,6 +707,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TermsOfServiceRoute: TermsOfServiceRoute,
+  UserSafetyRoute: UserSafetyRoute,
   ApiHumiChatRoute: ApiHumiChatRoute,
 }
 export const routeTree = rootRouteImport
