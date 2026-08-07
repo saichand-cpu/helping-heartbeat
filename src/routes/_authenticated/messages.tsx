@@ -45,7 +45,9 @@ function dayLabel(d: Date) {
 }
 
 export const Route = createFileRoute("/_authenticated/messages")({
-  validateSearch: (s: Record<string, unknown>) => ({
+  validateSearch: (
+    s: Record<string, unknown>,
+  ): { userId?: string; user?: string; conversationId?: string; call?: string } => ({
     userId: typeof s?.userId === "string" ? s.userId : undefined,
     user: typeof s?.user === "string" ? s.user : undefined,
     conversationId: typeof s?.conversationId === "string" ? s.conversationId : undefined,
