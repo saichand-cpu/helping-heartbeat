@@ -45,7 +45,9 @@ function dayLabel(d: Date) {
 }
 
 export const Route = createFileRoute("/_authenticated/messages")({
-  validateSearch: (s: Record<string, unknown>) => ({
+  validateSearch: (
+    s: Record<string, unknown>,
+  ): { userId?: string; user?: string; conversationId?: string; call?: string } => ({
     userId: typeof s?.userId === "string" ? s.userId : undefined,
     user: typeof s?.user === "string" ? s.user : undefined,
     conversationId: typeof s?.conversationId === "string" ? s.conversationId : undefined,
@@ -139,7 +141,7 @@ function MessagesPage() {
   // Ensure the deep-linked peer appears in the conversation list even before the first message.
   useEffect(() => {
     const uid = selectedUserId;
-    if (!isValidUserId(uid)) return;
+    if (!uid || !isValidUserId(uid)) return;
     supabase.from("profiles").select("id, full_name, avatar_url, profession").eq("id", uid).maybeSingle().then(({ data }) => {
       if (!data) return;
       setConvos((prev) => {

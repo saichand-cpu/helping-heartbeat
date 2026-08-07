@@ -62,13 +62,17 @@ export function Footer() {
       <div className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-6 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
           <div>© {new Date().getFullYear()} HumanLink. Made with kindness.</div>
-          <div className="flex items-center gap-5">
-            <a href="#" className="hover:text-foreground">Privacy</a>
-            <a href="#" className="hover:text-foreground">Terms</a>
-            <a href="#" className="hover:text-foreground">Security</a>
+          <div className="flex flex-wrap items-center gap-5">
+            <Link to="/terms-of-service" className="hover:text-foreground">Terms of Service</Link>
+            <Link to="/privacy-policy" className="hover:text-foreground">Privacy Policy</Link>
+            <Link to="/community-guidelines" className="hover:text-foreground">Community Guidelines</Link>
+            <Link to="/user-safety" className="hover:text-foreground">User Safety</Link>
+            <Link to="/refund-cancellation" className="hover:text-foreground">Refund &amp; Cancellation</Link>
+            <Link to="/report-and-grievance" className="hover:text-foreground">Report &amp; Grievance</Link>
           </div>
         </div>
       </div>
+
     </footer>
   );
 }

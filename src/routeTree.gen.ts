@@ -13,10 +13,16 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CommunityGuidelinesRouteImport } from './routes/community-guidelines'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
+import { Route as RefundCancellationRouteImport } from './routes/refund-cancellation'
+import { Route as ReportAndGrievanceRouteImport } from './routes/report-and-grievance'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as TermsOfServiceRouteImport } from './routes/terms-of-service'
+import { Route as UserSafetyRouteImport } from './routes/user-safety'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAdminMetricsRouteImport } from './routes/_authenticated/admin-metrics'
 import { Route as AuthenticatedCapsulesRouteImport } from './routes/_authenticated/capsules'
@@ -56,6 +62,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CommunityGuidelinesRoute = CommunityGuidelinesRouteImport.update({
+  id: '/community-guidelines',
+  path: '/community-guidelines',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
@@ -71,9 +82,34 @@ const PricingRoute = PricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
+  id: '/privacy-policy',
+  path: '/privacy-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RefundCancellationRoute = RefundCancellationRouteImport.update({
+  id: '/refund-cancellation',
+  path: '/refund-cancellation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportAndGrievanceRoute = ReportAndGrievanceRouteImport.update({
+  id: '/report-and-grievance',
+  path: '/report-and-grievance',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsOfServiceRoute = TermsOfServiceRouteImport.update({
+  id: '/terms-of-service',
+  path: '/terms-of-service',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UserSafetyRoute = UserSafetyRouteImport.update({
+  id: '/user-safety',
+  path: '/user-safety',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
@@ -184,10 +220,16 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/community-guidelines': typeof CommunityGuidelinesRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/leaderboard': typeof LeaderboardRoute
   '/pricing': typeof PricingRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
+  '/refund-cancellation': typeof RefundCancellationRoute
+  '/report-and-grievance': typeof ReportAndGrievanceRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/terms-of-service': typeof TermsOfServiceRoute
+  '/user-safety': typeof UserSafetyRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/admin-metrics': typeof AuthenticatedAdminMetricsRoute
   '/capsules': typeof AuthenticatedCapsulesRoute
@@ -212,10 +254,16 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/community-guidelines': typeof CommunityGuidelinesRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/leaderboard': typeof LeaderboardRoute
   '/pricing': typeof PricingRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
+  '/refund-cancellation': typeof RefundCancellationRoute
+  '/report-and-grievance': typeof ReportAndGrievanceRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/terms-of-service': typeof TermsOfServiceRoute
+  '/user-safety': typeof UserSafetyRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/admin-metrics': typeof AuthenticatedAdminMetricsRoute
   '/capsules': typeof AuthenticatedCapsulesRoute
@@ -242,10 +290,16 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/community-guidelines': typeof CommunityGuidelinesRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/leaderboard': typeof LeaderboardRoute
   '/pricing': typeof PricingRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
+  '/refund-cancellation': typeof RefundCancellationRoute
+  '/report-and-grievance': typeof ReportAndGrievanceRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/terms-of-service': typeof TermsOfServiceRoute
+  '/user-safety': typeof UserSafetyRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/admin-metrics': typeof AuthenticatedAdminMetricsRoute
   '/_authenticated/capsules': typeof AuthenticatedCapsulesRoute
@@ -272,10 +326,16 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
+    | '/community-guidelines'
     | '/forgot-password'
     | '/leaderboard'
     | '/pricing'
+    | '/privacy-policy'
+    | '/refund-cancellation'
+    | '/report-and-grievance'
     | '/reset-password'
+    | '/terms-of-service'
+    | '/user-safety'
     | '/admin'
     | '/admin-metrics'
     | '/capsules'
@@ -300,10 +360,16 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
+    | '/community-guidelines'
     | '/forgot-password'
     | '/leaderboard'
     | '/pricing'
+    | '/privacy-policy'
+    | '/refund-cancellation'
+    | '/report-and-grievance'
     | '/reset-password'
+    | '/terms-of-service'
+    | '/user-safety'
     | '/admin'
     | '/admin-metrics'
     | '/capsules'
@@ -329,10 +395,16 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/about'
     | '/auth'
+    | '/community-guidelines'
     | '/forgot-password'
     | '/leaderboard'
     | '/pricing'
+    | '/privacy-policy'
+    | '/refund-cancellation'
+    | '/report-and-grievance'
     | '/reset-password'
+    | '/terms-of-service'
+    | '/user-safety'
     | '/_authenticated/admin'
     | '/_authenticated/admin-metrics'
     | '/_authenticated/capsules'
@@ -359,10 +431,16 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
+  CommunityGuidelinesRoute: typeof CommunityGuidelinesRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LeaderboardRoute: typeof LeaderboardRoute
   PricingRoute: typeof PricingRoute
+  PrivacyPolicyRoute: typeof PrivacyPolicyRoute
+  RefundCancellationRoute: typeof RefundCancellationRoute
+  ReportAndGrievanceRoute: typeof ReportAndGrievanceRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  TermsOfServiceRoute: typeof TermsOfServiceRoute
+  UserSafetyRoute: typeof UserSafetyRoute
   ApiHumiChatRoute: typeof ApiHumiChatRoute
 }
 
@@ -396,6 +474,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/community-guidelines': {
+      id: '/community-guidelines'
+      path: '/community-guidelines'
+      fullPath: '/community-guidelines'
+      preLoaderRoute: typeof CommunityGuidelinesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/forgot-password': {
       id: '/forgot-password'
       path: '/forgot-password'
@@ -417,11 +502,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy-policy': {
+      id: '/privacy-policy'
+      path: '/privacy-policy'
+      fullPath: '/privacy-policy'
+      preLoaderRoute: typeof PrivacyPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/refund-cancellation': {
+      id: '/refund-cancellation'
+      path: '/refund-cancellation'
+      fullPath: '/refund-cancellation'
+      preLoaderRoute: typeof RefundCancellationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/report-and-grievance': {
+      id: '/report-and-grievance'
+      path: '/report-and-grievance'
+      fullPath: '/report-and-grievance'
+      preLoaderRoute: typeof ReportAndGrievanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms-of-service': {
+      id: '/terms-of-service'
+      path: '/terms-of-service'
+      fullPath: '/terms-of-service'
+      preLoaderRoute: typeof TermsOfServiceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/user-safety': {
+      id: '/user-safety'
+      path: '/user-safety'
+      fullPath: '/user-safety'
+      preLoaderRoute: typeof UserSafetyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
@@ -620,10 +740,16 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
+  CommunityGuidelinesRoute: CommunityGuidelinesRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LeaderboardRoute: LeaderboardRoute,
   PricingRoute: PricingRoute,
+  PrivacyPolicyRoute: PrivacyPolicyRoute,
+  RefundCancellationRoute: RefundCancellationRoute,
+  ReportAndGrievanceRoute: ReportAndGrievanceRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  TermsOfServiceRoute: TermsOfServiceRoute,
+  UserSafetyRoute: UserSafetyRoute,
   ApiHumiChatRoute: ApiHumiChatRoute,
 }
 export const routeTree = rootRouteImport

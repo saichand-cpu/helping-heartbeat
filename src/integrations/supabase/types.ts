@@ -254,6 +254,68 @@ export type Database = {
         }
         Relationships: []
       }
+      grievances: {
+        Row: {
+          admin_response: string | null
+          assigned_to: string | null
+          category: string
+          contact_email: string | null
+          created_at: string
+          description: string
+          id: string
+          ref_code: string
+          related_report_id: string | null
+          related_user_id: string | null
+          resolved_at: string | null
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          admin_response?: string | null
+          assigned_to?: string | null
+          category: string
+          contact_email?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          ref_code?: string
+          related_report_id?: string | null
+          related_user_id?: string | null
+          resolved_at?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          admin_response?: string | null
+          assigned_to?: string | null
+          category?: string
+          contact_email?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          ref_code?: string
+          related_report_id?: string | null
+          related_user_id?: string | null
+          resolved_at?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grievances_related_report_id_fkey"
+            columns: ["related_report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       help_requests: {
         Row: {
           budget: number | null
@@ -427,6 +489,36 @@ export type Database = {
         }
         Relationships: []
       }
+      legal_acceptances: {
+        Row: {
+          accepted_at: string
+          context: string
+          created_at: string
+          id: string
+          policy_type: string
+          policy_version: string
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string
+          context?: string
+          created_at?: string
+          id?: string
+          policy_type: string
+          policy_version: string
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string
+          context?: string
+          created_at?: string
+          id?: string
+          policy_type?: string
+          policy_version?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
@@ -451,6 +543,81 @@ export type Database = {
           read?: boolean
           receiver_id?: string
           sender_id?: string
+        }
+        Relationships: []
+      }
+      moderation_actions: {
+        Row: {
+          action: string
+          admin_id: string
+          created_at: string
+          grievance_id: string | null
+          id: string
+          reason: string | null
+          report_id: string | null
+          target_user_id: string | null
+        }
+        Insert: {
+          action: string
+          admin_id: string
+          created_at?: string
+          grievance_id?: string | null
+          id?: string
+          reason?: string | null
+          report_id?: string | null
+          target_user_id?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          created_at?: string
+          grievance_id?: string | null
+          id?: string
+          reason?: string | null
+          report_id?: string | null
+          target_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moderation_actions_grievance_id_fkey"
+            columns: ["grievance_id"]
+            isOneToOne: false
+            referencedRelation: "grievances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moderation_actions_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      moderation_notes: {
+        Row: {
+          admin_id: string
+          created_at: string
+          id: string
+          note: string
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          admin_id: string
+          created_at?: string
+          id?: string
+          note: string
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          admin_id?: string
+          created_at?: string
+          id?: string
+          note?: string
+          target_id?: string
+          target_type?: string
         }
         Relationships: []
       }
@@ -673,6 +840,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      policy_versions: {
+        Row: {
+          active: boolean
+          created_at: string
+          effective_date: string
+          id: string
+          policy_type: string
+          summary: string | null
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          effective_date?: string
+          id?: string
+          policy_type: string
+          summary?: string | null
+          updated_at?: string
+          version: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          effective_date?: string
+          id?: string
+          policy_type?: string
+          summary?: string | null
+          updated_at?: string
+          version?: string
+        }
+        Relationships: []
       }
       post_comments: {
         Row: {
@@ -1075,32 +1275,50 @@ export type Database = {
       }
       reports: {
         Row: {
+          category: string
+          content_excerpt: string | null
+          content_id: string | null
+          content_type: string
           created_at: string
           description: string | null
           id: string
           reason: string
+          ref_code: string
           reported_user_id: string
           reporter_id: string
+          resolved_at: string | null
           status: string
           updated_at: string
         }
         Insert: {
+          category?: string
+          content_excerpt?: string | null
+          content_id?: string | null
+          content_type?: string
           created_at?: string
           description?: string | null
           id?: string
           reason: string
+          ref_code?: string
           reported_user_id: string
           reporter_id: string
+          resolved_at?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
+          category?: string
+          content_excerpt?: string | null
+          content_id?: string | null
+          content_type?: string
           created_at?: string
           description?: string | null
           id?: string
           reason?: string
+          ref_code?: string
           reported_user_id?: string
           reporter_id?: string
+          resolved_at?: string | null
           status?: string
           updated_at?: string
         }
@@ -1313,6 +1531,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      support_config: {
+        Row: {
+          business_address: string | null
+          business_name: string | null
+          business_phone: string | null
+          grievance_email: string | null
+          grievance_officer_name: string | null
+          id: string
+          legal_email: string | null
+          notes: string | null
+          refund_window_days: number
+          support_email: string | null
+          updated_at: string
+        }
+        Insert: {
+          business_address?: string | null
+          business_name?: string | null
+          business_phone?: string | null
+          grievance_email?: string | null
+          grievance_officer_name?: string | null
+          id?: string
+          legal_email?: string | null
+          notes?: string | null
+          refund_window_days?: number
+          support_email?: string | null
+          updated_at?: string
+        }
+        Update: {
+          business_address?: string | null
+          business_name?: string | null
+          business_phone?: string | null
+          grievance_email?: string | null
+          grievance_officer_name?: string | null
+          id?: string
+          legal_email?: string | null
+          notes?: string | null
+          refund_window_days?: number
+          support_email?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       time_capsules: {
         Row: {
@@ -1527,6 +1787,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      gen_ref_code: { Args: { _prefix: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
