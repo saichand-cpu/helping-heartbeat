@@ -37,6 +37,7 @@ import { Route as ApiHumiChatRouteImport } from './routes/api/humi-chat'
 import { Route as AuthenticatedAdminDashboardIndexRouteImport } from './routes/_authenticated/admin-dashboard.index'
 import { Route as AuthenticatedAdminDashboardMetricsRouteImport } from './routes/_authenticated/admin-dashboard.metrics'
 import { Route as AuthenticatedGroupsIndexRouteImport } from './routes/_authenticated/groups.index'
+import { Route as AuthenticatedGroupsGroupIdRouteImport } from './routes/_authenticated/groups.$groupId'
 import { Route as AuthenticatedHumiIndexRouteImport } from './routes/_authenticated/humi.index'
 import { Route as AuthenticatedHumiThreadIdRouteImport } from './routes/_authenticated/humi.$threadId'
 import { Route as AuthenticatedProfileUserIdRouteImport } from './routes/_authenticated/profile.$userId'
@@ -187,6 +188,12 @@ const AuthenticatedGroupsIndexRoute =
     path: '/groups/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedGroupsGroupIdRoute =
+  AuthenticatedGroupsGroupIdRouteImport.update({
+    id: '/groups/$groupId',
+    path: '/groups/$groupId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHumiIndexRoute = AuthenticatedHumiIndexRouteImport.update({
   id: '/humi/',
   path: '/humi/',
@@ -249,6 +256,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/api/humi-chat': typeof ApiHumiChatRoute
   '/admin-dashboard/metrics': typeof AuthenticatedAdminDashboardMetricsRoute
+  '/groups/$groupId': typeof AuthenticatedGroupsGroupIdRoute
   '/humi/$threadId': typeof AuthenticatedHumiThreadIdRoute
   '/profile/$userId': typeof AuthenticatedProfileUserIdRoute
   '/requests/$requestId': typeof AuthenticatedRequestsRequestIdRoute
@@ -284,6 +292,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/api/humi-chat': typeof ApiHumiChatRoute
   '/admin-dashboard/metrics': typeof AuthenticatedAdminDashboardMetricsRoute
+  '/groups/$groupId': typeof AuthenticatedGroupsGroupIdRoute
   '/humi/$threadId': typeof AuthenticatedHumiThreadIdRoute
   '/profile/$userId': typeof AuthenticatedProfileUserIdRoute
   '/requests/$requestId': typeof AuthenticatedRequestsRequestIdRoute
@@ -321,6 +330,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/api/humi-chat': typeof ApiHumiChatRoute
   '/_authenticated/admin-dashboard/metrics': typeof AuthenticatedAdminDashboardMetricsRoute
+  '/_authenticated/groups/$groupId': typeof AuthenticatedGroupsGroupIdRoute
   '/_authenticated/humi/$threadId': typeof AuthenticatedHumiThreadIdRoute
   '/_authenticated/profile/$userId': typeof AuthenticatedProfileUserIdRoute
   '/_authenticated/requests/$requestId': typeof AuthenticatedRequestsRequestIdRoute
@@ -358,6 +368,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/api/humi-chat'
     | '/admin-dashboard/metrics'
+    | '/groups/$groupId'
     | '/humi/$threadId'
     | '/profile/$userId'
     | '/requests/$requestId'
@@ -393,6 +404,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/api/humi-chat'
     | '/admin-dashboard/metrics'
+    | '/groups/$groupId'
     | '/humi/$threadId'
     | '/profile/$userId'
     | '/requests/$requestId'
@@ -429,6 +441,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/api/humi-chat'
     | '/_authenticated/admin-dashboard/metrics'
+    | '/_authenticated/groups/$groupId'
     | '/_authenticated/humi/$threadId'
     | '/_authenticated/profile/$userId'
     | '/_authenticated/requests/$requestId'
@@ -655,6 +668,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGroupsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/groups/$groupId': {
+      id: '/_authenticated/groups/$groupId'
+      path: '/groups/$groupId'
+      fullPath: '/groups/$groupId'
+      preLoaderRoute: typeof AuthenticatedGroupsGroupIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/humi/': {
       id: '/_authenticated/humi/'
       path: '/humi'
@@ -723,6 +743,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSearchRoute: typeof AuthenticatedSearchRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedAdminDashboardMetricsRoute: typeof AuthenticatedAdminDashboardMetricsRoute
+  AuthenticatedGroupsGroupIdRoute: typeof AuthenticatedGroupsGroupIdRoute
   AuthenticatedHumiThreadIdRoute: typeof AuthenticatedHumiThreadIdRoute
   AuthenticatedRequestsRequestIdRoute: typeof AuthenticatedRequestsRequestIdRoute
   AuthenticatedRequestsNewRoute: typeof AuthenticatedRequestsNewRoute
@@ -745,6 +766,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedAdminDashboardMetricsRoute:
     AuthenticatedAdminDashboardMetricsRoute,
+  AuthenticatedGroupsGroupIdRoute: AuthenticatedGroupsGroupIdRoute,
   AuthenticatedHumiThreadIdRoute: AuthenticatedHumiThreadIdRoute,
   AuthenticatedRequestsRequestIdRoute: AuthenticatedRequestsRequestIdRoute,
   AuthenticatedRequestsNewRoute: AuthenticatedRequestsNewRoute,
