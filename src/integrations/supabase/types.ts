@@ -164,6 +164,32 @@ export type Database = {
           },
         ]
       }
+      comment_likes: {
+        Row: {
+          comment_id: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "post_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           created_at: string
@@ -315,6 +341,342 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      group_event_rsvps: {
+        Row: {
+          created_at: string
+          event_id: string
+          response: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          response?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          response?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_event_rsvps_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "group_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_events: {
+        Row: {
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          group_id: string
+          id: string
+          location: string | null
+          max_participants: number | null
+          organizer_id: string
+          starts_at: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          group_id: string
+          id?: string
+          location?: string | null
+          max_participants?: number | null
+          organizer_id: string
+          starts_at: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          group_id?: string
+          id?: string
+          location?: string | null
+          max_participants?: number | null
+          organizer_id?: string
+          starts_at?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_events_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_invites: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          invited_user_id: string
+          inviter_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          invited_user_id: string
+          inviter_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          invited_user_id?: string
+          inviter_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_invites_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_members: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          muted: boolean
+          notif_level: string
+          role: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          muted?: boolean
+          notif_level?: string
+          role?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          muted?: boolean
+          notif_level?: string
+          role?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "group_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_messages: {
+        Row: {
+          content: string | null
+          created_at: string
+          deleted_at: string | null
+          group_id: string
+          id: string
+          media_type: string | null
+          media_url: string | null
+          pinned: boolean
+          reply_to: string | null
+          sender_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          group_id: string
+          id?: string
+          media_type?: string | null
+          media_url?: string | null
+          pinned?: boolean
+          reply_to?: string | null
+          sender_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          group_id?: string
+          id?: string
+          media_type?: string | null
+          media_url?: string | null
+          pinned?: boolean
+          reply_to?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_messages_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_messages_reply_to_fkey"
+            columns: ["reply_to"]
+            isOneToOne: false
+            referencedRelation: "group_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_reads: {
+        Row: {
+          group_id: string
+          last_read_at: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          last_read_at?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          last_read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_reads_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      groups: {
+        Row: {
+          avatar_url: string | null
+          category: string
+          cover_url: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          group_type: string
+          id: string
+          invite_code: string | null
+          location: string | null
+          member_media: boolean
+          member_posting: boolean
+          name: string
+          privacy: string
+          radius_km: number | null
+          rules: string[]
+          slug: string | null
+          updated_at: string
+          verified: boolean
+        }
+        Insert: {
+          avatar_url?: string | null
+          category?: string
+          cover_url?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          group_type?: string
+          id?: string
+          invite_code?: string | null
+          location?: string | null
+          member_media?: boolean
+          member_posting?: boolean
+          name: string
+          privacy?: string
+          radius_km?: number | null
+          rules?: string[]
+          slug?: string | null
+          updated_at?: string
+          verified?: boolean
+        }
+        Update: {
+          avatar_url?: string | null
+          category?: string
+          cover_url?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          group_type?: string
+          id?: string
+          invite_code?: string | null
+          location?: string | null
+          member_media?: boolean
+          member_posting?: boolean
+          name?: string
+          privacy?: string
+          radius_km?: number | null
+          rules?: string[]
+          slug?: string | null
+          updated_at?: string
+          verified?: boolean
+        }
+        Relationships: []
       }
       help_requests: {
         Row: {
@@ -874,12 +1236,43 @@ export type Database = {
         }
         Relationships: []
       }
+      poll_votes: {
+        Row: {
+          created_at: string
+          option_index: number
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          option_index: number
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          option_index?: number
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_votes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       post_comments: {
         Row: {
           author_id: string
           body: string
           created_at: string
           id: string
+          parent_id: string | null
+          pinned: boolean
           post_id: string
         }
         Insert: {
@@ -887,6 +1280,8 @@ export type Database = {
           body: string
           created_at?: string
           id?: string
+          parent_id?: string | null
+          pinned?: boolean
           post_id: string
         }
         Update: {
@@ -894,9 +1289,18 @@ export type Database = {
           body?: string
           created_at?: string
           id?: string
+          parent_id?: string | null
+          pinned?: boolean
           post_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "post_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "post_comments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "post_comments_post_id_fkey"
             columns: ["post_id"]
@@ -937,30 +1341,71 @@ export type Database = {
           author_id: string
           body: string
           created_at: string
+          event_at: string | null
+          group_id: string | null
+          hashtags: string[]
           id: string
           image_url: string | null
           is_announcement: boolean
+          location: string | null
+          media: Json
+          mentions: string[]
+          pinned: boolean
+          poll: Json | null
+          post_type: string
+          resolved: boolean
           updated_at: string
+          visibility: string
         }
         Insert: {
           author_id: string
           body: string
           created_at?: string
+          event_at?: string | null
+          group_id?: string | null
+          hashtags?: string[]
           id?: string
           image_url?: string | null
           is_announcement?: boolean
+          location?: string | null
+          media?: Json
+          mentions?: string[]
+          pinned?: boolean
+          poll?: Json | null
+          post_type?: string
+          resolved?: boolean
           updated_at?: string
+          visibility?: string
         }
         Update: {
           author_id?: string
           body?: string
           created_at?: string
+          event_at?: string | null
+          group_id?: string | null
+          hashtags?: string[]
           id?: string
           image_url?: string | null
           is_announcement?: boolean
+          location?: string | null
+          media?: Json
+          mentions?: string[]
+          pinned?: boolean
+          poll?: Json | null
+          post_type?: string
+          resolved?: boolean
           updated_at?: string
+          visibility?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "posts_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       premium_plans: {
         Row: {
@@ -1445,32 +1890,104 @@ export type Database = {
       stories: {
         Row: {
           author_id: string
+          background: string | null
           caption: string | null
           created_at: string
           expires_at: string
+          group_id: string | null
           id: string
+          kind: string
           media_type: string
           media_url: string
         }
         Insert: {
           author_id: string
+          background?: string | null
           caption?: string | null
           created_at?: string
           expires_at?: string
+          group_id?: string | null
           id?: string
+          kind?: string
           media_type?: string
           media_url: string
         }
         Update: {
           author_id?: string
+          background?: string | null
           caption?: string | null
           created_at?: string
           expires_at?: string
+          group_id?: string | null
           id?: string
+          kind?: string
           media_type?: string
           media_url?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "stories_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      story_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          story_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji?: string
+          story_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          story_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_reactions_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      story_views: {
+        Row: {
+          created_at: string
+          story_id: string
+          viewer_id: string
+        }
+        Insert: {
+          created_at?: string
+          story_id: string
+          viewer_id: string
+        }
+        Update: {
+          created_at?: string
+          story_id?: string
+          viewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_views_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscriptions: {
         Row: {
@@ -1793,6 +2310,14 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_group_admin: {
+        Args: { _group_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_group_member: {
+        Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
       show_limit: { Args: never; Returns: number }
