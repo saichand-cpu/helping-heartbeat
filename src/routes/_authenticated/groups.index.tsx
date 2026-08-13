@@ -17,7 +17,7 @@ import {
 import { GROUP_CATEGORIES, GROUP_TYPES, categoryEmoji, categoryLabel, fetchMemberCounts, joinGroup, type Group } from "@/lib/groups";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/groups")({
+export const Route = createFileRoute("/_authenticated/groups/")({
   head: () => ({
     meta: [
       { title: "Groups — HumanLink Communities" },

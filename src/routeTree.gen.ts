@@ -36,6 +36,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as ApiHumiChatRouteImport } from './routes/api/humi-chat'
 import { Route as AuthenticatedAdminDashboardIndexRouteImport } from './routes/_authenticated/admin-dashboard.index'
 import { Route as AuthenticatedAdminDashboardMetricsRouteImport } from './routes/_authenticated/admin-dashboard.metrics'
+import { Route as AuthenticatedGroupsIndexRouteImport } from './routes/_authenticated/groups.index'
 import { Route as AuthenticatedHumiIndexRouteImport } from './routes/_authenticated/humi.index'
 import { Route as AuthenticatedHumiThreadIdRouteImport } from './routes/_authenticated/humi.$threadId'
 import { Route as AuthenticatedProfileUserIdRouteImport } from './routes/_authenticated/profile.$userId'
@@ -180,6 +181,12 @@ const AuthenticatedAdminDashboardMetricsRoute =
     path: '/admin-dashboard/metrics',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedGroupsIndexRoute =
+  AuthenticatedGroupsIndexRouteImport.update({
+    id: '/groups/',
+    path: '/groups/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHumiIndexRoute = AuthenticatedHumiIndexRouteImport.update({
   id: '/humi/',
   path: '/humi/',
@@ -247,6 +254,7 @@ export interface FileRoutesByFullPath {
   '/requests/$requestId': typeof AuthenticatedRequestsRequestIdRoute
   '/requests/new': typeof AuthenticatedRequestsNewRoute
   '/admin-dashboard/': typeof AuthenticatedAdminDashboardIndexRoute
+  '/groups/': typeof AuthenticatedGroupsIndexRoute
   '/humi/': typeof AuthenticatedHumiIndexRoute
   '/requests/': typeof AuthenticatedRequestsIndexRoute
 }
@@ -281,6 +289,7 @@ export interface FileRoutesByTo {
   '/requests/$requestId': typeof AuthenticatedRequestsRequestIdRoute
   '/requests/new': typeof AuthenticatedRequestsNewRoute
   '/admin-dashboard': typeof AuthenticatedAdminDashboardIndexRoute
+  '/groups': typeof AuthenticatedGroupsIndexRoute
   '/humi': typeof AuthenticatedHumiIndexRoute
   '/requests': typeof AuthenticatedRequestsIndexRoute
 }
@@ -317,6 +326,7 @@ export interface FileRoutesById {
   '/_authenticated/requests/$requestId': typeof AuthenticatedRequestsRequestIdRoute
   '/_authenticated/requests/new': typeof AuthenticatedRequestsNewRoute
   '/_authenticated/admin-dashboard/': typeof AuthenticatedAdminDashboardIndexRoute
+  '/_authenticated/groups/': typeof AuthenticatedGroupsIndexRoute
   '/_authenticated/humi/': typeof AuthenticatedHumiIndexRoute
   '/_authenticated/requests/': typeof AuthenticatedRequestsIndexRoute
 }
@@ -353,6 +363,7 @@ export interface FileRouteTypes {
     | '/requests/$requestId'
     | '/requests/new'
     | '/admin-dashboard/'
+    | '/groups/'
     | '/humi/'
     | '/requests/'
   fileRoutesByTo: FileRoutesByTo
@@ -387,6 +398,7 @@ export interface FileRouteTypes {
     | '/requests/$requestId'
     | '/requests/new'
     | '/admin-dashboard'
+    | '/groups'
     | '/humi'
     | '/requests'
   id:
@@ -422,6 +434,7 @@ export interface FileRouteTypes {
     | '/_authenticated/requests/$requestId'
     | '/_authenticated/requests/new'
     | '/_authenticated/admin-dashboard/'
+    | '/_authenticated/groups/'
     | '/_authenticated/humi/'
     | '/_authenticated/requests/'
   fileRoutesById: FileRoutesById
@@ -635,6 +648,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminDashboardMetricsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/groups/': {
+      id: '/_authenticated/groups/'
+      path: '/groups'
+      fullPath: '/groups/'
+      preLoaderRoute: typeof AuthenticatedGroupsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/humi/': {
       id: '/_authenticated/humi/'
       path: '/humi'
@@ -707,6 +727,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRequestsRequestIdRoute: typeof AuthenticatedRequestsRequestIdRoute
   AuthenticatedRequestsNewRoute: typeof AuthenticatedRequestsNewRoute
   AuthenticatedAdminDashboardIndexRoute: typeof AuthenticatedAdminDashboardIndexRoute
+  AuthenticatedGroupsIndexRoute: typeof AuthenticatedGroupsIndexRoute
   AuthenticatedHumiIndexRoute: typeof AuthenticatedHumiIndexRoute
   AuthenticatedRequestsIndexRoute: typeof AuthenticatedRequestsIndexRoute
 }
@@ -728,6 +749,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRequestsRequestIdRoute: AuthenticatedRequestsRequestIdRoute,
   AuthenticatedRequestsNewRoute: AuthenticatedRequestsNewRoute,
   AuthenticatedAdminDashboardIndexRoute: AuthenticatedAdminDashboardIndexRoute,
+  AuthenticatedGroupsIndexRoute: AuthenticatedGroupsIndexRoute,
   AuthenticatedHumiIndexRoute: AuthenticatedHumiIndexRoute,
   AuthenticatedRequestsIndexRoute: AuthenticatedRequestsIndexRoute,
 }
