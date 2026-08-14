@@ -27,6 +27,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAdminMetricsRouteImport } from './routes/_authenticated/admin-metrics'
 import { Route as AuthenticatedCapsulesRouteImport } from './routes/_authenticated/capsules'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedDiscoverRouteImport } from './routes/_authenticated/discover'
 import { Route as AuthenticatedFeedRouteImport } from './routes/_authenticated/feed'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
@@ -133,6 +134,11 @@ const AuthenticatedCapsulesRoute = AuthenticatedCapsulesRouteImport.update({
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDiscoverRoute = AuthenticatedDiscoverRouteImport.update({
+  id: '/discover',
+  path: '/discover',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedFeedRoute = AuthenticatedFeedRouteImport.update({
@@ -248,6 +254,7 @@ export interface FileRoutesByFullPath {
   '/admin-metrics': typeof AuthenticatedAdminMetricsRoute
   '/capsules': typeof AuthenticatedCapsulesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/discover': typeof AuthenticatedDiscoverRoute
   '/feed': typeof AuthenticatedFeedRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -284,6 +291,7 @@ export interface FileRoutesByTo {
   '/admin-metrics': typeof AuthenticatedAdminMetricsRoute
   '/capsules': typeof AuthenticatedCapsulesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/discover': typeof AuthenticatedDiscoverRoute
   '/feed': typeof AuthenticatedFeedRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -322,6 +330,7 @@ export interface FileRoutesById {
   '/_authenticated/admin-metrics': typeof AuthenticatedAdminMetricsRoute
   '/_authenticated/capsules': typeof AuthenticatedCapsulesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/discover': typeof AuthenticatedDiscoverRoute
   '/_authenticated/feed': typeof AuthenticatedFeedRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
@@ -360,6 +369,7 @@ export interface FileRouteTypes {
     | '/admin-metrics'
     | '/capsules'
     | '/dashboard'
+    | '/discover'
     | '/feed'
     | '/messages'
     | '/onboarding'
@@ -396,6 +406,7 @@ export interface FileRouteTypes {
     | '/admin-metrics'
     | '/capsules'
     | '/dashboard'
+    | '/discover'
     | '/feed'
     | '/messages'
     | '/onboarding'
@@ -433,6 +444,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin-metrics'
     | '/_authenticated/capsules'
     | '/_authenticated/dashboard'
+    | '/_authenticated/discover'
     | '/_authenticated/feed'
     | '/_authenticated/messages'
     | '/_authenticated/onboarding'
@@ -598,6 +610,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/discover': {
+      id: '/_authenticated/discover'
+      path: '/discover'
+      fullPath: '/discover'
+      preLoaderRoute: typeof AuthenticatedDiscoverRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/feed': {
       id: '/_authenticated/feed'
       path: '/feed'
@@ -736,6 +755,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminMetricsRoute: typeof AuthenticatedAdminMetricsRoute
   AuthenticatedCapsulesRoute: typeof AuthenticatedCapsulesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDiscoverRoute: typeof AuthenticatedDiscoverRoute
   AuthenticatedFeedRoute: typeof AuthenticatedFeedRoute
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
@@ -758,6 +778,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminMetricsRoute: AuthenticatedAdminMetricsRoute,
   AuthenticatedCapsulesRoute: AuthenticatedCapsulesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDiscoverRoute: AuthenticatedDiscoverRoute,
   AuthenticatedFeedRoute: AuthenticatedFeedRoute,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
