@@ -55,3 +55,20 @@ export function isAuthError(err: unknown): boolean {
 }
 
 export const SESSION_EXPIRED_MESSAGE = "Your session has expired. Please sign in again.";
+
+/**
+ * Called when a request still fails auth AFTER one forced refresh:
+ * the session is genuinely dead, so clear it and send the user to sign in.
+ * Never loops — it does not retry the request again.
+ */
+export async function endExpiredSession() {
+  try {
+    await supabase.auth.signOut();
+  } catch {
+    // ignore — the session is already unusable
+  }
+  if (typeof window !== "undefined") {
+    const next = encodeURIComponent(window.location.pathname + window.location.search);
+    window.location.assign(`/auth?redirect=${next}`);
+  }
+}
