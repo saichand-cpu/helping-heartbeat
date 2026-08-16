@@ -1,7 +1,9 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "./lib/error-page";
-import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
+// Project-specific bearer middleware: always attaches a *fresh* Supabase token
+// and retries once on 401 (replaces generated attachSupabaseAuth).
+import { attachFreshSupabaseAuth } from "@/lib/supabase-fn-middleware";
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
