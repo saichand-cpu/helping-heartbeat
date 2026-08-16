@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
+import { SESSION_EXPIRED_MESSAGE, endExpiredSession } from "@/lib/supabase-session";
 
 type Attachment = { name: string; mime: string; dataUrl: string };
 type Msg = {
@@ -100,6 +101,10 @@ export function HumiAssistant() {
         }),
         signal: ctrl.signal,
       });
+      if (res.status === 401) {
+        void endExpiredSession();
+        throw new Error(SESSION_EXPIRED_MESSAGE);
+      }
       if (!res.ok || !res.body) {
         const err = await res.text().catch(() => "");
         throw new Error(err || `HUMI is unavailable (${res.status})`);

@@ -23,6 +23,7 @@ import {
 } from "@/lib/humi-threads";
 import { setPendingSend, takePendingSend } from "@/lib/humi-pending";
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
+import { SESSION_EXPIRED_MESSAGE, endExpiredSession } from "@/lib/supabase-session";
 
 const MAX_FILE_BYTES = 6 * 1024 * 1024;
 
@@ -210,6 +211,11 @@ export function HumiWorkspace({ threadId }: { threadId?: string }) {
           }),
         });
 
+        if (res.status === 401) {
+          toast.error(SESSION_EXPIRED_MESSAGE);
+          void endExpiredSession();
+          return;
+        }
         if (!res.ok || !res.body) {
           toast.error((await res.text().catch(() => "")) || "HUMI could not respond");
           return;
