@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useIsAdmin } from "@/hooks/use-role";
 import { openRazorpay, type RazorpayResponse } from "@/lib/razorpay";
 import { createRazorpayOrder, verifyRazorpayPayment, cancelRazorpayOrder } from "@/lib/razorpay.functions";
+import { SESSION_EXPIRED_MESSAGE, endExpiredSession, isAuthError } from "@/lib/supabase-session";
 
 type TierKey = "pro" | "ngo";
 
@@ -101,10 +102,12 @@ export function RazorpayCheckoutModal({
         onSuccess?.();
       }, 1800);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Verification failed";
+      const auth = isAuthError(e);
+      const msg = auth ? SESSION_EXPIRED_MESSAGE : e instanceof Error ? e.message : "Verification failed";
       setErrorMsg(msg);
       setStage("error");
       toast.error(msg);
+      if (auth) void endExpiredSession();
     }
   };
 
@@ -144,10 +147,14 @@ export function RazorpayCheckoutModal({
         },
       });
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Checkout failed to load";
+      // Authentication failures must never look like payment failures, and
+      // Razorpay checkout is never opened unless the backend authorized us.
+      const auth = isAuthError(e);
+      const msg = auth ? SESSION_EXPIRED_MESSAGE : e instanceof Error ? e.message : "Checkout failed to load";
       toast.error(msg);
       setErrorMsg(msg);
       setStage("error");
+      if (auth) void endExpiredSession();
     } finally {
       setLoading(false);
     }

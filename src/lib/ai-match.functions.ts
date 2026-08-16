@@ -15,10 +15,28 @@ export const smartMatch = createServerFn({ method: "POST" })
   .handler(async ({ context }): Promise<Match[]> => {
     const { supabase, userId } = context;
 
-    const [{ data: profile }, { data: requests }] = await Promise.all([
-      supabase.from("profiles").select("full_name, bio, skills, interests, languages, location").eq("id", userId).maybeSingle(),
-      supabase.from("help_requests").select("id, title, description, category, urgency, location").eq("status", "open").limit(20),
-    ]);
+    type OpenRequest = {
+      id: string;
+      title: string;
+      description: string | null;
+      category: string;
+      urgency: string;
+      location: string | null;
+    };
+
+    const profileRes = await supabase
+      .from("profiles")
+      .select("full_name, bio, skills, interests, languages, location")
+      .eq("id", userId)
+      .maybeSingle();
+    const requestsRes = await supabase
+      .from("help_requests")
+      .select("id, title, description, category, urgency, location")
+      .eq("status", "open")
+      .limit(20);
+
+    const profile = profileRes.data;
+    const requests = (requestsRes.data ?? []) as unknown as OpenRequest[];
 
     if (!requests || requests.length === 0) return [];
 

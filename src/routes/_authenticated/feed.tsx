@@ -410,8 +410,8 @@ function FeedPage() {
             <PostCard
               post={p}
               me={me}
-              isAdmin={isAdmin}
-              canModerate={isAdmin}
+              isAdmin={!!isAdmin}
+              canModerate={!!isAdmin}
               onLike={() => toggleLike(p)}
               onShare={() => setShareFor(p)}
               onUpdate={(patch) => setPosts((prev) => prev.map((x) => (x.id === p.id ? { ...x, ...patch } : x)))}
