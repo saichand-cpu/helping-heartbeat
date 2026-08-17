@@ -195,6 +195,7 @@ export function HumiWorkspace({ threadId }: { threadId?: string }) {
       abortRef.current = controller;
       setBusy(true);
       setStreaming("");
+      setNotice(null);
 
       try {
         const res = await authenticatedFetch("/api/humi-chat", {
