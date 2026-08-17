@@ -217,9 +217,12 @@ export function HumiWorkspace({ threadId }: { threadId?: string }) {
           return;
         }
         if (!res.ok || !res.body) {
-          toast.error((await res.text().catch(() => "")) || "HUMI could not respond");
+          // AI key missing / gateway unavailable → calm inline notice, no red toast.
+          const body = (await res.text().catch(() => "")).trim();
+          setNotice(body || "HUMI AI is updating. Please check back in a moment.");
           return;
         }
+        setNotice(null);
 
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
