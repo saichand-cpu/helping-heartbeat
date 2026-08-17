@@ -246,7 +246,11 @@ export function HumiWorkspace({ threadId }: { threadId?: string }) {
         void refreshThreads();
       } catch (e) {
         if ((e as Error).name === "AbortError") return;
-        toast.error((e as Error).message === "LOGIN_REQUIRED" ? "Please sign in to use HUMI" : "HUMI hit a snag. Try again.");
+        if ((e as Error).message === "LOGIN_REQUIRED") {
+          toast.error("Please sign in to use HUMI");
+        } else {
+          setNotice("HUMI AI is updating. Please check back in a moment.");
+        }
       } finally {
         setBusy(false);
         abortRef.current = null;
