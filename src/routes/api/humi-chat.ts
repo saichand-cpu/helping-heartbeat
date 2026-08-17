@@ -103,8 +103,16 @@ export const Route = createFileRoute("/api/humi-chat")({
           );
         }
 
+        // AI key may be missing while the backend is still provisioning.
+        // Answer with a calm, retryable signal instead of a hard 500.
         const key = process.env.LOVABLE_API_KEY;
-        if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
+        if (!key) {
+          console.error("[humi-chat] LOVABLE_API_KEY is not configured");
+          return new Response("HUMI AI is updating. Please check back in a moment.", {
+            status: 503,
+            headers: { "X-Humi-Status": "unavailable" },
+          });
+        }
         let body: Body;
         try {
           body = (await request.json()) as Body;
@@ -146,11 +154,28 @@ export const Route = createFileRoute("/api/humi-chat")({
 
         if (!res.ok || !res.body) {
           const text = await res.text().catch(() => "");
+          const notice = { "X-Humi-Status": "unavailable" };
           if (res.status === 429)
-            return new Response("HUMI is busy right now. Try again in a moment.", { status: 429 });
+            return new Response("HUMI is busy right now. Try again in a moment.", {
+              status: 429,
+              headers: notice,
+            });
           if (res.status === 402)
-            return new Response("AI credits are exhausted. Please add credits.", { status: 402 });
-          return new Response(text || "Upstream error", { status: res.status || 500 });
+            return new Response("HUMI AI is updating. Please check back in a moment.", {
+              status: 402,
+              headers: notice,
+            });
+          if (res.status === 401 || res.status === 403) {
+            console.error("[humi-chat] AI gateway rejected the key", res.status, text);
+            return new Response("HUMI AI is updating. Please check back in a moment.", {
+              status: 503,
+              headers: notice,
+            });
+          }
+          return new Response(text || "HUMI could not respond. Please try again.", {
+            status: res.status || 500,
+            headers: notice,
+          });
         }
 
         // Transform OpenAI-style SSE to a plain stream of delta tokens.

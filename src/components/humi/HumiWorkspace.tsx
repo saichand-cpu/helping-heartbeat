@@ -98,6 +98,7 @@ export function HumiWorkspace({ threadId }: { threadId?: string }) {
   const [listening, setListening] = useState(false);
   const [speak, setSpeak] = useState(false);
   const [loadingThread, setLoadingThread] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -194,6 +195,7 @@ export function HumiWorkspace({ threadId }: { threadId?: string }) {
       abortRef.current = controller;
       setBusy(true);
       setStreaming("");
+      setNotice(null);
 
       try {
         const res = await authenticatedFetch("/api/humi-chat", {
@@ -217,9 +219,12 @@ export function HumiWorkspace({ threadId }: { threadId?: string }) {
           return;
         }
         if (!res.ok || !res.body) {
-          toast.error((await res.text().catch(() => "")) || "HUMI could not respond");
+          // AI key missing / gateway unavailable → calm inline notice, no red toast.
+          const body = (await res.text().catch(() => "")).trim();
+          setNotice(body || "HUMI AI is updating. Please check back in a moment.");
           return;
         }
+        setNotice(null);
 
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
@@ -242,7 +247,11 @@ export function HumiWorkspace({ threadId }: { threadId?: string }) {
         void refreshThreads();
       } catch (e) {
         if ((e as Error).name === "AbortError") return;
-        toast.error((e as Error).message === "LOGIN_REQUIRED" ? "Please sign in to use HUMI" : "HUMI hit a snag. Try again.");
+        if ((e as Error).message === "LOGIN_REQUIRED") {
+          toast.error("Please sign in to use HUMI");
+        } else {
+          setNotice("HUMI AI is updating. Please check back in a moment.");
+        }
       } finally {
         setBusy(false);
         abortRef.current = null;
@@ -631,6 +640,15 @@ export function HumiWorkspace({ threadId }: { threadId?: string }) {
               >
                 HUMI is thinking…
               </motion.span>
+            </div>
+          )}
+
+          {notice && (
+            <div className="flex gap-3">
+              <HumiOrb size={26} className="mt-1 shrink-0" />
+              <div className="min-w-0 flex-1 rounded-2xl border border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
+                {notice}
+              </div>
             </div>
           )}
         </div>

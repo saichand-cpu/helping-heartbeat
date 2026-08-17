@@ -23,19 +23,36 @@ import {
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async ({ location }) => {
+    // Reload-safe gate: only sign the user out when there is genuinely no
+    // stored session. A transient network/validation failure (common right
+    // after a reload on a custom domain) must not bounce them to /auth.
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) throw redirect({ to: "/auth" });
+
+    let user = sessionData.session.user;
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data?.user) throw redirect({ to: "/auth" });
+    if (data?.user) {
+      user = data.user;
+    } else if (error) {
+      const refreshed = await supabase.auth.refreshSession();
+      if (refreshed.data.session?.user) {
+        user = refreshed.data.session.user;
+      } else {
+        throw redirect({ to: "/auth" });
+      }
+    }
+    const authedUser = user;
     if (!location.pathname.startsWith("/onboarding")) {
       const { data: p } = await supabase
         .from("profiles")
         .select("profession, full_name" as never)
-        .eq("id", data.user.id)
+        .eq("id", authedUser.id)
         .maybeSingle();
       const prof = (p as { profession?: string | null } | null)?.profession?.trim();
       const name = (p as { full_name?: string | null } | null)?.full_name?.trim();
       if (!prof || !name) throw redirect({ to: "/onboarding" });
     }
-    return { user: data.user };
+    return { user: authedUser };
   },
   component: AuthedLayout,
 });
