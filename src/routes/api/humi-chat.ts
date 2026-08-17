@@ -140,15 +140,21 @@ export const Route = createFileRoute("/api/humi-chat")({
           content: toMultimodalContent(m),
         }));
 
-        const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        const useGateway = Boolean(lovableKey);
+        const endpoint = useGateway
+          ? "https://ai.gateway.lovable.dev/v1/chat/completions"
+          : "https://api.openai.com/v1/chat/completions";
+
+        const res = await fetch(endpoint, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Lovable-API-Key": key,
-            "X-Lovable-AIG-SDK": "fetch",
+            ...(useGateway
+              ? { "Lovable-API-Key": lovableKey!, "X-Lovable-AIG-SDK": "fetch" }
+              : { Authorization: `Bearer ${openaiKey!}` }),
           },
           body: JSON.stringify({
-            model: "google/gemini-3.6-flash",
+            model: useGateway ? "google/gemini-3.6-flash" : "gpt-4o-mini",
             stream: true,
             messages: [{ role: "system", content: system }, ...messages],
           }),
@@ -163,17 +169,18 @@ export const Route = createFileRoute("/api/humi-chat")({
               headers: notice,
             });
           if (res.status === 402)
-            return new Response("HUMI AI is updating. Please check back in a moment.", {
+            return new Response("HUMI AI is updating. Please try again shortly.", {
               status: 402,
               headers: notice,
             });
           if (res.status === 401 || res.status === 403) {
-            console.error("[humi-chat] AI gateway rejected the key", res.status, text);
-            return new Response("HUMI AI is updating. Please check back in a moment.", {
+            console.error("[humi-chat] AI provider rejected the key", res.status, text);
+            return new Response("HUMI AI is updating. Please try again shortly.", {
               status: 503,
               headers: notice,
             });
           }
+
           return new Response(text || "HUMI could not respond. Please try again.", {
             status: res.status || 500,
             headers: notice,
