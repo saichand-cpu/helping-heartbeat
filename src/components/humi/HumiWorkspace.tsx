@@ -641,6 +641,15 @@ export function HumiWorkspace({ threadId }: { threadId?: string }) {
               </motion.span>
             </div>
           )}
+
+          {notice && (
+            <div className="flex gap-3">
+              <HumiOrb size={26} className="mt-1 shrink-0" />
+              <div className="min-w-0 flex-1 rounded-2xl border border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
+                {notice}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Composer */}
