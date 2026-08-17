@@ -106,8 +106,11 @@ export function HumiAssistant() {
         throw new Error(SESSION_EXPIRED_MESSAGE);
       }
       if (!res.ok || !res.body) {
-        const err = await res.text().catch(() => "");
-        throw new Error(err || `HUMI is unavailable (${res.status})`);
+        // Missing AI key / gateway down: show a calm inline notice, no red toast.
+        const err = (await res.text().catch(() => "")).trim();
+        const notice = err || "HUMI AI is updating. Please check back in a moment.";
+        setMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, content: notice } : m)));
+        return;
       }
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
