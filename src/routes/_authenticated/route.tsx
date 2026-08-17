@@ -46,13 +46,13 @@ export const Route = createFileRoute("/_authenticated")({
       const { data: p } = await supabase
         .from("profiles")
         .select("profession, full_name" as never)
-        .eq("id", data.user.id)
+        .eq("id", authedUser.id)
         .maybeSingle();
       const prof = (p as { profession?: string | null } | null)?.profession?.trim();
       const name = (p as { full_name?: string | null } | null)?.full_name?.trim();
       if (!prof || !name) throw redirect({ to: "/onboarding" });
     }
-    return { user: data.user };
+    return { user: authedUser };
   },
   component: AuthedLayout,
 });
