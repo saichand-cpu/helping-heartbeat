@@ -104,15 +104,17 @@ export const Route = createFileRoute("/api/humi-chat")({
         }
 
         // AI key may be missing while the backend is still provisioning.
-        // Answer with a calm, retryable signal instead of a hard 500.
-        const key = process.env.LOVABLE_API_KEY;
-        if (!key) {
-          console.error("[humi-chat] LOVABLE_API_KEY is not configured");
-          return new Response("HUMI AI is updating. Please check back in a moment.", {
+        // Prefer the Lovable AI Gateway; fall back to a direct OpenAI key if present.
+        const lovableKey = process.env.LOVABLE_API_KEY;
+        const openaiKey = process.env.OPENAI_API_KEY;
+        if (!lovableKey && !openaiKey) {
+          console.error("[humi-chat] No AI key configured (LOVABLE_API_KEY / OPENAI_API_KEY)");
+          return new Response("HUMI AI is updating. Please try again shortly.", {
             status: 503,
             headers: { "X-Humi-Status": "unavailable" },
           });
         }
+
         let body: Body;
         try {
           body = (await request.json()) as Body;
