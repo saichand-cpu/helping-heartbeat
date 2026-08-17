@@ -98,6 +98,7 @@ export function HumiWorkspace({ threadId }: { threadId?: string }) {
   const [listening, setListening] = useState(false);
   const [speak, setSpeak] = useState(false);
   const [loadingThread, setLoadingThread] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
