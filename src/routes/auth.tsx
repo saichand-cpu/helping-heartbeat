@@ -410,6 +410,17 @@ function EmailAuthFlow() {
             "Create account"
           )}
         </Button>
+
+        {needsConfirmation && (
+          <button
+            type="button"
+            onClick={resendConfirmation}
+            disabled={resending}
+            className="w-full text-xs text-primary hover:underline font-medium disabled:opacity-60"
+          >
+            {resending ? "Sending…" : "Resend confirmation email"}
+          </button>
+        )}
       </form>
     </div>
   );
