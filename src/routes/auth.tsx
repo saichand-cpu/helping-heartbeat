@@ -161,6 +161,35 @@ function EmailAuthFlow() {
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
+  const [needsConfirmation, setNeedsConfirmation] = useState(false);
+  const [resending, setResending] = useState(false);
+
+  const resendConfirmation = async () => {
+    if (!validEmailFor(email)) {
+      toast.error("Enter your email address first");
+      return;
+    }
+    setResending(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: email.trim(),
+        options: { emailRedirectTo: `${window.location.origin}/` },
+      });
+      if (error) {
+        console.error("Resend confirmation error details:", error);
+        toast.error(error.message || "Could not resend the confirmation email.");
+        return;
+      }
+      toast.success("Confirmation email sent — check your inbox.");
+    } catch (error) {
+      console.error("Resend confirmation error details:", error);
+      toast.error("Could not resend the confirmation email.");
+    } finally {
+      setResending(false);
+    }
+  };
+
 
   const { remainingCooldown, registerAttempt, clearCooldown } =
     useAttemptGuard("humanlink:auth:cooldown");
