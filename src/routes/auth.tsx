@@ -165,7 +165,7 @@ function EmailAuthFlow() {
   const [resending, setResending] = useState(false);
 
   const resendConfirmation = async () => {
-    if (!validEmailFor(email)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       toast.error("Enter your email address first");
       return;
     }
