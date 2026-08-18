@@ -235,51 +235,43 @@ export const Route = createFileRoute("/api/humi-chat")({
           content: toMultimodalContent(m),
         }));
 
+        // No provider key configured — answer from the local knowledge fallback
+        // rather than telling the user the service is unavailable.
+        if (!lovableKey && !openaiKey) {
+          console.error("[humi-chat] No AI key configured (LOVABLE_API_KEY / OPENAI_API_KEY)");
+          return textStreamResponse(offlineReply(lastUser?.content ?? ""), emergency);
+        }
+
         const useGateway = Boolean(lovableKey);
         const endpoint = useGateway
           ? "https://ai.gateway.lovable.dev/v1/chat/completions"
           : "https://api.openai.com/v1/chat/completions";
 
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(useGateway
-              ? { "Lovable-API-Key": lovableKey!, "X-Lovable-AIG-SDK": "fetch" }
-              : { Authorization: `Bearer ${openaiKey!}` }),
-          },
-          body: JSON.stringify({
-            model: useGateway ? "google/gemini-3.6-flash" : "gpt-4o-mini",
-            stream: true,
-            messages: [{ role: "system", content: system }, ...messages],
-          }),
-        });
+        let res: Response;
+        try {
+          res = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(useGateway
+                ? { "Lovable-API-Key": lovableKey!, "X-Lovable-AIG-SDK": "fetch" }
+                : { Authorization: `Bearer ${openaiKey!}` }),
+            },
+            body: JSON.stringify({
+              model: useGateway ? "google/gemini-3.6-flash" : "gpt-4o-mini",
+              stream: true,
+              messages: [{ role: "system", content: system }, ...messages],
+            }),
+          });
+        } catch (err) {
+          console.error("[humi-chat] AI request failed", err);
+          return textStreamResponse(offlineReply(lastUser?.content ?? ""), emergency);
+        }
 
         if (!res.ok || !res.body) {
           const text = await res.text().catch(() => "");
-          const notice = { "X-Humi-Status": "unavailable" };
-          if (res.status === 429)
-            return new Response("HUMI is busy right now. Try again in a moment.", {
-              status: 429,
-              headers: notice,
-            });
-          if (res.status === 402)
-            return new Response("HUMI AI is updating. Please try again shortly.", {
-              status: 402,
-              headers: notice,
-            });
-          if (res.status === 401 || res.status === 403) {
-            console.error("[humi-chat] AI provider rejected the key", res.status, text);
-            return new Response("HUMI AI is updating. Please try again shortly.", {
-              status: 503,
-              headers: notice,
-            });
-          }
-
-          return new Response(text || "HUMI could not respond. Please try again.", {
-            status: res.status || 500,
-            headers: notice,
-          });
+          console.error("[humi-chat] AI provider error", res.status, text);
+          return textStreamResponse(offlineReply(lastUser?.content ?? ""), emergency);
         }
 
         // Transform OpenAI-style SSE to a plain stream of delta tokens.
