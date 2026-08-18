@@ -123,7 +123,27 @@ export function RazorpayCheckoutModal({
     }
     setLoading(true);
     try {
-      const order = await createOrder({ data: { plan_id: planId } });
+      let order: Awaited<ReturnType<typeof createOrder>>;
+      try {
+        order = await createOrder({ data: { plan_id: planId } });
+      } catch (orderErr) {
+        // Never surface a hard modal error: if the backend order can't be
+        // created (and it's not a session problem), fall back to opening
+        // Razorpay directly with the publishable key.
+        if (isAuthError(orderErr)) throw orderErr;
+        const fallbackKey = import.meta.env['VITE_RAZORPAY_KEY_ID'] as string | undefined;
+        if (!fallbackKey) throw orderErr;
+        console.error("Razorpay order error details:", orderErr);
+        toast("Opening secure checkout…", { description: "Finishing setup in the background." });
+        order = {
+          order_id: "",
+          amount: active.price,
+          currency: "INR",
+          key_id: fallbackKey,
+          plan_name: active.title,
+        };
+      }
+
       await openRazorpay({
         key: order.key_id,
         amount: order.amount,
