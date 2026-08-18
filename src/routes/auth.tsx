@@ -217,12 +217,15 @@ function EmailAuthFlow() {
     e.preventDefault();
     if (!canSubmit) return;
     setLoading(true);
+    setNeedsConfirmation(false);
     try {
       if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
           options: {
+            // Dynamic origin so confirmation links work on custom domains too.
+            emailRedirectTo: `${window.location.origin}/`,
             data: {
               full_name: fullName.trim(),
               phone: phone.trim(),
@@ -230,8 +233,9 @@ function EmailAuthFlow() {
           },
         });
         if (error) {
+          console.error("Signup error details:", error);
           registerAttempt();
-          toast.error(error.message || "Could not create account");
+          toast.error(error.message || "Signup failed. Please try again.");
           return;
         }
         if (!data.session) {
@@ -240,7 +244,15 @@ function EmailAuthFlow() {
             password,
           });
           if (signInErr) {
-            toast.error(signInErr.message || "Signed up, please sign in");
+            console.error("Signup error details:", signInErr);
+            if (/confirm/i.test(signInErr.message ?? "")) {
+              setNeedsConfirmation(true);
+              toast.success(
+                "Account created — check your inbox for the verification link before signing in.",
+              );
+            } else {
+              toast.error(signInErr.message || "Signed up, please sign in");
+            }
             setMode("signin");
             return;
           }
@@ -254,14 +266,25 @@ function EmailAuthFlow() {
           password,
         });
         if (error) {
+          console.error("Sign-in error details:", error);
           registerAttempt();
-          toast.error(error.message || "Invalid email or password");
+          if (/confirm/i.test(error.message ?? "")) {
+            setNeedsConfirmation(true);
+            toast.error("Your email isn't confirmed yet. Resend the confirmation email below.");
+          } else {
+            toast.error(error.message || "Invalid email or password");
+          }
           return;
         }
         clearCooldown();
         toast.success("Welcome back");
         navigate({ to: "/dashboard" });
       }
+    } catch (error) {
+      console.error("Auth error details:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Something went wrong. Please try again.",
+      );
     } finally {
       setLoading(false);
     }
