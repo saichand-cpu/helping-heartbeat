@@ -182,12 +182,18 @@ export function RazorpayCheckoutModal({
     } catch (e) {
       // Authentication failures must never look like payment failures, and
       // Razorpay checkout is never opened unless the backend authorized us.
+      console.error("Checkout error details:", e);
       const auth = isAuthError(e);
-      const msg = auth ? SESSION_EXPIRED_MESSAGE : e instanceof Error ? e.message : "Checkout failed to load";
-      toast.error(msg);
-      setErrorMsg(msg);
-      setStage("error");
-      if (auth) void endExpiredSession();
+      if (auth) {
+        toast.error(SESSION_EXPIRED_MESSAGE);
+        setErrorMsg(SESSION_EXPIRED_MESSAGE);
+        setStage("error");
+        void endExpiredSession();
+        return;
+      }
+      // Soft notice only — never a red failure banner inside the modal.
+      toast("Checkout isn't available right now. Please try again in a moment.");
+      setStage("pick");
     } finally {
       setLoading(false);
     }
