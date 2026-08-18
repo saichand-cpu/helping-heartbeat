@@ -173,7 +173,9 @@ export function RazorpayCheckoutModal({
         modal: {
           ondismiss: () => {
             setLoading(false);
-            void cancelOrder({ data: { razorpay_order_id: order.order_id } }).catch(() => {});
+            if (order.order_id) {
+              void cancelOrder({ data: { razorpay_order_id: order.order_id } }).catch(() => {});
+            }
           },
         },
       });
