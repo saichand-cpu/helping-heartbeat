@@ -16,7 +16,9 @@ type IncomingMessage = {
 
 type Body = { messages: IncomingMessage[]; agent?: string; emergency?: boolean };
 
-const BASE_PROMPT = `You are HUMI — HumanLink's AI operating system for human life. HumanLink is a kindness platform where people request help, offer help, donate, and connect with volunteers, NGOs and local businesses.
+const BASE_PROMPT = `You are HUMI, a warm, encouraging, and actionable kindness co-pilot. Help users find ways to contribute, offer their skills, and connect with their community.
+
+You are HumanLink's AI operating system for human life. HumanLink is a kindness platform where people request help, offer help, donate, and connect with volunteers, NGOs and local businesses.
 
 Your philosophy on EVERY reply:
 1. Understand the user's real intent, not just the literal question.
@@ -71,6 +73,107 @@ function toMultimodalContent(m: IncomingMessage) {
   return parts;
 }
 
+/**
+ * When the AI provider is unreachable, HUMI still answers with something useful
+ * and specific to what the user asked — never a "service is updating" notice.
+ */
+function offlineReply(userText: string): string {
+  const t = (userText ?? "").toLowerCase();
+  const topic = (() => {
+    if (/tutor|teach|study|exam|school|student/.test(t))
+      return {
+        title: "Ways you can help with learning",
+        q: "tutoring",
+        ideas: [
+          "Offer **1 hour of free tutoring a week** in a subject you know well — maths, English, or exam prep.",
+          "Record a short explainer for a topic students in your area struggle with.",
+          "Help someone build a study plan for the next 30 days.",
+        ],
+      };
+    if (/tech|computer|phone|laptop|wifi|software|code|app/.test(t))
+      return {
+        title: "Ways you can help with tech",
+        q: "tech support",
+        ideas: [
+          "Offer **free device setup or troubleshooting** for elders in your neighbourhood.",
+          "Help a small business or NGO get online — a simple page, a Google listing, a payment link.",
+          "Teach a 20-minute session on staying safe from online scams.",
+        ],
+      };
+    if (/donat|money|fund|ngo|charity/.test(t))
+      return {
+        title: "Ways to give that go further",
+        q: "NGOs near me",
+        ideas: [
+          "Support a **verified NGO** on HumanLink with a small recurring amount instead of a one-off.",
+          "Fund one specific need — a month of meals, a school kit, a medical test.",
+          "Share a campaign with five people who can also give.",
+        ],
+      };
+    if (/food|meal|hunger|grocer/.test(t))
+      return {
+        title: "Ways to help with food",
+        q: "food help",
+        ideas: [
+          "Cook or sponsor **one extra meal a week** for someone nearby.",
+          "Coordinate surplus food from a local restaurant to a shelter.",
+          "Deliver groceries for someone who can't leave home.",
+        ],
+      };
+    return {
+      title: "Ways to start helping today",
+      q: "helpers near me",
+      ideas: [
+        "Offer a skill you already have — tutoring, tech support, driving, translation, or listening.",
+        "Answer one open help request near you this week.",
+        "Volunteer two hours with a local NGO or community group.",
+      ],
+    };
+  })();
+
+  const actions = JSON.stringify([
+    { kind: "find_helpers", label: "Find people nearby", payload: { q: topic.q } },
+    {
+      kind: "create_request",
+      label: "Post what you need",
+      payload: {
+        title: (userText ?? "").slice(0, 60) || "I need a hand",
+        description: userText ?? "",
+        category: "other",
+        urgency: "normal",
+      },
+    },
+    { kind: "prompt", label: "Suggest a plan", payload: { text: "Help me plan my first act of kindness this week." } },
+  ]);
+
+  return `### ${topic.title}
+
+${topic.ideas.map((i) => `- ${i}`).join("\n")}
+
+Pick one and I'll help you turn it into a concrete post, message, or schedule — just tell me which.
+
+${ACTIONS_DELIMITER} ${actions}`;
+}
+
+function textStreamResponse(text: string, emergency = false) {
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(encoder.encode(text));
+      controller.close();
+    },
+  });
+  return new Response(stream, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "no-cache, no-transform",
+      "X-Accel-Buffering": "no",
+      "X-Humi-Emergency": emergency ? "1" : "0",
+    },
+  });
+}
+
 export const Route = createFileRoute("/api/humi-chat")({
   server: {
     handlers: {
@@ -107,14 +210,6 @@ export const Route = createFileRoute("/api/humi-chat")({
         // Prefer the Lovable AI Gateway; fall back to a direct OpenAI key if present.
         const lovableKey = process.env.LOVABLE_API_KEY;
         const openaiKey = process.env.OPENAI_API_KEY;
-        if (!lovableKey && !openaiKey) {
-          console.error("[humi-chat] No AI key configured (LOVABLE_API_KEY / OPENAI_API_KEY)");
-          return new Response("HUMI AI is updating. Please try again shortly.", {
-            status: 503,
-            headers: { "X-Humi-Status": "unavailable" },
-          });
-        }
-
         let body: Body;
         try {
           body = (await request.json()) as Body;
@@ -140,51 +235,43 @@ export const Route = createFileRoute("/api/humi-chat")({
           content: toMultimodalContent(m),
         }));
 
+        // No provider key configured — answer from the local knowledge fallback
+        // rather than telling the user the service is unavailable.
+        if (!lovableKey && !openaiKey) {
+          console.error("[humi-chat] No AI key configured (LOVABLE_API_KEY / OPENAI_API_KEY)");
+          return textStreamResponse(offlineReply(lastUser?.content ?? ""), emergency);
+        }
+
         const useGateway = Boolean(lovableKey);
         const endpoint = useGateway
           ? "https://ai.gateway.lovable.dev/v1/chat/completions"
           : "https://api.openai.com/v1/chat/completions";
 
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(useGateway
-              ? { "Lovable-API-Key": lovableKey!, "X-Lovable-AIG-SDK": "fetch" }
-              : { Authorization: `Bearer ${openaiKey!}` }),
-          },
-          body: JSON.stringify({
-            model: useGateway ? "google/gemini-3.6-flash" : "gpt-4o-mini",
-            stream: true,
-            messages: [{ role: "system", content: system }, ...messages],
-          }),
-        });
+        let res: Response;
+        try {
+          res = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(useGateway
+                ? { "Lovable-API-Key": lovableKey!, "X-Lovable-AIG-SDK": "fetch" }
+                : { Authorization: `Bearer ${openaiKey!}` }),
+            },
+            body: JSON.stringify({
+              model: useGateway ? "google/gemini-3.6-flash" : "gpt-4o-mini",
+              stream: true,
+              messages: [{ role: "system", content: system }, ...messages],
+            }),
+          });
+        } catch (err) {
+          console.error("[humi-chat] AI request failed", err);
+          return textStreamResponse(offlineReply(lastUser?.content ?? ""), emergency);
+        }
 
         if (!res.ok || !res.body) {
           const text = await res.text().catch(() => "");
-          const notice = { "X-Humi-Status": "unavailable" };
-          if (res.status === 429)
-            return new Response("HUMI is busy right now. Try again in a moment.", {
-              status: 429,
-              headers: notice,
-            });
-          if (res.status === 402)
-            return new Response("HUMI AI is updating. Please try again shortly.", {
-              status: 402,
-              headers: notice,
-            });
-          if (res.status === 401 || res.status === 403) {
-            console.error("[humi-chat] AI provider rejected the key", res.status, text);
-            return new Response("HUMI AI is updating. Please try again shortly.", {
-              status: 503,
-              headers: notice,
-            });
-          }
-
-          return new Response(text || "HUMI could not respond. Please try again.", {
-            status: res.status || 500,
-            headers: notice,
-          });
+          console.error("[humi-chat] AI provider error", res.status, text);
+          return textStreamResponse(offlineReply(lastUser?.content ?? ""), emergency);
         }
 
         // Transform OpenAI-style SSE to a plain stream of delta tokens.
