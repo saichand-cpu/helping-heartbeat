@@ -161,7 +161,7 @@ export function RazorpayCheckoutModal({
         currency: order.currency,
         name: "HumanLink",
         description: order.plan_name,
-        order_id: order.order_id,
+        order_id: order.order_id || undefined,
         prefill: {
           name: (user?.user_metadata?.full_name as string | undefined) ?? "Neighbor",
           email: user?.email ?? "",
