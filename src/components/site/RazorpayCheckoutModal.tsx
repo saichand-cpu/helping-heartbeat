@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { useIsAdmin } from "@/hooks/use-role";
-import { openRazorpay, type RazorpayResponse } from "@/lib/razorpay";
+import { openRazorpay, loadRazorpay, type RazorpayResponse } from "@/lib/razorpay";
 import { createRazorpayOrder, verifyRazorpayPayment, cancelRazorpayOrder } from "@/lib/razorpay.functions";
 import { SESSION_EXPIRED_MESSAGE, endExpiredSession, isAuthError } from "@/lib/supabase-session";
 
@@ -83,6 +83,12 @@ export function RazorpayCheckoutModal({
   }, [open, defaultTier]);
 
   const active = useMemo(() => CARDS.find((c) => c.key === selected)!, [selected]);
+
+  // Warm up the Razorpay SDK as soon as the modal opens so the popup is instant.
+  useEffect(() => {
+    if (!open) return;
+    void loadRazorpay().catch(() => {});
+  }, [open]);
 
   const handleVerified = async (response: RazorpayResponse) => {
     setStage("processing");
@@ -192,7 +198,12 @@ export function RazorpayCheckoutModal({
         return;
       }
       // Soft notice only — never a red failure banner inside the modal.
-      toast("Checkout isn't available right now. Please try again in a moment.");
+      const detail = e instanceof Error ? e.message : "";
+      toast(
+        /razorpay credentials/i.test(detail)
+          ? detail
+          : "Checkout isn't available right now. Please try again in a moment.",
+      );
       setStage("pick");
     } finally {
       setLoading(false);

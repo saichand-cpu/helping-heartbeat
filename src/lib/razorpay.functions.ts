@@ -28,7 +28,10 @@ export const createRazorpayOrder = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const keyId = process.env.RAZORPAY_KEY_ID;
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
-    if (!keyId || !keySecret) throw new Error("Razorpay is not configured");
+    if (!keyId || !keySecret) {
+      // Descriptive, actionable error instead of a generic checkout failure.
+      throw new Error("Razorpay credentials missing on backend");
+    }
 
     const { userId, supabase } = context;
 
@@ -58,6 +61,7 @@ export const createRazorpayOrder = createServerFn({ method: "POST" })
     if (!resp.ok) {
       const text = await resp.text();
       await log(null, userId, "order.create_failed", "error", "Razorpay order API error", { status: resp.status, body: text });
+      if (resp.status === 401) throw new Error("Razorpay credentials invalid on backend");
       throw new Error("Failed to create Razorpay order");
     }
 
