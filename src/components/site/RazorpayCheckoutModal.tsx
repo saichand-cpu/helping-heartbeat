@@ -84,6 +84,12 @@ export function RazorpayCheckoutModal({
 
   const active = useMemo(() => CARDS.find((c) => c.key === selected)!, [selected]);
 
+  // Warm up the Razorpay SDK as soon as the modal opens so the popup is instant.
+  useEffect(() => {
+    if (!open) return;
+    void loadRazorpay().catch(() => {});
+  }, [open]);
+
   const handleVerified = async (response: RazorpayResponse) => {
     setStage("processing");
     // Fallback checkout (no server order) — we can't verify a signature, so we
