@@ -2279,6 +2279,10 @@ export type Database = {
         Args: { _owner: string; _viewer: string; _which: string }
         Returns: boolean
       }
+      can_view_post: {
+        Args: { _post_id: string; _user_id: string }
+        Returns: boolean
+      }
       can_view_profile: {
         Args: { _owner: string; _viewer: string }
         Returns: boolean
