@@ -198,7 +198,12 @@ export function RazorpayCheckoutModal({
         return;
       }
       // Soft notice only — never a red failure banner inside the modal.
-      toast("Checkout isn't available right now. Please try again in a moment.");
+      const detail = e instanceof Error ? e.message : "";
+      toast(
+        /razorpay credentials/i.test(detail)
+          ? detail
+          : "Checkout isn't available right now. Please try again in a moment.",
+      );
       setStage("pick");
     } finally {
       setLoading(false);
