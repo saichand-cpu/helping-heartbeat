@@ -61,6 +61,7 @@ export const createRazorpayOrder = createServerFn({ method: "POST" })
     if (!resp.ok) {
       const text = await resp.text();
       await log(null, userId, "order.create_failed", "error", "Razorpay order API error", { status: resp.status, body: text });
+      if (resp.status === 401) throw new Error("Razorpay credentials invalid on backend");
       throw new Error("Failed to create Razorpay order");
     }
 
