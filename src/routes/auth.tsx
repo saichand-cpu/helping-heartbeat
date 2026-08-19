@@ -117,6 +117,20 @@ const ATTEMPT_WINDOW_MS = 60_000;
 const MAX_ATTEMPTS = 5;
 const COOLDOWN_MS = 60_000;
 
+const DYNAMIC_AUTH_ORIGIN = typeof window !== "undefined" ? window.location.origin : "";
+
+/** Ensure we never render a raw object, number, or empty string to users. */
+function normalizeAuthError(err: unknown, fallback = "Something went wrong. Please try again."): string {
+  if (err === null || err === undefined) return fallback;
+  if (typeof err === "string" && err.trim()) return err;
+  if (err instanceof Error && err.message?.trim()) return err.message;
+  const maybe = (err as { message?: string; error?: string; msg?: string })?.message;
+  if (typeof maybe === "string" && maybe.trim()) return maybe;
+  const raw = String(err);
+  if (raw && raw !== "[object Object]" && raw !== "0") return raw;
+  return fallback;
+}
+
 function useAttemptGuard(storageKey: string) {
   const attemptsRef = useRef<number[]>([]);
   const [cooldownUntil, setCooldownUntil] = useState<number>(() => {
@@ -174,22 +188,21 @@ function EmailAuthFlow() {
       const { error } = await supabase.auth.resend({
         type: "signup",
         email: email.trim(),
-        options: { emailRedirectTo: `${window.location.origin}/` },
+        options: { emailRedirectTo: `${DYNAMIC_AUTH_ORIGIN}/` },
       });
       if (error) {
         console.error("Resend confirmation error details:", error);
-        toast.error(error.message || "Could not resend the confirmation email.");
+        toast.error(normalizeAuthError(error, "Could not resend the confirmation email."));
         return;
       }
       toast.success("Confirmation email sent — check your inbox.");
     } catch (error) {
       console.error("Resend confirmation error details:", error);
-      toast.error("Could not resend the confirmation email.");
+      toast.error(normalizeAuthError(error, "Could not resend the confirmation email."));
     } finally {
       setResending(false);
     }
   };
-
 
   const { remainingCooldown, registerAttempt, clearCooldown } =
     useAttemptGuard("humanlink:auth:cooldown");
@@ -225,37 +238,46 @@ function EmailAuthFlow() {
           password,
           options: {
             // Dynamic origin so confirmation links work on custom domains too.
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: `${DYNAMIC_AUTH_ORIGIN}/`,
             data: {
               full_name: fullName.trim(),
               phone: phone.trim(),
             },
           },
         });
+
         if (error) {
           console.error("Signup error details:", error);
           registerAttempt();
-          toast.error(error.message || "Signup failed. Please try again.");
+          toast.error(normalizeAuthError(error, "Signup failed. Please try again."));
           return;
         }
-        if (!data.session) {
-          const { error: signInErr } = await supabase.auth.signInWithPassword({
-            email: email.trim(),
-            password,
-          });
-          if (signInErr) {
-            console.error("Signup error details:", signInErr);
-            if (/confirm/i.test(signInErr.message ?? "")) {
-              setNeedsConfirmation(true);
-              toast.success(
-                "Account created — check your inbox for the verification link before signing in.",
-              );
-            } else {
-              toast.error(signInErr.message || "Signed up, please sign in");
-            }
-            setMode("signin");
-            return;
+
+        // Auto-confirmed users get a session immediately — log them straight in.
+        if (data.session) {
+          clearCooldown();
+          toast.success("Welcome to HumanLink");
+          navigate({ to: "/dashboard" });
+          return;
+        }
+
+        // No session: email confirmation is required. Try to sign in once
+        // in case confirmation is not strictly required; otherwise show the
+        // resend-confirmation state.
+        const { error: signInErr } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+        if (signInErr) {
+          console.error("Post-signup sign-in error details:", signInErr);
+          if (/confirm/i.test(signInErr.message ?? "")) {
+            setNeedsConfirmation(true);
+            toast.success("Account created — check your inbox for the verification link before signing in.");
+          } else {
+            toast.error(normalizeAuthError(signInErr, "Signed up, please sign in."));
           }
+          setMode("signin");
+          return;
         }
         clearCooldown();
         toast.success("Welcome to HumanLink");
@@ -272,7 +294,7 @@ function EmailAuthFlow() {
             setNeedsConfirmation(true);
             toast.error("Your email isn't confirmed yet. Resend the confirmation email below.");
           } else {
-            toast.error(error.message || "Invalid email or password");
+            toast.error(normalizeAuthError(error, "Invalid email or password."));
           }
           return;
         }
@@ -282,9 +304,7 @@ function EmailAuthFlow() {
       }
     } catch (error) {
       console.error("Auth error details:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Something went wrong. Please try again.",
-      );
+      toast.error(normalizeAuthError(error, "Something went wrong. Please try again."));
     } finally {
       setLoading(false);
     }
