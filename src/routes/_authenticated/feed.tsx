@@ -469,8 +469,16 @@ function FeedPage() {
 }
 
 function AdCard({ ad }: { ad: Ad }) {
+  const logAdEvent = async (event_type: "impression" | "click") => {
+    const { data } = await supabase.auth.getUser();
+    const uid = data.user?.id;
+    if (!uid) return;
+    await supabase.from("ad_events").insert({ ad_id: ad.id, event_type, user_id: uid });
+  };
+
   useEffect(() => {
-    void supabase.from("ad_events").insert({ ad_id: ad.id, event_type: "impression" });
+    void logAdEvent("impression");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ad.id]);
 
   return (
@@ -478,7 +486,8 @@ function AdCard({ ad }: { ad: Ad }) {
       href={ad.destination_url}
       target="_blank"
       rel="noopener noreferrer"
-      onClick={() => void supabase.from("ad_events").insert({ ad_id: ad.id, event_type: "click" })}
+      onClick={() => void logAdEvent("click")}
+
       className="block overflow-hidden rounded-2xl border border-border bg-card shadow-soft transition-colors hover:bg-muted"
     >
       <div className="flex items-center justify-between px-4 pt-3">
