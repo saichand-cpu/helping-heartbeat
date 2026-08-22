@@ -63,16 +63,29 @@ export function FounderPortrait() {
       return;
     }
     setUploading(true);
+    const objectPath = `founder_${Date.now()}.jpg`;
     const { error } = await supabase.storage
-      .from(BUCKET)
-      .upload(PATH, file, { upsert: true, contentType: file.type, cacheControl: "3600" });
-    setUploading(false);
+      .from(TEAM_BUCKET)
+      .upload(objectPath, file, { upsert: true, contentType: file.type, cacheControl: "3600" });
     if (error) {
+      setUploading(false);
       toast.error(error.message);
       return;
     }
-    toast.success("Founder portrait updated");
+    const { error: dbError } = await supabase
+      .from("team_members")
+      .upsert(
+        { role_title: "Founder", name: "L. Saichand", image_url: `${TEAM_BUCKET}:${objectPath}` },
+        { onConflict: "role_title" },
+      );
+    setUploading(false);
+    if (dbError) {
+      toast.error(dbError.message);
+      return;
+    }
+    toast.success("Founder's picture updated on the About page");
     await load();
+
     if (fileRef.current) fileRef.current.value = "";
   };
 
