@@ -8,6 +8,7 @@ import logoAsset from "@/assets/humanlink-logo.jpeg.asset.json";
 
 const BUCKET = "founder-assets";
 const PATH = "portrait.jpg";
+const TEAM_BUCKET = "team-avatars";
 
 /**
  * Founder portrait with admin-only upload gate.
@@ -22,6 +23,29 @@ export function FounderPortrait() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
+    // Preferred source: the `Founder` row in team_members.
+    const { data: member } = await supabase
+      .from("team_members")
+      .select("image_url")
+      .eq("role_title", "Founder")
+      .maybeSingle();
+
+    const stored = member?.image_url ?? null;
+    if (stored) {
+      if (stored.startsWith(`${TEAM_BUCKET}:`)) {
+        const { data, error } = await supabase.storage
+          .from(TEAM_BUCKET)
+          .createSignedUrl(stored.slice(TEAM_BUCKET.length + 1), 60 * 60 * 24 * 30);
+        if (!error && data?.signedUrl) {
+          setUrl(data.signedUrl);
+          return;
+        }
+      } else if (stored.startsWith("http")) {
+        setUrl(stored);
+        return;
+      }
+    }
+
     const { data, error } = await supabase.storage
       .from(BUCKET)
       .createSignedUrl(PATH, 60 * 60 * 24 * 30); // 30d
@@ -29,6 +53,7 @@ export function FounderPortrait() {
   };
 
   useEffect(() => { load(); }, []);
+
 
   const onPick = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
