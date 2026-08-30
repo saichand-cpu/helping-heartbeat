@@ -133,16 +133,20 @@ export function RazorpayCheckoutModal({
       toast.error("Please sign in first");
       return;
     }
-    const planId = planIds[selected];
-    if (!planId) {
-      toast.error("Plan unavailable — please retry");
-      return;
-    }
     setLoading(true);
     try {
       let order: Awaited<ReturnType<typeof createOrder>>;
       try {
-        order = await createOrder({ data: { plan_id: planId } });
+        // Pass the standardized plan key + amount; the backend normalizes
+        // these and falls back to canonical pricing if no DB plan row exists.
+        // planIds[selected] (uuid) is included as a hint when available.
+        order = await createOrder({
+          data: {
+            plan_id: planIds[selected] ?? undefined,
+            plan_key: selected,
+            amount: active.price / 100,
+          },
+        });
       } catch (orderErr) {
         // Never surface a hard modal error: if the backend order can't be
         // created (and it's not a session problem), fall back to opening
