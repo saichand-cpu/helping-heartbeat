@@ -21,10 +21,35 @@ async function log(
   }
 }
 
+// Canonical plans — used to normalize keys/amounts and as a fallback when the
+// premium_plans table has no matching active row.
+const CANONICAL_PLANS = {
+  pro: { name: "HumanLink Pro", price_cents: 59900 },
+  ngo: { name: "HumanLink NGO", price_cents: 29900 },
+} as const;
+type PlanKey = keyof typeof CANONICAL_PLANS;
+
+function keyFromInput(plan_key?: string, amount?: number): PlanKey | null {
+  const k = plan_key?.toLowerCase();
+  if (k === "pro" || k === "ngo") return k;
+  if (amount === 599 || amount === 59900) return "pro";
+  if (amount === 299 || amount === 29900) return "ngo";
+  return null;
+}
+
 /** Creates a Razorpay order for the selected premium plan and returns checkout options. */
 export const createRazorpayOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({ plan_id: z.string().uuid() }).parse(data))
+  .inputValidator((data) =>
+    z
+      .object({
+        plan_id: z.string().optional(),
+        plan_key: z.string().optional(),
+        amount: z.number().optional(),
+      })
+      .refine((v) => v.plan_id || v.plan_key || v.amount, { message: "plan_id, plan_key or amount required" })
+      .parse(data),
+  )
   .handler(async ({ data, context }) => {
     const keyId = process.env.RAZORPAY_KEY_ID;
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
@@ -35,12 +60,42 @@ export const createRazorpayOrder = createServerFn({ method: "POST" })
 
     const { userId, supabase } = context;
 
-    const { data: plan, error: planErr } = await supabase
-      .from("premium_plans")
-      .select("id, name, price_cents, currency, interval, is_active")
-      .eq("id", data.plan_id)
-      .maybeSingle();
-    if (planErr || !plan || !plan.is_active) throw new Error("Plan not available");
+    // Resolve the plan: UUID lookup, then key/amount normalization, then DB
+    // name match, then the canonical fallback so checkout never hard-fails on
+    // a missing premium_plans row.
+    let plan: { id: string | null; name: string; price_cents: number; currency: string } | null = null;
+    const planKey = keyFromInput(data.plan_key, data.amount);
+
+    if (data.plan_id && /^[0-9a-f-]{36}$/i.test(data.plan_id)) {
+      const { data: row } = await supabase
+        .from("premium_plans")
+        .select("id, name, price_cents, currency, is_active")
+        .eq("id", data.plan_id)
+        .maybeSingle();
+      if (row?.is_active) plan = row;
+    }
+
+    if (!plan && planKey) {
+      const { data: row } = await supabase
+        .from("premium_plans")
+        .select("id, name, price_cents, currency, is_active")
+        .ilike("name", `%${planKey}%`)
+        .eq("is_active", true)
+        .limit(1)
+        .maybeSingle();
+      if (row) plan = row;
+    }
+
+    if (!plan && planKey) {
+      const canonical = CANONICAL_PLANS[planKey];
+      plan = { id: null, name: canonical.name, price_cents: canonical.price_cents, currency: "INR" };
+    }
+
+    if (!plan) {
+      throw new Error(
+        `Plan not available (plan_id=${data.plan_id ?? "none"}, plan_key=${data.plan_key ?? "none"}, amount=${data.amount ?? "none"})`,
+      );
+    }
 
     const receipt = `hl_${userId.slice(0, 8)}_${Date.now().toString(36)}`;
 
