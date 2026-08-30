@@ -201,13 +201,11 @@ export function RazorpayCheckoutModal({
         void endExpiredSession();
         return;
       }
-      // Soft notice only — never a red failure banner inside the modal.
-      const detail = e instanceof Error ? e.message : "";
-      toast(
-        /razorpay credentials/i.test(detail)
-          ? detail
-          : "Checkout isn't available right now. Please try again in a moment.",
-      );
+      // Surface the exact error returned by the backend / Razorpay so users
+      // (and logs) see the real cause instead of a generic "plan unavailable".
+      const detail = (e instanceof Error ? e.message : "").trim();
+      toast.error(detail || "Checkout isn't available right now. Please try again in a moment.");
+      setErrorMsg(detail);
       setStage("pick");
     } finally {
       setLoading(false);
