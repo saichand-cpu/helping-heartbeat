@@ -83,10 +83,12 @@ function DiscoverPage() {
   const [newGroups, setNewGroups] = useState<GroupRow[]>([]);
   const [requests, setRequests] = useState<RequestRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
     (async () => {
+      setLoadError(null);
       const [h, g, r] = await Promise.all([
         supabase
           .from("profiles")
@@ -107,6 +109,8 @@ function DiscoverPage() {
           .limit(6),
       ]);
       if (!alive) return;
+      const firstError = h.error ?? g.error ?? r.error;
+      if (firstError) setLoadError("Some discovery results could not be loaded. You can still use search and create a request.");
       setHelpers((h.data ?? []) as Helper[]);
       const all = (g.data ?? []) as GroupRow[];
       setGroups(all.slice(0, 6));
@@ -123,16 +127,30 @@ function DiscoverPage() {
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Compass className="h-4 w-4 text-primary" aria-hidden /> Discover
         </div>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight">Find people, groups and help</h1>
-        <p className="mt-1 text-muted-foreground">
-          Explore your community — helpers near you, active requests and groups worth joining.
-        </p>
+        <div className="mt-1 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Discover your next way to help</h1>
+            <p className="mt-1 text-muted-foreground">
+              Find people, open requests and communities where you can make a difference.
+            </p>
+          </div>
+          <div className="flex shrink-0 gap-2">
+            <Link to="/requests/new"><Button variant="outline" size="sm">Ask for help</Button></Link>
+            <Link to="/humi"><Button size="sm"><Sparkles className="mr-1.5 h-4 w-4" /> Ask HUMI</Button></Link>
+          </div>
+        </div>
         <Link to="/search" className="mt-4 block">
           <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground shadow-soft transition-colors hover:bg-muted">
             <SearchIcon className="h-4 w-4" aria-hidden />
             Search people, posts, groups and requests
+            <span className="ml-auto hidden text-xs text-muted-foreground/70 sm:block">Search everything</span>
           </div>
         </Link>
+        {loadError && (
+          <div className="mt-3 rounded-xl border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground" role="status">
+            {loadError}
+          </div>
+        )}
       </header>
 
       {loading ? (
@@ -141,7 +159,7 @@ function DiscoverPage() {
         </div>
       ) : (
         <>
-          <Section icon={Sparkles} title="Recommended people" subtitle="Based on your area and interests">
+          <Section icon={Sparkles} title="Recommended people" subtitle="People you may be able to help or learn from">
             <SuggestedForYou />
           </Section>
 
