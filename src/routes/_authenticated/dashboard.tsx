@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  HeartHandshake, Award, Clock, CheckCircle2, MessageCircle, Sparkles, Plus, ArrowRight, Brain, Loader2,
+  HeartHandshake, Award, Clock, CheckCircle2, MessageCircle, Sparkles, ArrowRight, Brain, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -63,12 +63,11 @@ function Dashboard() {
   const quick = [
     { to: "/requests/new" as const, label: "Need Help", sub: "Create a help request", icon: HeartHandshake, tint: "bg-primary text-primary-foreground" },
     { to: "/requests" as const, label: "Offer Help", sub: "Help someone in need", icon: Award, tint: "bg-brand text-white" },
-    { to: "/requests/new" as const, label: "Emergency", sub: "Get urgent assistance", icon: Clock, tint: "bg-destructive text-destructive-foreground" },
+    { to: "/humi" as const, label: "Ask HUMI", sub: "Get AI help with anything", icon: Sparkles, tint: "bg-accent text-primary" },
   ];
 
   return (
     <div className="space-y-6 pb-28 lg:pb-6">
-      {/* Greeting */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -78,10 +77,9 @@ function Dashboard() {
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
           {greeting}, <span className="text-foreground">{profile?.full_name || "friend"}</span> 👋
         </h1>
-        <p className="text-sm text-muted-foreground">How can we help today?</p>
+        <p className="text-sm text-muted-foreground">What would you like to accomplish today?</p>
       </motion.div>
 
-      {/* Quick actions */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {quick.map((q, i) => (
           <motion.div key={q.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
@@ -96,29 +94,25 @@ function Dashboard() {
         ))}
       </div>
 
-      {/* AI assistant banner */}
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-soft flex items-center gap-4">
-        <div className="h-12 w-12 shrink-0 rounded-2xl bg-accent grid place-items-center text-primary">
+      <div className="rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/10 via-card to-accent/40 p-5 shadow-soft flex flex-col sm:flex-row sm:items-center gap-4">
+        <div className="h-12 w-12 shrink-0 rounded-2xl bg-primary text-primary-foreground grid place-items-center shadow-sm">
           <Sparkles className="h-6 w-6" />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-base font-semibold text-primary">AI Assistant</div>
-          <div className="text-xs text-muted-foreground">How can I help you today?</div>
+          <div className="text-base font-semibold">Meet HUMI — your AI companion</div>
+          <div className="text-xs text-muted-foreground mt-0.5">Ask about coding, study, writing, business, travel, research, or getting help through HumanLink.</div>
         </div>
-        <Link to="/requests/new">
-          <Button className="rounded-full h-9 px-5 bg-primary text-primary-foreground hover:bg-primary/90">Ask AI</Button>
+        <Link to="/humi">
+          <Button className="rounded-full h-9 px-5 bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5">Open HUMI <ArrowRight className="h-4 w-4" /></Button>
         </Link>
       </div>
 
       <NotificationOptIn />
-
       <UserSearch />
-
       <SuggestedForYou />
 
-
       <Tabs value={tab} onValueChange={setTab} className="space-y-5">
-        <TabsList className="bg-muted rounded-2xl p-1 h-11">
+        <TabsList className="bg-muted rounded-2xl p-1 h-11 w-full sm:w-auto overflow-x-auto justify-start">
           <TabsTrigger value="overview" className="rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm h-9 px-4">
             <Sparkles className="h-4 w-4 mr-1.5" /> Overview
           </TabsTrigger>
@@ -156,17 +150,17 @@ function Dashboard() {
               <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <Sparkles className="h-5 w-5" />
               </div>
-              <h3 className="mt-4 text-lg font-semibold tracking-tight">Visit the global feed</h3>
-              <p className="text-sm text-muted-foreground mt-1">See updates, stories, and announcements from your community.</p>
-              <Link to="/feed" className="mt-4 inline-flex">
-                <Button variant="outline" className="rounded-xl gap-1">Open feed <ArrowRight className="h-4 w-4" /></Button>
+              <h3 className="mt-4 text-lg font-semibold tracking-tight">Discover where you can help</h3>
+              <p className="text-sm text-muted-foreground mt-1">Explore requests, people, groups, and opportunities matched to your skills.</p>
+              <Link to="/discover" className="mt-4 inline-flex">
+                <Button variant="outline" className="rounded-xl gap-1">Explore <ArrowRight className="h-4 w-4" /></Button>
               </Link>
             </motion.div>
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl p-6 bg-gradient-to-br from-primary to-[#1d4ed8] text-primary-foreground shadow-pop relative overflow-hidden">
               <div className="absolute -bottom-16 -right-10 h-56 w-56 rounded-full bg-white/10 blur-3xl" aria-hidden />
               <MessageCircle className="h-7 w-7" />
               <h3 className="mt-4 text-lg font-semibold tracking-tight">{stats.unread} unread {stats.unread === 1 ? "message" : "messages"}</h3>
-              <p className="text-sm text-white/85 mt-1">Keep the conversations going. Kindness compounds.</p>
+              <p className="text-sm text-white/85 mt-1">Keep conversations moving and coordinate help safely.</p>
               <Link to="/messages" className="mt-4 inline-flex">
                 <Button className="rounded-xl bg-white text-primary hover:bg-white/90 gap-1">Open inbox <ArrowRight className="h-4 w-4" /></Button>
               </Link>
@@ -212,7 +206,7 @@ function SmartMatchPanel() {
           </div>
           <h3 className="text-xl font-semibold mt-1">Find people you're perfect to help</h3>
           <p className="text-sm text-muted-foreground mt-1">
-            Our AI scans open requests against your skills, interests, and bio to find the best matches.
+            HUMI-assisted matching can compare open requests with your skills, interests, and profile context.
           </p>
         </div>
         <Button onClick={go} disabled={loading} className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">
