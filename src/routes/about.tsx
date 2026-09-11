@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
+import { FounderPortrait } from "@/components/site/FounderPortrait";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/about")({
@@ -17,18 +18,36 @@ function About() {
   return (
     <div className="min-h-screen">
       <Navbar />
-      <section className="mx-auto max-w-3xl px-6 py-20 md:py-28">
-        <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Our story</div>
-        <h1 className="mt-3 text-5xl font-bold">Kindness, by design.</h1>
-        <p className="mt-6 text-lg text-muted-foreground">
-          HumanLink started with a simple belief: most people want to help, they just need an easy way to be useful. We built a platform that turns small moments of intent into real human connection — across streets, cities and continents.
-        </p>
-        <p className="mt-4 text-muted-foreground">
-          Whether you need a tutor for an hour, a ride to the doctor, or a friendly voice during a hard week, HumanLink connects you with someone nearby who's ready to help. Our AI gently nudges you to be clear, kind and safe — and matches you with the right people, fast.
-        </p>
-        <div className="mt-10 flex gap-3">
-          <Link to="/auth"><Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">Join HumanLink</Button></Link>
-          <Link to="/requests"><Button variant="outline">Browse requests</Button></Link>
+      <section className="mx-auto max-w-6xl px-6 py-20 md:py-28">
+        <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr]">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Our story</div>
+            <h1 className="mt-3 text-5xl font-bold">Kindness, by design.</h1>
+            <p className="mt-6 text-lg text-muted-foreground">
+              HumanLink started with a simple belief: most people want to help, they just need an easy way to be useful. We built a platform that turns small moments of intent into real human connection — across streets, cities and continents.
+            </p>
+            <p className="mt-4 text-muted-foreground">
+              Whether you need a tutor for an hour, a ride to the doctor, or a friendly voice during a hard week, HumanLink connects you with someone nearby who's ready to help. Our AI gently nudges you to be clear, kind and safe — and matches you with the right people, fast.
+            </p>
+            <div className="mt-10 flex gap-3">
+              <Link to="/auth"><Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">Join HumanLink</Button></Link>
+              <Link to="/requests"><Button variant="outline">Browse requests</Button></Link>
+            </div>
+          </div>
+
+          <div className="mx-auto w-full max-w-md lg:justify-self-end">
+            <FounderPortrait />
+          </div>
+        </div>
+
+        <div className="mt-20 border-t border-border pt-12">
+          <div className="max-w-3xl">
+            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Our founder</div>
+            <h2 className="mt-3 text-3xl md:text-4xl font-bold">Saichand Lakavath</h2>
+            <p className="mt-3 text-muted-foreground leading-relaxed">
+              Founder &amp; CEO of HumanLink, building technology that makes it easier for people to ask for help, offer help, and create meaningful connections.
+            </p>
+          </div>
         </div>
       </section>
       <Footer />
