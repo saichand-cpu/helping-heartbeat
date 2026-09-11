@@ -10,11 +10,12 @@ const BUCKET = "founder-assets";
 const PATH = "portrait.jpg";
 const TEAM_BUCKET = "team-avatars";
 const FOUNDER_NAME = "Saichand Lakavath";
+const DEFAULT_FOUNDER_IMAGE = "/founder-saichand.jpg";
 
 /** Founder portrait with an admin-only upload gate. */
 export function FounderPortrait() {
   const { isAdmin } = useIsAdmin();
-  const [url, setUrl] = useState<string | null>(null);
+  const [url, setUrl] = useState<string | null>(DEFAULT_FOUNDER_IMAGE);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -104,7 +105,7 @@ export function FounderPortrait() {
         </div>
       </div>
 
-      <div className="absolute -top-3 -right-3 bg-card border border-border rounded-full px-3 py-1.5 shadow-soft border border-amber-500/40 flex items-center gap-1.5">
+      <div className="absolute -top-3 -right-3 bg-card rounded-full px-3 py-1.5 shadow-soft border border-amber-500/40 flex items-center gap-1.5">
         <ShieldCheck className="h-3.5 w-3.5 text-amber-500" />
         <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Verified Founder</span>
       </div>
