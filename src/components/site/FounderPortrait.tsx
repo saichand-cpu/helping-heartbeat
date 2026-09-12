@@ -10,7 +10,7 @@ const BUCKET = "founder-assets";
 const PATH = "portrait.jpg";
 const TEAM_BUCKET = "team-avatars";
 const FOUNDER_NAME = "Saichand Lakavath";
-const DEFAULT_FOUNDER_IMAGE = "/founder-saichand.jpg";
+const DEFAULT_FOUNDER_IMAGE = "/founder-saichand.svg";
 
 /** Founder portrait with an admin-only upload gate. */
 export function FounderPortrait() {
