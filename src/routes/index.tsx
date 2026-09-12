@@ -5,9 +5,9 @@ import {
   HandHeart, BrainCircuit, MapPin, Star, ArrowRight, Check, Quote,
   Building2, Stethoscope, GraduationCap, Utensils, Compass, CheckCircle2,
 } from "lucide-react";
-import heroImg from "@/assets/hero-humanlink.jpg";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
+import { HumanNetwork3D } from "@/components/site/HumanNetwork3D";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
@@ -42,15 +42,19 @@ function Eyebrow({ children, tone = "primary" }: { children: React.ReactNode; to
 function Hero() {
   return (
     <div className="relative overflow-hidden bg-gradient-hero">
-      <Section className="relative grid items-center gap-14 lg:grid-cols-2 pt-10 md:pt-16">
-        <motion.div initial="hidden" animate="show" variants={fadeUp} className="space-y-7">
+      <div className="pointer-events-none absolute inset-0 opacity-60 [background-image:radial-gradient(circle_at_75%_35%,hsl(var(--primary)/.10),transparent_28%),radial-gradient(circle_at_85%_75%,hsl(var(--brand)/.08),transparent_25%)]" />
+      <Section className="relative grid items-center gap-10 lg:grid-cols-[.92fr_1.08fr] pt-10 md:pt-16">
+        <motion.div initial="hidden" animate="show" variants={fadeUp} className="relative z-10 space-y-7">
           <Eyebrow>AI-powered global help network</Eyebrow>
           <motion.h1 variants={fadeUp} custom={1} className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.02] tracking-tight text-foreground">Helping Humanity,<br /><span className="text-primary">One Connection</span><br />at a Time.</motion.h1>
           <motion.p variants={fadeUp} custom={2} className="text-lg text-muted-foreground max-w-xl leading-relaxed">HumanLink connects people who need help with people ready to help — volunteers, NGOs, professionals, and businesses — supported by HUMI AI and built around trust.</motion.p>
           <motion.div variants={fadeUp} custom={3} className="flex flex-wrap gap-3"><Link to="/auth"><Button size="lg" className="rounded-full h-12 px-7 text-base bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">Get Started <ArrowRight className="ml-2 h-4 w-4" /></Button></Link><Link to="/about"><Button size="lg" variant="outline" className="rounded-full h-12 px-7 text-base border-border">Explore HumanLink</Button></Link></motion.div>
           <motion.div variants={fadeUp} custom={4} className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-2 text-sm text-muted-foreground"><div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-brand" /> Trust & safety</div><div className="flex items-center gap-2"><BrainCircuit className="h-4 w-4 text-primary" /> HUMI AI</div><div className="flex items-center gap-2"><Heart className="h-4 w-4 text-destructive" /> Free to ask for help</div></motion.div>
         </motion.div>
-        <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }} className="relative"><div className="relative overflow-hidden rounded-3xl border border-border bg-card shadow-pop"><img src={heroImg} alt="Diverse community of people helping each other" width={1600} height={1200} className="w-full h-auto" /></div><motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.55 }} className="absolute -bottom-5 -left-5 bg-card border border-border rounded-2xl p-4 shadow-soft hidden sm:flex items-center gap-3 max-w-[240px]"><div className="h-10 w-10 rounded-xl bg-brand/10 grid place-items-center text-brand"><HandHeart className="h-5 w-5" /></div><div><div className="text-xs text-muted-foreground">HumanLink</div><div className="text-sm font-medium">A little help can change a day.</div></div></motion.div><motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7, duration: 0.55 }} className="absolute -top-5 -right-5 bg-card border border-border rounded-2xl p-3.5 shadow-soft hidden sm:flex items-center gap-2.5"><div className="h-9 w-9 rounded-lg bg-primary/10 grid place-items-center"><Award className="h-4 w-4 text-primary" /></div><div><div className="text-xs text-muted-foreground">Karma</div><div className="text-sm font-semibold">Earned by helping</div></div></motion.div></motion.div>
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }} className="relative min-h-[520px] flex items-center justify-center">
+          <HumanNetwork3D />
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 0.55 }} className="absolute bottom-2 left-4 hidden sm:flex items-center gap-3 rounded-2xl border border-border bg-card/90 p-4 shadow-soft backdrop-blur-md max-w-[240px]"><div className="h-10 w-10 rounded-xl bg-brand/10 grid place-items-center text-brand"><HandHeart className="h-5 w-5" /></div><div><div className="text-xs text-muted-foreground">HumanLink</div><div className="text-sm font-medium">A little help can change a day.</div></div></motion.div>
+        </motion.div>
       </Section>
     </div>
   );
