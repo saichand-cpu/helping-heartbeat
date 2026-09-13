@@ -36,19 +36,28 @@ export const createRazorpayOrder = createServerFn({ method: "POST" })
     const { userId, supabase } = context;
     let plan: { id: string | null; name: string; price_cents: number; currency: string } | null = null;
     const planKey = keyFromInput(data.plan_key, data.amount);
+
     if (data.plan_id && /^[0-9a-f-]{36}$/i.test(data.plan_id)) {
-      const { data: row } = await supabase.from("premium_plans").select("id, name, price_cents, currency, is_active").eq("id", data.plan_id).maybeSingle();
+      const { data: row, error } = await supabase.from("premium_plans").select("id, name, price_cents, currency, is_active").eq("id", data.plan_id).maybeSingle();
+      if (error) await log(null, userId, "plan.lookup_failed", "warn", error.message);
       if (row?.is_active) plan = row;
     }
+
+    // Use an exact canonical plan name rather than a broad ilike search. A broad
+    // search for "pro" can incorrectly match "Business Promotion".
     if (!plan && planKey) {
-      const { data: row } = await supabase.from("premium_plans").select("id, name, price_cents, currency, is_active").ilike("name", `%${planKey}%`).eq("is_active", true).limit(1).maybeSingle();
+      const canonical = CANONICAL_PLANS[planKey];
+      const { data: row, error } = await supabase.from("premium_plans").select("id, name, price_cents, currency, is_active").eq("name", canonical.name).eq("is_active", true).maybeSingle();
+      if (error) await log(null, userId, "plan.lookup_failed", "warn", error.message);
       if (row) plan = row;
     }
+
     if (!plan && planKey) {
       const canonical = CANONICAL_PLANS[planKey];
       plan = { id: null, name: canonical.name, price_cents: canonical.price_cents, currency: "INR" };
     }
     if (!plan) throw new Error(`Plan not available (plan_key=${data.plan_key ?? "none"})`);
+
     const receipt = `hl_${userId.slice(0, 8)}_${Date.now().toString(36)}`;
     const resp = await fetch("https://api.razorpay.com/v1/orders", {
       method: "POST",
@@ -61,7 +70,13 @@ export const createRazorpayOrder = createServerFn({ method: "POST" })
       if (resp.status === 401) throw new Error("Razorpay credentials invalid on backend");
       throw new Error("Failed to create Razorpay order");
     }
+
     const order = (await resp.json()) as { id: string; amount: number; currency: string };
+    if (!order.id || order.amount !== plan.price_cents || order.currency !== plan.currency) {
+      await log(null, userId, "order.invalid_response", "error", "Razorpay returned an unexpected order", { order_id: order.id, amount: order.amount, currency: order.currency });
+      throw new Error("Invalid Razorpay order response");
+    }
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: paymentRow, error: insErr } = await supabaseAdmin.from("payments").insert({ user_id: userId, razorpay_order_id: order.id, amount: order.amount, currency: order.currency, status: "created", plan_name: plan.name, plan_id: plan.id, notes: { receipt } }).select("id").single();
     if (insErr) { await log(null, userId, "order.persist_failed", "error", insErr.message); throw new Error("Could not save order"); }
@@ -80,23 +95,38 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
     const given = data.razorpay_signature;
     const ok = expected.length === given.length && timingSafeEqual(Buffer.from(expected, "utf8"), Buffer.from(given, "utf8"));
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: payment } = await supabaseAdmin.from("payments").select("id, user_id, plan_id, plan_name, amount, currency, status").eq("razorpay_order_id", data.razorpay_order_id).maybeSingle();
+
+    const { data: payment, error: paymentErr } = await supabaseAdmin.from("payments").select("id, user_id, plan_id, plan_name, amount, currency, status").eq("razorpay_order_id", data.razorpay_order_id).maybeSingle();
+    if (paymentErr) { await log(null, userId, "verify.lookup_failed", "error", paymentErr.message); throw new Error("Could not load payment record"); }
     if (!payment) throw new Error("Unknown order");
     if (payment.user_id !== userId) throw new Error("Not your payment");
     if (payment.status === "paid") return { ok: true, already: true, payment_id: payment.id };
+
     if (!ok) {
       await supabaseAdmin.from("payments").update({ status: "failed", razorpay_payment_id: data.razorpay_payment_id }).eq("id", payment.id);
+      await log(payment.id, userId, "verify.failed", "warn", "Payment signature verification failed");
       throw new Error("Payment verification failed");
     }
-    await supabaseAdmin.from("payments").update({ status: "paid", razorpay_payment_id: data.razorpay_payment_id, razorpay_signature: data.razorpay_signature, verified_at: new Date().toISOString() }).eq("id", payment.id);
+
+    const { error: paidErr } = await supabaseAdmin.from("payments").update({ status: "paid", razorpay_payment_id: data.razorpay_payment_id, razorpay_signature: data.razorpay_signature, verified_at: new Date().toISOString() }).eq("id", payment.id).neq("status", "paid");
+    if (paidErr) { await log(payment.id, userId, "verify.persist_failed", "error", paidErr.message); throw new Error("Could not finalize payment"); }
+
     const nameLower = (payment.plan_name ?? "").toLowerCase();
     const tier = nameLower.includes("business") ? "business" : nameLower.includes("ngo") ? "ngo" : nameLower.includes("pro") ? "pro" : nameLower.includes("plus") ? "plus" : "basic";
     const expiresAt = new Date(); expiresAt.setMonth(expiresAt.getMonth() + 1);
-    await supabaseAdmin.from("subscriptions").update({ status: "superseded" }).eq("user_id", userId).eq("status", "active");
-    await supabaseAdmin.from("subscriptions").insert({ user_id: userId, plan_id: payment.plan_id, plan_name: payment.plan_name, tier, status: "active", payment_id: payment.id, expires_at: expiresAt.toISOString() });
+
+    const { error: supersedeErr } = await supabaseAdmin.from("subscriptions").update({ status: "superseded" }).eq("user_id", userId).eq("status", "active");
+    if (supersedeErr) await log(payment.id, userId, "subscription.supersede_failed", "warn", supersedeErr.message);
+
+    const { error: subErr } = await supabaseAdmin.from("subscriptions").insert({ user_id: userId, plan_id: payment.plan_id, plan_name: payment.plan_name, tier, status: "active", payment_id: payment.id, expires_at: expiresAt.toISOString() });
+    if (subErr) { await log(payment.id, userId, "subscription.create_failed", "error", subErr.message); throw new Error("Payment succeeded but subscription activation failed. Please contact support."); }
+
     const { error: rpcErr } = await context.supabase.rpc("activate_premium" as never, { _plan_id: payment.plan_id } as never);
     if (rpcErr) await log(payment.id, userId, "activate.rpc_failed", "warn", rpcErr.message);
-    await supabaseAdmin.from("notifications").insert({ user_id: userId, kind: "payment", title: `${payment.plan_name} activated`, body: `Your subscription is active until ${expiresAt.toDateString()}.`, link: "/business-promote" });
+
+    const { error: notificationErr } = await supabaseAdmin.from("notifications").insert({ user_id: userId, kind: "payment", title: `${payment.plan_name} activated`, body: `Your subscription is active until ${expiresAt.toDateString()}.`, link: "/business-promote" });
+    if (notificationErr) await log(payment.id, userId, "notification.failed", "warn", notificationErr.message);
+
     await log(payment.id, userId, "verify.success", "info", "Payment verified", { amount: payment.amount, tier });
     return { ok: true, payment_id: payment.id, tier, expires_at: expiresAt.toISOString() };
   });
