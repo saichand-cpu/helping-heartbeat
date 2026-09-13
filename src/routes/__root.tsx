@@ -16,6 +16,12 @@ import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { GlobalErrorBoundary } from "@/components/site/GlobalErrorBoundary";
 
+const SITE_URL = "https://www.humanlink.in";
+const SITE_NAME = "HumanLink";
+const SITE_DESCRIPTION =
+  "HumanLink is a community platform connecting people who need help with volunteers, NGOs, professionals, students, teachers, job seekers, HR teams and local businesses.";
+const OG_IMAGE = `${SITE_URL}/humanlink-logo.jpeg`;
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-soft px-4">
@@ -76,30 +82,73 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "HumanLink — Connecting People Through Kindness" },
-      { name: "description", content: "HumanLink connects people who need help with people ready to help. Join a community built on kindness." },
-      { property: "og:title", content: "HumanLink — Connecting People Through Kindness" },
-      { property: "og:description", content: "HumanLink connects people who need help with people ready to help. Join a community built on kindness." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "HumanLink — Connecting People Through Kindness" },
-      { name: "twitter:description", content: "HumanLink connects people who need help with people ready to help. Join a community built on kindness." },
-      { property: "og:image", content: "https://helping-heartbeat.lovable.app/humanlink-logo.jpeg" },
-      { name: "twitter:image", content: "https://helping-heartbeat.lovable.app/humanlink-logo.jpeg" },
+      { title: "HumanLink | Help, Volunteer, Jobs, Skills & Community" },
+      { name: "description", content: SITE_DESCRIPTION },
+      { name: "keywords", content: "HumanLink, help platform, volunteer platform India, NGO platform, community help, students, jobs, HR jobs, local businesses, social impact, humanitarian help, Hyderabad" },
+      { name: "author", content: "HumanLink" },
+      { name: "robots", content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" },
+      { name: "googlebot", content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" },
       { name: "theme-color", content: "#0b1220" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
-      { name: "apple-mobile-web-app-title", content: "HumanLink" },
+      { name: "apple-mobile-web-app-title", content: SITE_NAME },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { property: "og:locale", content: "en_IN" },
+      { property: "og:site_name", content: SITE_NAME },
+      { property: "og:title", content: "HumanLink | Help, Volunteer, Jobs, Skills & Community" },
+      { property: "og:description", content: SITE_DESCRIPTION },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: SITE_URL },
+      { property: "og:image", content: OG_IMAGE },
+      { property: "og:image:alt", content: "HumanLink — Helping Humanity, One Connection at a Time" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "HumanLink | Help, Volunteer, Jobs, Skills & Community" },
+      { name: "twitter:description", content: SITE_DESCRIPTION },
+      { name: "twitter:image", content: OG_IMAGE },
+      { name: "twitter:image:alt", content: "HumanLink — Helping Humanity, One Connection at a Time" },
     ],
     links: [
+      { rel: "canonical", href: SITE_URL },
       { rel: "icon", type: "image/jpeg", href: logoAsset.url },
       { rel: "apple-touch-icon", href: logoAsset.url },
       { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "sitemap", type: "application/xml", href: "/sitemap.xml" },
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              "@id": `${SITE_URL}/#organization`,
+              name: SITE_NAME,
+              url: SITE_URL,
+              logo: { "@type": "ImageObject", url: OG_IMAGE },
+              description: SITE_DESCRIPTION,
+              slogan: "Helping Humanity, One Connection at a Time.",
+            },
+            {
+              "@type": "WebSite",
+              "@id": `${SITE_URL}/#website`,
+              url: SITE_URL,
+              name: SITE_NAME,
+              description: SITE_DESCRIPTION,
+              publisher: { "@id": `${SITE_URL}/#organization` },
+              potentialAction: {
+                "@type": "SearchAction",
+                target: `${SITE_URL}/search?q={search_term_string}`,
+                "query-input": "required name=search_term_string",
+              },
+            },
+          ],
+        }),
+      },
     ],
   }),
   shellComponent: RootShell,
@@ -110,7 +159,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en-IN" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
