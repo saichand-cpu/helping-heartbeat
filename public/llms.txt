@@ -1,0 +1,36 @@
+# HumanLink
+
+HumanLink is an AI-powered human connection platform for people who need help and people who can help.
+
+## Mission
+Helping Humanity, One Connection at a Time.
+
+## What HumanLink does
+- Help people request and offer help
+- Connect users with volunteers and NGOs
+- Help students discover and share skills
+- Help professionals showcase services and expertise
+- Help businesses promote their services
+- Help HR teams publish job opportunities
+- Support community groups, messaging, reviews and reputation
+- Provide HUMI AI assistance for clearer, safer requests
+
+## Audience
+Students, volunteers, job seekers, HR teams, teachers, professionals, NGOs, businesses and community members.
+
+## Website
+https://www.humanlink.in/
+
+## Public pages
+- https://www.humanlink.in/about
+- https://www.humanlink.in/pricing
+- https://www.humanlink.in/community-guidelines
+- https://www.humanlink.in/privacy-policy
+- https://www.humanlink.in/refund-cancellation
+- https://www.humanlink.in/report-and-grievance
+
+## Pricing
+Community access is free. Paid plans are available for professional and organizational features. See the live pricing page for current plans and terms.
+
+## Safety
+HumanLink is a connection platform. Users should use appropriate caution, verify information independently and follow the community guidelines. HumanLink does not guarantee outcomes or the identity, qualifications or conduct of every user.
