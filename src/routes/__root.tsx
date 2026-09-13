@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import logoAsset from "../assets/humanlink-logo.jpeg.asset.json";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { initializeMobilePushNotifications } from "../lib/mobile-push";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { GlobalErrorBoundary } from "@/components/site/GlobalErrorBoundary";
@@ -188,6 +189,10 @@ function RootComponent() {
     });
     return () => sub.subscription.unsubscribe();
   }, [router, queryClient]);
+
+  useEffect(() => {
+    void initializeMobilePushNotifications();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
