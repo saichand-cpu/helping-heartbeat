@@ -27,32 +27,35 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
   };
 }
 
-
 function createSupabaseClient() {
-  // Use import.meta.env for client-side (Vite build-time replacement)
-  // Fall back to process.env for SSR (server-side rendering)
+  // Support both the current publishable-key name and the older anon-key name.
+  // Vite values are used in the browser; server env values remain available for SSR.
   const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-  const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY;
+  const SUPABASE_KEY =
+    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+    import.meta.env.VITE_SUPABASE_ANON_KEY ||
+    process.env.SUPABASE_PUBLISHABLE_KEY ||
+    process.env.SUPABASE_ANON_KEY;
 
-  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
     const missing = [
       ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),
-      ...(!SUPABASE_PUBLISHABLE_KEY ? ['SUPABASE_PUBLISHABLE_KEY'] : []),
+      ...(!SUPABASE_KEY ? ['SUPABASE_PUBLISHABLE_KEY / SUPABASE_ANON_KEY'] : []),
     ];
-    const message = `Missing Supabase environment variable(s): ${missing.join(', ')}. Connect Supabase in Lovable Cloud.`;
+    const message = `Missing Supabase environment variable(s): ${missing.join(', ')}. Configure them in Vercel Project Settings → Environment Variables.`;
     console.error(`[Supabase] ${message}`);
     throw new Error(message);
   }
 
-  return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  return createClient<Database>(SUPABASE_URL, SUPABASE_KEY, {
     global: {
-      fetch: createSupabaseFetch(SUPABASE_PUBLISHABLE_KEY),
+      fetch: createSupabaseFetch(SUPABASE_KEY),
     },
     auth: {
       storage: brokeredPreviewStorage(),
       persistSession: true,
       autoRefreshToken: true,
-    }
+    },
   });
 }
 
@@ -66,4 +69,3 @@ export const supabase = new Proxy({} as ReturnType<typeof createSupabaseClient>,
     return Reflect.get(_supabase, prop, receiver);
   },
 });
-
