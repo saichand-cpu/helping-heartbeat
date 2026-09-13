@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://www.humanlink.in/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>https://www.humanlink.in/about</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.humanlink.in/pricing</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.humanlink.in/leaderboard</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.humanlink.in/community-guidelines</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://www.humanlink.in/privacy-policy</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://www.humanlink.in/refund-cancellation</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://www.humanlink.in/report-and-grievance</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
+</urlset>
