@@ -2,9 +2,13 @@ User-agent: *
 Allow: /
 Disallow: /auth
 Disallow: /forgot-password
+Disallow: /reset-password
 Disallow: /dashboard
 Disallow: /settings
 Disallow: /admin
 Disallow: /api/
+Disallow: /messages
+Disallow: /notifications
+Disallow: /profile/edit
 
 Sitemap: https://www.humanlink.in/sitemap.xml
