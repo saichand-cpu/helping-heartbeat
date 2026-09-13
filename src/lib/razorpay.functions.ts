@@ -34,35 +34,46 @@ export const createRazorpayOrder = createServerFn({ method: "POST" })
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
     if (!keyId || !keySecret) throw new Error("Razorpay credentials missing on backend");
     const { userId, supabase } = context;
-    let plan: { id: string | null; name: string; price_cents: number; currency: string } | null = null;
     const planKey = keyFromInput(data.plan_key, data.amount);
+    let plan: { id: string | null; name: string; price_cents: number; currency: string } | null = null;
 
-    if (data.plan_id && /^[0-9a-f-]{36}$/i.test(data.plan_id)) {
+    // When a canonical plan key is supplied, it is authoritative. Do not let
+    // a mismatched client-supplied plan_id change the amount/tier being bought.
+    if (planKey) {
+      const canonical = CANONICAL_PLANS[planKey];
+      const { data: row, error } = await supabase
+        .from("premium_plans")
+        .select("id, name, price_cents, currency, is_active")
+        .eq("name", canonical.name)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (error) await log(null, userId, "plan.lookup_failed", "warn", error.message);
+      if (row) {
+        if (row.price_cents !== canonical.price_cents || (row.currency ?? "INR") !== "INR") {
+          await log(null, userId, "plan.configuration_invalid", "error", "Premium plan price/currency does not match canonical configuration", { plan: planKey, db_price_cents: row.price_cents, expected_price_cents: canonical.price_cents, currency: row.currency });
+          throw new Error("Payment plan is temporarily unavailable. Please try again later.");
+        }
+        plan = row;
+      } else {
+        // Keep checkout usable if the seed row is missing, while still using
+        // the canonical server-side price and never trusting the client amount.
+        plan = { id: null, name: canonical.name, price_cents: canonical.price_cents, currency: "INR" };
+      }
+    } else if (data.plan_id && /^[0-9a-f-]{36}$/i.test(data.plan_id)) {
+      // Legacy/direct plan-id requests are allowed only when their DB price is
+      // one of the explicitly supported canonical prices.
       const { data: row, error } = await supabase.from("premium_plans").select("id, name, price_cents, currency, is_active").eq("id", data.plan_id).maybeSingle();
       if (error) await log(null, userId, "plan.lookup_failed", "warn", error.message);
-      if (row?.is_active) plan = row;
+      if (row?.is_active && (row.price_cents === 59900 || row.price_cents === 50000 || row.price_cents === 29900) && (row.currency ?? "INR") === "INR") plan = row;
     }
 
-    // Use an exact canonical plan name rather than a broad ilike search. A broad
-    // search for "pro" can incorrectly match "Business Promotion".
-    if (!plan && planKey) {
-      const canonical = CANONICAL_PLANS[planKey];
-      const { data: row, error } = await supabase.from("premium_plans").select("id, name, price_cents, currency, is_active").eq("name", canonical.name).eq("is_active", true).maybeSingle();
-      if (error) await log(null, userId, "plan.lookup_failed", "warn", error.message);
-      if (row) plan = row;
-    }
-
-    if (!plan && planKey) {
-      const canonical = CANONICAL_PLANS[planKey];
-      plan = { id: null, name: canonical.name, price_cents: canonical.price_cents, currency: "INR" };
-    }
-    if (!plan) throw new Error(`Plan not available (plan_key=${data.plan_key ?? "none"})`);
+    if (!plan) throw new Error("Plan not available");
 
     const receipt = `hl_${userId.slice(0, 8)}_${Date.now().toString(36)}`;
     const resp = await fetch("https://api.razorpay.com/v1/orders", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: "Basic " + Buffer.from(`${keyId}:${keySecret}`).toString("base64") },
-      body: JSON.stringify({ amount: plan.price_cents, currency: plan.currency ?? "INR", receipt, notes: { user_id: userId, plan_id: plan.id, plan_name: plan.name } }),
+      body: JSON.stringify({ amount: plan.price_cents, currency: plan.currency, receipt, notes: { user_id: userId, plan_id: plan.id, plan_name: plan.name } }),
     });
     if (!resp.ok) {
       const text = await resp.text();
@@ -121,8 +132,10 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
     const { error: subErr } = await supabaseAdmin.from("subscriptions").insert({ user_id: userId, plan_id: payment.plan_id, plan_name: payment.plan_name, tier, status: "active", payment_id: payment.id, expires_at: expiresAt.toISOString() });
     if (subErr) { await log(payment.id, userId, "subscription.create_failed", "error", subErr.message); throw new Error("Payment succeeded but subscription activation failed. Please contact support."); }
 
-    const { error: rpcErr } = await context.supabase.rpc("activate_premium" as never, { _plan_id: payment.plan_id } as never);
-    if (rpcErr) await log(payment.id, userId, "activate.rpc_failed", "warn", rpcErr.message);
+    if (payment.plan_id) {
+      const { error: rpcErr } = await context.supabase.rpc("activate_premium" as never, { _plan_id: payment.plan_id } as never);
+      if (rpcErr) await log(payment.id, userId, "activate.rpc_failed", "warn", rpcErr.message);
+    }
 
     const { error: notificationErr } = await supabaseAdmin.from("notifications").insert({ user_id: userId, kind: "payment", title: `${payment.plan_name} activated`, body: `Your subscription is active until ${expiresAt.toDateString()}.`, link: "/business-promote" });
     if (notificationErr) await log(payment.id, userId, "notification.failed", "warn", notificationErr.message);
