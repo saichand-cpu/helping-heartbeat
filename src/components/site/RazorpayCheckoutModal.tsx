@@ -123,10 +123,10 @@ export function RazorpayCheckoutModal({ open, onOpenChange, defaultTier = "busin
         },
       });
 
-      // Never open Razorpay without a server-created order. A client-side
-      // fallback order cannot be securely verified and could result in a
-      // successful charge that HumanLink cannot reconcile.
-      if (!order.order_id || order.amount !== active.price || order.currency !== "INR" || order.key_id !== order.key_id) {
+      // Razorpay must always receive a server-created order. Never fall back
+      // to an order-less checkout because such a payment cannot be safely
+      // reconciled with the HumanLink payment record.
+      if (!order.order_id || order.amount !== active.price || order.currency !== "INR") {
         throw new Error("HumanLink could not create a secure Razorpay order. Please try again.");
       }
 
