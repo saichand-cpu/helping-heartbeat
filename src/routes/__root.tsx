@@ -7,12 +7,13 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import logoAsset from "../assets/humanlink-logo.jpeg.asset.json";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { initializeMobilePushNotifications } from "../lib/mobile-push";
+import { AdminNotificationCenter } from "../components/admin/AdminNotificationCenter";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { GlobalErrorBoundary } from "@/components/site/GlobalErrorBoundary";
@@ -180,6 +181,11 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+  const [isAdminRoute, setIsAdminRoute] = useState(false);
+
+  useEffect(() => {
+    setIsAdminRoute(window.location.pathname === "/admin");
+  }, []);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
@@ -198,6 +204,11 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <GlobalErrorBoundary>
         <Outlet />
+        {isAdminRoute && (
+          <div className="mx-auto w-full max-w-7xl px-4 pb-8 md:px-6">
+            <AdminNotificationCenter />
+          </div>
+        )}
       </GlobalErrorBoundary>
       <Toaster richColors position="top-right" />
     </QueryClientProvider>
