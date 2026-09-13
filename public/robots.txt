@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /auth
+Disallow: /forgot-password
+Disallow: /dashboard
+Disallow: /settings
+Disallow: /admin
+Disallow: /api/
+
+Sitemap: https://www.humanlink.in/sitemap.xml
