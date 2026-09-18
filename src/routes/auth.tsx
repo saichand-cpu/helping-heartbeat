@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Loader2, Mail, Lock, User, Phone, ShieldCheck, Sparkles, Users } from "lucide-react";
+import { Loader2, Mail, Lock, User, Phone, ShieldCheck, Sparkles, HandHeart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,7 +64,7 @@ function AuthPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <Feature icon={Users} title="120K+ members" note="already helping" />
+            <Feature icon={HandHeart} title="Community-powered" note="people helping people" />
             <Feature icon={ShieldCheck} title="Verified & safe" note="report / block built-in" />
           </div>
         </div>
@@ -90,9 +90,9 @@ function AuthPage() {
           </div>
           <p className="mt-6 text-xs text-center text-muted-foreground">
             By continuing you agree to our{" "}
-            <Link to="/" className="underline underline-offset-2 hover:text-foreground">Terms</Link>{" "}
+            <Link to="/terms-of-service" className="underline underline-offset-2 hover:text-foreground">Terms</Link>{" "}
             and{" "}
-            <Link to="/" className="underline underline-offset-2 hover:text-foreground">Privacy Policy</Link>.
+            <Link to="/privacy-policy" className="underline underline-offset-2 hover:text-foreground">Privacy Policy</Link>.
           </p>
         </motion.div>
       </div>
@@ -336,7 +336,7 @@ function EmailAuthFlow() {
       <p className="text-sm text-muted-foreground mt-1">
         {mode === "signin"
           ? "Sign in to continue helping."
-          : "It takes a moment — no verification needed."}
+          : "Create your account and start helping."}
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-4 mt-6">
