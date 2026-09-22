@@ -11,6 +11,8 @@ permissions:
 jobs:
   android:
     runs-on: ubuntu-latest
+    env:
+      GOOGLE_SERVICES_JSON_B64: ${{ secrets.GOOGLE_SERVICES_JSON_B64 }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,14 +36,12 @@ jobs:
         run: npx cap sync android
 
       - name: Configure Firebase for Android
-        if: ${{ secrets.GOOGLE_SERVICES_JSON_B64 != '' }}
-        env:
-          GOOGLE_SERVICES_JSON_B64: ${{ secrets.GOOGLE_SERVICES_JSON_B64 }}
+        if: ${{ env.GOOGLE_SERVICES_JSON_B64 != '' }}
         run: |
           echo "$GOOGLE_SERVICES_JSON_B64" | base64 --decode > android/app/google-services.json
 
       - name: Verify Firebase configuration
-        if: ${{ secrets.GOOGLE_SERVICES_JSON_B64 != '' }}
+        if: ${{ env.GOOGLE_SERVICES_JSON_B64 != '' }}
         run: test -s android/app/google-services.json
 
       - name: Build debug APK
@@ -69,6 +69,6 @@ jobs:
           path: android/app/build/outputs/bundle/release/app-release.aab
 
       - name: Firebase setup notice
-        if: ${{ secrets.GOOGLE_SERVICES_JSON_B64 == '' }}
+        if: ${{ env.GOOGLE_SERVICES_JSON_B64 == '' }}
         run: |
           echo "GOOGLE_SERVICES_JSON_B64 is not configured. Web build completed; Android/FCM build was intentionally skipped."
