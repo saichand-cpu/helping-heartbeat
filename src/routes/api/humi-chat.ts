@@ -122,7 +122,7 @@ export const Route = createFileRoute("/api/humi-chat")({
 
         // Preferred production path: Vercel AI Gateway. It gives HUMI access
         // to current models and provider failover through one credential.
-        const gatewayKey = process.env.AI_GATEWAY_API_KEY;
+        const gatewayKey = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_AI_GATEWAY_API_KEY;
         const gatewayModel = process.env.HUMI_MODEL || "openai/gpt-5.6-sol";
         const lovableKey = process.env.LOVABLE_API_KEY;
         const openaiKey = process.env.OPENAI_API_KEY;
@@ -139,7 +139,7 @@ export const Route = createFileRoute("/api/humi-chat")({
         } else if (lovableKey) {
           endpoint = "https://ai.gateway.lovable.dev/v1/chat/completions";
           apiKey = lovableKey;
-          model = "google/gemini-3.8-flash";
+          model = "google/gemini-3-flash-preview";
           authHeaderName = "Lovable-API-Key";
         } else if (openaiKey) {
           endpoint = "https://api.openai.com/v1/chat/completions";
@@ -163,8 +163,12 @@ export const Route = createFileRoute("/api/humi-chat")({
               stream: true,
               messages: [{ role: "system", content: system }, ...messages],
               max_tokens: 8192,
-              ...(authHeaderName === "Authorization" && endpoint.includes("ai-gateway.vercel.sh")
-                ? { reasoning_effort: "high" }
+              // Keep Chat Completions broadly compatible across Gateway providers.
+              // GPT-5.6 supports reasoning, but Responses is the preferred endpoint
+              // for advanced reasoning; HUMI uses Chat Completions here for streaming
+              // compatibility and lets the provider use its safe default.
+              ...(authHeaderName === "Authorization" && endpoint.includes("api.openai.com")
+                ? { reasoning_effort: "medium" }
                 : {}),
             }),
           });
@@ -172,9 +176,26 @@ export const Route = createFileRoute("/api/humi-chat")({
         let res: Response;
         try {
           res = await requestModel(model);
+          if ((!res.ok || !res.body) && gatewayKey && model !== "openai/gpt-5.6-terra") {
+            console.warn("[humi-chat] primary model unavailable; retrying with Terra");
+            res = await requestModel("openai/gpt-5.6-terra");
+          }
           if ((!res.ok || !res.body) && gatewayKey && model !== "openai/gpt-5.6-luna") {
-            console.warn("[humi-chat] flagship model unavailable; retrying with fast model");
+            console.warn("[humi-chat] secondary model unavailable; retrying with Luna");
             res = await requestModel("openai/gpt-5.6-luna");
+          }
+          if ((!res.ok || !res.body) && gatewayKey && openaiKey) {
+            console.warn("[humi-chat] AI Gateway unavailable; retrying direct OpenAI");
+            const previousEndpoint = endpoint;
+            const previousKey = apiKey;
+            const previousHeader = authHeaderName;
+            endpoint = "https://api.openai.com/v1/chat/completions";
+            apiKey = openaiKey;
+            authHeaderName = "Authorization";
+            res = await requestModel("gpt-5.6-sol");
+            endpoint = previousEndpoint;
+            apiKey = previousKey;
+            authHeaderName = previousHeader;
           }
         } catch (error) {
           console.error("[humi-chat] provider request failed", error);
