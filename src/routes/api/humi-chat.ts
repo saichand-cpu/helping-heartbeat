@@ -88,8 +88,12 @@ export const Route = createFileRoute("/api/humi-chat")({
         const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
         if (!token) return new Response("Login required to chat with HUMI.", { status: 401 });
 
-        const supabaseUrl = process.env.SUPABASE_URL;
-        const supabaseKey = process.env.SUPABASE_PUBLISHABLE_KEY;
+        const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+        const supabaseKey =
+          process.env.SUPABASE_PUBLISHABLE_KEY ||
+          process.env.SUPABASE_ANON_KEY ||
+          process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+          process.env.VITE_SUPABASE_ANON_KEY;
         if (!supabaseUrl || !supabaseKey) return new Response("Auth not configured", { status: 500 });
 
         const sb = createClient(supabaseUrl, supabaseKey, {
@@ -119,7 +123,7 @@ export const Route = createFileRoute("/api/humi-chat")({
         // Preferred production path: Vercel AI Gateway. It gives HUMI access
         // to current models and provider failover through one credential.
         const gatewayKey = process.env.AI_GATEWAY_API_KEY;
-        const gatewayModel = process.env.HUMI_MODEL || "openai/gpt-5.6-luna";
+        const gatewayModel = process.env.HUMI_MODEL || "openai/gpt-5.6-sol";
         const lovableKey = process.env.LOVABLE_API_KEY;
         const openaiKey = process.env.OPENAI_API_KEY;
 
@@ -140,15 +144,14 @@ export const Route = createFileRoute("/api/humi-chat")({
         } else if (openaiKey) {
           endpoint = "https://api.openai.com/v1/chat/completions";
           apiKey = openaiKey;
-          model = "gpt-4o-mini";
+          model = "gpt-5.6-sol";
         } else {
           console.error("[humi-chat] No AI key configured");
           return streamText(fallbackReply(lastUser?.content ?? ""), emergency);
         }
 
-        let res: Response;
-        try {
-          res = await fetch(endpoint, {
+        const requestModel = async (selectedModel: string) =>
+          fetch(endpoint, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -156,12 +159,23 @@ export const Route = createFileRoute("/api/humi-chat")({
               ...(authHeaderName === "Lovable-API-Key" ? { "X-Lovable-AIG-SDK": "fetch" } : {}),
             },
             body: JSON.stringify({
-              model,
+              model: selectedModel,
               stream: true,
               messages: [{ role: "system", content: system }, ...messages],
               max_tokens: 8192,
+              ...(authHeaderName === "Authorization" && endpoint.includes("ai-gateway.vercel.sh")
+                ? { reasoning_effort: "high" }
+                : {}),
             }),
           });
+
+        let res: Response;
+        try {
+          res = await requestModel(model);
+          if ((!res.ok || !res.body) && gatewayKey && model !== "openai/gpt-5.6-luna") {
+            console.warn("[humi-chat] flagship model unavailable; retrying with fast model");
+            res = await requestModel("openai/gpt-5.6-luna");
+          }
         } catch (error) {
           console.error("[humi-chat] provider request failed", error);
           return streamText(fallbackReply(lastUser?.content ?? ""), emergency);
