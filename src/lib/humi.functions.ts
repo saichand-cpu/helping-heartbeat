@@ -100,7 +100,9 @@ export const getHumiBriefing = createServerFn({ method: "POST" })
     // HUMI AI briefing
     let briefing = "";
     let highlights: string[] = [];
-    const apiKey = process.env.LOVABLE_API_KEY;
+    const gatewayKey = process.env.AI_GATEWAY_API_KEY;
+    const lovableKey = process.env.LOVABLE_API_KEY;
+    const apiKey = gatewayKey || lovableKey;
     if (apiKey) {
       try {
         const system = `You are HUMI, HumanLink's calm, warm AI analyst briefing an admin.
@@ -109,11 +111,16 @@ Given platform metrics JSON, return STRICT JSON: {
   "highlights": ["3-5 short bullet insights, each under 90 chars, no emojis"]
 }
 No markdown. No preface.`;
-        const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        const endpoint = gatewayKey
+          ? "https://ai-gateway.vercel.sh/v1/chat/completions"
+          : "https://ai.gateway.lovable.dev/v1/chat/completions";
+        const res = await fetch(endpoint, {
           method: "POST",
-          headers: { "Content-Type": "application/json", "Lovable-API-Key": apiKey },
+          headers: gatewayKey
+            ? { "Content-Type": "application/json", Authorization: `Bearer ${gatewayKey}` }
+            : { "Content-Type": "application/json", "Lovable-API-Key": lovableKey! },
           body: JSON.stringify({
-            model: "google/gemini-3-flash-preview",
+            model: gatewayKey ? "openai/gpt-5.6-luna" : "google/gemini-3-flash-preview",
             messages: [
               { role: "system", content: system },
               { role: "user", content: JSON.stringify(metrics) },
