@@ -14,7 +14,7 @@ import { PostCard } from "@/components/social/PostCard";
 import { EmptyState, ErrorState } from "@/components/ui/empty-state";
 import { toast } from "sonner";
 import {
-  Send, Megaphone, Loader2, Wand2, HandHeart, HeartHandshake, Newspaper, ExternalLink, Users,
+  Send, Megaphone, Loader2, Wand2, HandHeart, HeartHandshake, Newspaper, ExternalLink, Users, ShieldCheck,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { writeCaption } from "@/lib/ai.functions";
@@ -232,6 +232,10 @@ function FeedPage() {
 
   const createPost = async () => {
     if (!body.trim() || !me) return;
+    const { data: authData } = await supabase.auth.getUser();
+    if (!authData.user?.email_confirmed_at) return toast.error("Please verify your email before posting.");
+    const safetyPattern = /\b(?:otp|verification code|upi pin|atm pin|cvv|card number|bank account|net banking password|pay first|send money first|advance payment|registration fee|processing fee|gift card|cryptocurrency|wire transfer)\b/i;
+    if (safetyPattern.test(body)) return toast.error("Safety check blocked this post. Do not request OTPs, PINs, passwords, bank/card details, or upfront payment.");
     setPosting(true);
     const text = body.trim();
     const { data, error: insErr } = await supabase
