@@ -11,19 +11,22 @@ async function log(payment_id: string | null, user_id: string | null, event: str
 }
 
 const CANONICAL_PLANS = {
-  pro: { name: "HumanLink Pro", price_cents: 59900 },
-  business: { name: "HumanLink Business Promotion", price_cents: 50000 },
+  plus: { name: "HumanLink Plus", price_cents: 4900 },
+  volunteer: { name: "HumanLink Volunteer Plus", price_cents: 9900 },
+  professional: { name: "HumanLink Professional", price_cents: 19900 },
   ngo: { name: "HumanLink NGO", price_cents: 29900 },
+  business: { name: "HumanLink Business", price_cents: 59900 },
+  healthcare: { name: "HumanLink Healthcare Partner", price_cents: 99900 },
+  education: { name: "HumanLink Education Partner", price_cents: 49900 },
+  csr: { name: "HumanLink CSR Partner", price_cents: 249900 },
 } as const;
 type PlanKey = keyof typeof CANONICAL_PLANS;
 
 function keyFromInput(plan_key?: string, amount?: number): PlanKey | null {
-  const k = plan_key?.toLowerCase();
-  if (k === "pro" || k === "business" || k === "ngo") return k;
-  if (amount === 599 || amount === 59900) return "pro";
-  if (amount === 500 || amount === 50000) return "business";
-  if (amount === 299 || amount === 29900) return "ngo";
-  return null;
+  const k = plan_key?.toLowerCase() as PlanKey | undefined;
+  if (k && k in CANONICAL_PLANS) return k;
+  const matches = (Object.entries(CANONICAL_PLANS) as [PlanKey, { price_cents: number }][]).filter(([, p]) => p.price_cents === amount || p.price_cents === (amount ?? 0) * 100);
+  return matches.length === 1 ? matches[0][0] : null;
 }
 
 export const createRazorpayOrder = createServerFn({ method: "POST" })
@@ -37,8 +40,6 @@ export const createRazorpayOrder = createServerFn({ method: "POST" })
     const planKey = keyFromInput(data.plan_key, data.amount);
     let plan: { id: string | null; name: string; price_cents: number; currency: string } | null = null;
 
-    // When a canonical plan key is supplied, it is authoritative. Do not let
-    // a mismatched client-supplied plan_id change the amount/tier being bought.
     if (planKey) {
       const canonical = CANONICAL_PLANS[planKey];
       const { data: row, error } = await supabase
@@ -55,16 +56,14 @@ export const createRazorpayOrder = createServerFn({ method: "POST" })
         }
         plan = row;
       } else {
-        // Keep checkout usable if the seed row is missing, while still using
-        // the canonical server-side price and never trusting the client amount.
         plan = { id: null, name: canonical.name, price_cents: canonical.price_cents, currency: "INR" };
       }
     } else if (data.plan_id && /^[0-9a-f-]{36}$/i.test(data.plan_id)) {
-      // Legacy/direct plan-id requests are allowed only when their DB price is
-      // one of the explicitly supported canonical prices.
-      const { data: row, error } = await supabase.from("premium_plans").select("id, name, price_cents, currency, is_active").eq("id", data.plan_id).maybeSingle();
-      if (error) await log(null, userId, "plan.lookup_failed", "warn", error.message);
-      if (row?.is_active && (row.price_cents === 59900 || row.price_cents === 50000 || row.price_cents === 29900) && (row.currency ?? "INR") === "INR") plan = row;
+      const { data: row } = await supabase.from("premium_plans").select("id, name, price_cents, currency, is_active").eq("id", data.plan_id).maybeSingle();
+      if (row?.is_active) {
+        const supported = (Object.values(CANONICAL_PLANS) as { price_cents: number }[]).some((p) => p.price_cents === row.price_cents);
+        if (supported && (row.currency ?? "INR") === "INR") plan = row;
+      }
     }
 
     if (!plan) throw new Error("Plan not available");
@@ -91,7 +90,7 @@ export const createRazorpayOrder = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: paymentRow, error: insErr } = await supabaseAdmin.from("payments").insert({ user_id: userId, razorpay_order_id: order.id, amount: order.amount, currency: order.currency, status: "created", plan_name: plan.name, plan_id: plan.id, notes: { receipt } }).select("id").single();
     if (insErr) { await log(null, userId, "order.persist_failed", "error", insErr.message); throw new Error("Could not save order"); }
-    await log(paymentRow.id, userId, "order.created", "info", "Order created", { order_id: order.id, amount: order.amount });
+    await log(paymentRow.id, userId, "order.created", "info", "Order created", { order_id: order.id, amount: order.amount, plan: plan.name });
     return { order_id: order.id, amount: order.amount, currency: order.currency, key_id: keyId, plan_name: plan.name };
   });
 
@@ -106,13 +105,11 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
     const given = data.razorpay_signature;
     const ok = expected.length === given.length && timingSafeEqual(Buffer.from(expected, "utf8"), Buffer.from(given, "utf8"));
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
     const { data: payment, error: paymentErr } = await supabaseAdmin.from("payments").select("id, user_id, plan_id, plan_name, amount, currency, status").eq("razorpay_order_id", data.razorpay_order_id).maybeSingle();
     if (paymentErr) { await log(null, userId, "verify.lookup_failed", "error", paymentErr.message); throw new Error("Could not load payment record"); }
     if (!payment) throw new Error("Unknown order");
     if (payment.user_id !== userId) throw new Error("Not your payment");
     if (payment.status === "paid") return { ok: true, already: true, payment_id: payment.id };
-
     if (!ok) {
       await supabaseAdmin.from("payments").update({ status: "failed", razorpay_payment_id: data.razorpay_payment_id }).eq("id", payment.id);
       await log(payment.id, userId, "verify.failed", "warn", "Payment signature verification failed");
@@ -123,7 +120,15 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
     if (paidErr) { await log(payment.id, userId, "verify.persist_failed", "error", paidErr.message); throw new Error("Could not finalize payment"); }
 
     const nameLower = (payment.plan_name ?? "").toLowerCase();
-    const tier = nameLower.includes("business") ? "business" : nameLower.includes("ngo") ? "ngo" : nameLower.includes("pro") ? "pro" : nameLower.includes("plus") ? "plus" : "basic";
+    const tier = nameLower.includes("healthcare") ? "healthcare"
+      : nameLower.includes("education") ? "education"
+      : nameLower.includes("csr") ? "csr"
+      : nameLower.includes("business") ? "business"
+      : nameLower.includes("ngo") ? "ngo"
+      : nameLower.includes("professional") ? "professional"
+      : nameLower.includes("volunteer") ? "volunteer"
+      : nameLower.includes("plus") ? "plus"
+      : "basic";
     const expiresAt = new Date(); expiresAt.setMonth(expiresAt.getMonth() + 1);
 
     const { error: supersedeErr } = await supabaseAdmin.from("subscriptions").update({ status: "superseded" }).eq("user_id", userId).eq("status", "active");
@@ -137,25 +142,30 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
       if (rpcErr) await log(payment.id, userId, "activate.rpc_failed", "warn", rpcErr.message);
     }
 
-    const { error: notificationErr } = await supabaseAdmin.from("notifications").insert({ user_id: userId, kind: "payment", title: `${payment.plan_name} activated`, body: `Your subscription is active until ${expiresAt.toDateString()}.`, link: "/business-promote" });
+    const { error: notificationErr } = await supabaseAdmin.from("notifications").insert({ user_id: userId, kind: "payment", title: `${payment.plan_name} activated`, body: `Your subscription is active until ${expiresAt.toDateString()}.`, link: "/settings" });
     if (notificationErr) await log(payment.id, userId, "notification.failed", "warn", notificationErr.message);
 
     await log(payment.id, userId, "verify.success", "info", "Payment verified", { amount: payment.amount, tier });
     return { ok: true, payment_id: payment.id, tier, expires_at: expiresAt.toISOString() };
   });
 
-export const cancelRazorpayOrder = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).inputValidator((data) => z.object({ razorpay_order_id: z.string().min(1) }).parse(data)).handler(async ({ data, context }) => {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data: payment } = await supabaseAdmin.from("payments").select("id, user_id, status").eq("razorpay_order_id", data.razorpay_order_id).maybeSingle();
-  if (!payment || payment.user_id !== context.userId) return { ok: false };
-  if (payment.status === "created") await supabaseAdmin.from("payments").update({ status: "cancelled" }).eq("id", payment.id);
-  return { ok: true };
-});
+export const cancelRazorpayOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ razorpay_order_id: z.string().min(1) }).parse(data))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: payment } = await supabaseAdmin.from("payments").select("id, user_id, status").eq("razorpay_order_id", data.razorpay_order_id).maybeSingle();
+    if (!payment || payment.user_id !== context.userId) return { ok: false };
+    if (payment.status === "created") await supabaseAdmin.from("payments").update({ status: "cancelled" }).eq("id", payment.id);
+    return { ok: true };
+  });
 
-export const cancelSubscription = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data: sub } = await supabaseAdmin.from("subscriptions").select("id").eq("user_id", context.userId).eq("status", "active").order("created_at", { ascending: false }).limit(1).maybeSingle();
-  if (!sub) return { ok: false };
-  await supabaseAdmin.from("subscriptions").update({ status: "cancelled", cancelled_at: new Date().toISOString() }).eq("id", sub.id);
-  return { ok: true };
-});
+export const cancelSubscription = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: sub } = await supabaseAdmin.from("subscriptions").select("id").eq("user_id", context.userId).eq("status", "active").order("created_at", { ascending: false }).limit(1).maybeSingle();
+    if (!sub) return { ok: false };
+    await supabaseAdmin.from("subscriptions").update({ status: "cancelled", cancelled_at: new Date().toISOString() }).eq("id", sub.id);
+    return { ok: true };
+  });
