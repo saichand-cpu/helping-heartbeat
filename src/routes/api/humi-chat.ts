@@ -179,13 +179,13 @@ export const Route = createFileRoute("/api/humi-chat")({
         let res: Response;
         try {
           res = await requestModel(model);
-          if ((!res.ok || !res.body) && gatewayKey && model !== "openai/gpt-5.6-terra") {
-            console.warn("[humi-chat] primary model unavailable; retrying with Terra");
-            res = await requestModel("openai/gpt-5.6-terra");
+          if ((!res.ok || !res.body) && gatewayKey && model !== "openai/gpt-6-sol") {
+            console.warn("[humi-chat] primary model unavailable; retrying with GPT-6 Sol");
+            res = await requestModel("openai/gpt-6-sol");
           }
-          if ((!res.ok || !res.body) && gatewayKey && model !== "openai/gpt-5.6-luna") {
-            console.warn("[humi-chat] secondary model unavailable; retrying with Luna");
-            res = await requestModel("openai/gpt-5.6-luna");
+          if ((!res.ok || !res.body) && gatewayKey && model !== "openai/gpt-6-luna") {
+            console.warn("[humi-chat] secondary model unavailable; retrying with GPT-6 Luna");
+            res = await requestModel("openai/gpt-6-luna");
           }
           if ((!res.ok || !res.body) && gatewayKey && openaiKey) {
             console.warn("[humi-chat] AI Gateway unavailable; retrying direct OpenAI");
