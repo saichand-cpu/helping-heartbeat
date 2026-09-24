@@ -81,19 +81,18 @@ export function LegalPage({
             <section id="contact" className="scroll-mt-28">
               <h2 className="text-xl font-semibold tracking-tight mb-3">Contact</h2>
               <div className="rounded-2xl border border-border bg-card p-5 text-sm space-y-2">
-                <ContactRow label="Support email" value={displayValue(config?.support_email)} />
-                <ContactRow label="Grievance email" value={displayValue(config?.grievance_email)} />
-                <ContactRow
-                  label="Grievance officer"
-                  value={displayValue(config?.grievance_officer_name)}
-                />
-                <ContactRow label="Legal contact" value={displayValue(config?.legal_email)} />
-                <ContactRow label="Operating entity" value={displayValue(config?.business_name)} />
-                <ContactRow label="Address" value={displayValue(config?.business_address)} />
-                <p className="pt-2 text-xs text-muted-foreground">
-                  Contact details are maintained by the HumanLink team. Items marked “Not configured
-                  yet” have not been published.
-                </p>
+                {config?.support_email && <ContactRow label="Support email" value={config.support_email} />}
+                {config?.grievance_email && <ContactRow label="Grievance email" value={config.grievance_email} />}
+                {config?.grievance_officer_name && <ContactRow label="Grievance officer" value={config.grievance_officer_name} />}
+                {config?.legal_email && <ContactRow label="Legal contact" value={config.legal_email} />}
+                {config?.business_name && <ContactRow label="Operating entity" value={config.business_name} />}
+                {config?.business_address && <ContactRow label="Address" value={config.business_address} />}
+                {!config?.support_email && !config?.grievance_email && !config?.grievance_officer_name &&
+                  !config?.legal_email && !config?.business_name && !config?.business_address && (
+                    <p className="text-sm text-muted-foreground">
+                      HumanLink support and legal contact details are being configured. For an immediate safety concern, use the Report &amp; Grievance page.
+                    </p>
+                  )}
               </div>
             </section>
 
