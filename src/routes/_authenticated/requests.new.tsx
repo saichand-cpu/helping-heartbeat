@@ -33,11 +33,13 @@ function NewRequest() {
   const [aiLoading, setAiLoading] = useState(false);
   const [verificationChecked, setVerificationChecked] = useState(false);
   const [verifiedEmail, setVerifiedEmail] = useState(false);
+  const [verifiedPhone, setVerifiedPhone] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       const user = data.user;
       setVerifiedEmail(Boolean(user?.email_confirmed_at));
+      setVerifiedPhone(Boolean(user?.phone_confirmed_at));
       setVerificationChecked(true);
     });
   }, []);
@@ -65,6 +67,11 @@ function NewRequest() {
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) { setLoading(false); return; }
     if (!u.user.email_confirmed_at) { setLoading(false); return toast.error("Please verify your email before posting a help request."); }
+    const highRiskCategories = ["medical", "child_care", "elder_care", "donations", "emergency"];
+    if (highRiskCategories.includes(category) && !u.user.phone_confirmed_at) {
+      setLoading(false);
+      return toast.error("Phone verification is required for higher-risk help requests. Verify your phone in Settings → Verification.");
+    }
     if (description.length > 5000 || title.length > 160 || location.length > 160) { setLoading(false); return toast.error("Please shorten the request details and try again."); }
     const { data: inserted, error } = await supabase.from("help_requests").insert({
       requester_id: u.user.id, title, description, location,
