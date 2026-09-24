@@ -100,7 +100,7 @@ export const getHumiBriefing = createServerFn({ method: "POST" })
     // HUMI AI briefing
     let briefing = "";
     let highlights: string[] = [];
-    const gatewayKey = process.env.AI_GATEWAY_API_KEY;
+    const gatewayKey = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
     const lovableKey = process.env.LOVABLE_API_KEY;
     const apiKey = gatewayKey || lovableKey;
     if (apiKey) {
