@@ -137,7 +137,7 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
     const { error: subErr } = await supabaseAdmin.from("subscriptions").insert({ user_id: userId, plan_id: payment.plan_id, plan_name: payment.plan_name, tier, status: "active", payment_id: payment.id, expires_at: expiresAt.toISOString() });
     if (subErr) { await log(payment.id, userId, "subscription.create_failed", "error", subErr.message); throw new Error("Payment succeeded but subscription activation failed. Please contact support."); }
 
-    const { error: profileTierErr } = await supabaseAdmin.from("profiles").update({ premium_tier: tier, verified: ["ngo", "business", "professional", "healthcare", "education", "csr"].includes(tier) }).eq("id", userId);
+    const { error: profileTierErr } = await supabaseAdmin.from("profiles").update({ premium_tier: tier }).eq("id", userId);
     if (profileTierErr) await log(payment.id, userId, "profile.tier_update_failed", "warn", profileTierErr.message, { tier });
 
     if (payment.plan_id) {
