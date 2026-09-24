@@ -122,7 +122,10 @@ export const Route = createFileRoute("/api/humi-chat")({
 
         // Preferred production path: Vercel AI Gateway. It gives HUMI access
         // to current models and provider failover through one credential.
-        const gatewayKey = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_AI_GATEWAY_API_KEY;
+        const gatewayKey =
+          process.env.AI_GATEWAY_API_KEY ||
+          process.env.VERCEL_OIDC_TOKEN ||
+          process.env.VERCEL_AI_GATEWAY_API_KEY;
         const gatewayModel = process.env.HUMI_MODEL || "openai/gpt-5.6-sol";
         const lovableKey = process.env.LOVABLE_API_KEY;
         const openaiKey = process.env.OPENAI_API_KEY;
