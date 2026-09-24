@@ -132,6 +132,10 @@ function AccountSection() {
     country: "", state: "", city: "", preferred_language: "",
   });
   const [phone, setPhone] = useState("");
+  const [phoneOtp, setPhoneOtp] = useState("");
+  const [phoneSending, setPhoneSending] = useState(false);
+  const [phoneVerifying, setPhoneVerifying] = useState(false);
+  const [phoneVerified, setPhoneVerified] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -160,7 +164,10 @@ function AccountSection() {
           preferred_language: (pp.preferred_language as string) ?? "",
         });
       }
-      setPhone((c as { phone?: string } | null)?.phone ?? "");
+      const profilePhone = (c as { phone?: string } | null)?.phone ?? "";
+      setPhone(profilePhone);
+      const { data: authUser } = await supabase.auth.getUser();
+      setPhoneVerified(Boolean(authUser.user?.phone_confirmed_at));
       setLoading(false);
     })();
   }, [user]);
@@ -182,6 +189,27 @@ function AccountSection() {
     } finally {
       setter(false);
     }
+  };
+
+  const sendPhoneOtp = async () => {
+    const value = phone.trim();
+    if (!value) return toast.error("Enter a phone number first");
+    setPhoneSending(true);
+    const { error } = await supabase.auth.updateUser({ phone: value });
+    setPhoneSending(false);
+    if (error) return toast.error(error.message);
+    toast.success("Verification code sent. Check your SMS.");
+  };
+
+  const verifyPhoneOtp = async () => {
+    if (!phoneOtp.trim()) return toast.error("Enter the verification code");
+    setPhoneVerifying(true);
+    const { error } = await supabase.auth.verifyOtp({ phone: phone.trim(), token: phoneOtp.trim(), type: "phone_change" });
+    setPhoneVerifying(false);
+    if (error) return toast.error(error.message);
+    setPhoneVerified(true);
+    setPhoneOtp("");
+    toast.success("Phone number verified");
   };
 
   const save = async () => {
@@ -252,6 +280,25 @@ function AccountSection() {
           </button>
           <input ref={avatarInput} type="file" accept="image/*" hidden onChange={(e) => e.target.files?.[0] && handleImage(e.target.files[0], "avatar")} />
         </div>
+      </div>
+
+      <div className="rounded-xl border p-4 mb-5 space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="font-medium">Phone verification</p>
+            <p className="text-xs text-muted-foreground">Required for some higher-risk help activities.</p>
+          </div>
+          <Badge variant={phoneVerified ? "default" : "secondary"}>{phoneVerified ? "Verified" : "Not verified"}</Badge>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 98765 43210" disabled={phoneVerified} />
+          {!phoneVerified && <Button type="button" variant="outline" onClick={sendPhoneOtp} disabled={phoneSending}>{phoneSending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send code"}</Button>}
+        </div>
+        {!phoneVerified && <div className="flex flex-col sm:flex-row gap-2">
+          <Input value={phoneOtp} onChange={(e) => setPhoneOtp(e.target.value)} placeholder="SMS verification code" inputMode="numeric" maxLength={8} />
+          <Button type="button" onClick={verifyPhoneOtp} disabled={phoneVerifying}>{phoneVerifying ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify phone"}</Button>
+        </div>}
+        <p className="text-xs text-muted-foreground">Verification status comes from HumanLink's authentication provider. A phone number saved to your profile is not treated as verified until the OTP is confirmed.</p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
