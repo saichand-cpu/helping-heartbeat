@@ -126,7 +126,7 @@ export const Route = createFileRoute("/api/humi-chat")({
           process.env.AI_GATEWAY_API_KEY ||
           process.env.VERCEL_OIDC_TOKEN ||
           process.env.VERCEL_AI_GATEWAY_API_KEY;
-        const gatewayModel = process.env.HUMI_MODEL || "openai/gpt-5.6-sol";
+        const gatewayModel = process.env.HUMI_MODEL || "openai/gpt-6-luna";
         const lovableKey = process.env.LOVABLE_API_KEY;
         const openaiKey = process.env.OPENAI_API_KEY;
 
