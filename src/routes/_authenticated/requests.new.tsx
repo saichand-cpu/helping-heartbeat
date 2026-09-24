@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Sparkles, Loader2, ArrowLeft } from "lucide-react";
+import { Sparkles, Loader2, ArrowLeft, ShieldCheck, AlertTriangle } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,16 @@ function NewRequest() {
   const [location, setLocation] = useState("");
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
+  const [verificationChecked, setVerificationChecked] = useState(false);
+  const [verifiedEmail, setVerifiedEmail] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      const user = data.user;
+      setVerifiedEmail(Boolean(user?.email_confirmed_at));
+      setVerificationChecked(true);
+    });
+  }, []);
 
   // Prefill from a HUMI suggested action.
   useEffect(() => {
@@ -54,6 +64,8 @@ function NewRequest() {
     setLoading(true);
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) { setLoading(false); return; }
+    if (!u.user.email_confirmed_at) { setLoading(false); return toast.error("Please verify your email before posting a help request."); }
+    if (description.length > 5000 || title.length > 160 || location.length > 160) { setLoading(false); return toast.error("Please shorten the request details and try again."); }
     const { data: inserted, error } = await supabase.from("help_requests").insert({
       requester_id: u.user.id, title, description, location,
       category: category as never, urgency: urgency as never,
@@ -96,6 +108,9 @@ function NewRequest() {
         <h1 className="text-3xl font-bold">Ask for <span className="text-primary">help</span></h1>
         <p className="text-sm text-muted-foreground mt-1">Tell the community what you need. The clearer your story, the faster help arrives.</p>
 
+        <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm"><div className="flex items-start gap-2"><ShieldCheck className="h-4 w-4 text-primary mt-0.5 shrink-0" /><div><p className="font-semibold">HumanLink Safety Check</p><p className="text-muted-foreground mt-1">Never share OTPs, UPI PINs, passwords, card details, or exact home addresses. Keep payments and sensitive information out of chat.</p></div></div></div>
+        {verificationChecked && !verifiedEmail && (<div className="mt-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm flex gap-2"><AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" /><span>Please verify your email address before posting a request.</span></div>)}
+
         <form onSubmit={submit} className="mt-6 space-y-5">
           <div>
             <Label htmlFor="title">Title</Label>
@@ -132,7 +147,7 @@ function NewRequest() {
               <Input id="loc" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="City or neighborhood" />
             </div>
           </div>
-          <Button type="submit" disabled={loading} className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">
+          <Button type="submit" disabled={loading || !verificationChecked || !verifiedEmail} className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Post request"}
           </Button>
         </form>
