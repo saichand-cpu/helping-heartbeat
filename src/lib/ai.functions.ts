@@ -15,7 +15,7 @@ export const improveRequest = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => Input.parse(input))
   .handler(async ({ data }): Promise<Improved> => {
-    const gatewayKey = process.env.AI_GATEWAY_API_KEY;
+    const gatewayKey = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
     const lovableKey = process.env.LOVABLE_API_KEY;
     if (!gatewayKey && !lovableKey) throw new Error("AI is not configured");
 
