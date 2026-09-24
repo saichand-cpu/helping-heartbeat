@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Logo } from "./Logo";
-import { Twitter, Github, Instagram, Linkedin } from "lucide-react";
+import { Github, Instagram } from "lucide-react";
 
 const columns = [
   {
@@ -39,11 +39,12 @@ export function Footer() {
             Helping Humanity, One Connection at a Time. HumanLink makes asking for and offering help as simple as a single tap.
           </p>
           <div className="flex items-center gap-2">
-            {[Twitter, Instagram, Linkedin, Github].map((Icon, i) => (
-              <a key={i} href="#" aria-label="Social" className="h-9 w-9 grid place-items-center rounded-full border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors">
-                <Icon className="h-4 w-4" />
-              </a>
-            ))}
+            <a href="https://www.instagram.com/humanlink2026/" target="_blank" rel="noreferrer" aria-label="HumanLink on Instagram" className="h-9 w-9 grid place-items-center rounded-full border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors">
+              <Instagram className="h-4 w-4" />
+            </a>
+            <a href="https://github.com/saichand-cpu/helping-heartbeat" target="_blank" rel="noreferrer" aria-label="HumanLink on GitHub" className="h-9 w-9 grid place-items-center rounded-full border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors">
+              <Github className="h-4 w-4" />
+            </a>
           </div>
         </div>
         {columns.map((col) => (
