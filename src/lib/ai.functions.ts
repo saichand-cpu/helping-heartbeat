@@ -84,7 +84,7 @@ Return ONLY the post text — no quotes, no preamble, no markdown.`;
         ? { "Content-Type": "application/json", Authorization: `Bearer ${gatewayKey}` }
         : { "Content-Type": "application/json", "Lovable-API-Key": lovableKey! },
       body: JSON.stringify({
-        model: gatewayKey ? "openai/gpt-5.6-luna" : "google/gemini-3-flash-preview",
+        model: gatewayKey ? "openai/gpt-6-luna" : "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: system },
           { role: "user", content: data.draft || "(empty draft — write something)" },
