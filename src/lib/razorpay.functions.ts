@@ -109,7 +109,21 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
     if (paymentErr) { await log(null, userId, "verify.lookup_failed", "error", paymentErr.message); throw new Error("Could not load payment record"); }
     if (!payment) throw new Error("Unknown order");
     if (payment.user_id !== userId) throw new Error("Not your payment");
-    if (payment.status === "paid") return { ok: true, already: true, payment_id: payment.id };
+    if (payment.status === "paid") {
+      const { data: existingSubscription, error: existingSubscriptionErr } = await supabaseAdmin
+        .from("subscriptions")
+        .select("id, tier, expires_at")
+        .eq("payment_id", payment.id)
+        .maybeSingle();
+      if (existingSubscriptionErr) {
+        await log(payment.id, userId, "subscription.recovery_lookup_failed", "error", existingSubscriptionErr.message);
+        throw new Error("Could not verify subscription activation");
+      }
+      if (existingSubscription) {
+        return { ok: true, already: true, payment_id: payment.id, tier: existingSubscription.tier, expires_at: existingSubscription.expires_at };
+      }
+      await log(payment.id, userId, "subscription.recovery", "warn", "Payment was already marked paid but subscription was missing; retrying activation");
+    }
     if (!ok) {
       await supabaseAdmin.from("payments").update({ status: "failed", razorpay_payment_id: data.razorpay_payment_id }).eq("id", payment.id);
       await log(payment.id, userId, "verify.failed", "warn", "Payment signature verification failed");
