@@ -794,10 +794,22 @@ function VerificationSection() {
     load();
   };
 
+  const { data: authData } = await supabase.auth.getUser();
+  const emailVerified = Boolean(authData.user?.email_confirmed_at);
+
   return (
     <div>
-      <SectionHeader title="Verification" description="Get a verified badge on your profile." />
+      <SectionHeader title="Verification & trust" description="Build trust gradually. Basic participation requires a verified email; stronger verification is available for higher-risk activities." />
       <div className="rounded-2xl border p-4 space-y-4">
+        <div className="rounded-xl bg-muted/50 p-4 text-sm">
+          <div className="font-semibold flex items-center gap-2"><BadgeCheck className="h-4 w-4 text-primary" /> Trust status</div>
+          <div className="mt-2 grid gap-2 sm:grid-cols-3">
+            <div><span className="text-muted-foreground">Email</span><div className="font-medium">{emailVerified ? "Verified" : "Not verified"}</div></div>
+            <div><span className="text-muted-foreground">Identity</span><div className="font-medium">Optional</div></div>
+            <div><span className="text-muted-foreground">Organization</span><div className="font-medium">Review required</div></div>
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">HumanLink will never display a “100% safe” claim. Verification reduces risk but does not guarantee another person's behavior.</p>
+        </div>
         <Field label="Verification type">
           <Select value={kind} onValueChange={(v) => setKind(v as typeof kind)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
