@@ -712,6 +712,9 @@ export function Thread({ me, other, onBack, onStartCall, isPeerOnline }: { me: s
 
   const sendRaw = async (content: string) => {
     if (!content || sending) return;
+
+    const scamPatterns = [/\\b(?:otp|one[- ]time password|verification code)\\b/i,/\\b(?:upi pin|pin number|atm pin|cvv|card number|bank account|net banking password)\\b/i,/\\b(?:pay first|send money first|advance payment|registration fee|processing fee)\\b/i,/\\b(?:gift card|crypto(?:currency)?|wire transfer)\\b/i,/\\b(?:click this link|open this link|verify your account)\\b/i];
+    if (scamPatterns.some((pattern) => pattern.test(content))) { toast.error("Safety check blocked this message", { description: "Do not request or share OTPs, PINs, passwords, bank/card details, payment fees, or suspicious links on HumanLink." }); return; }
     setSending(true);
     const optimistic: Msg = {
       id: `tmp-${Date.now()}`,
