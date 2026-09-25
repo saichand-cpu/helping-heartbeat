@@ -43,8 +43,6 @@ function contentForMessage(m: IncomingMessage) {
     if (a.mime.startsWith("image/")) {
       parts.push({ type: "image_url", image_url: { url: a.dataUrl } });
     } else {
-      // GPT-5.6 Luna supports text + image input. Keep unsupported files from
-      // breaking the whole request and tell HUMI which file was attached.
       parts.push({ type: "text", text: `[Attached file: ${a.name} (${a.mime})]` });
     }
   }
@@ -120,13 +118,13 @@ export const Route = createFileRoute("/api/humi-chat")({
           .join("\n\n");
         const messages = incoming.map((m) => ({ role: m.role, content: contentForMessage(m) }));
 
-        // Preferred production path: Vercel AI Gateway. It gives HUMI access
-        // to current models and provider failover through one credential.
+        // AI Gateway supports the current GPT-5.6 family. Prefer an explicit
+        // gateway key, then Vercel OIDC, then optional direct-provider keys.
         const gatewayKey =
           process.env.AI_GATEWAY_API_KEY ||
           process.env.VERCEL_OIDC_TOKEN ||
           process.env.VERCEL_AI_GATEWAY_API_KEY;
-        const gatewayModel = process.env.HUMI_MODEL || "openai/gpt-6-luna";
+        const gatewayModel = process.env.HUMI_MODEL || "openai/gpt-5.6-luna";
         const lovableKey = process.env.LOVABLE_API_KEY;
         const openaiKey = process.env.OPENAI_API_KEY;
 
@@ -147,7 +145,7 @@ export const Route = createFileRoute("/api/humi-chat")({
         } else if (openaiKey) {
           endpoint = "https://api.openai.com/v1/chat/completions";
           apiKey = openaiKey;
-          model = "gpt-5.6-sol";
+          model = "gpt-5.6-luna";
         } else {
           console.error("[humi-chat] No AI key configured");
           return streamText(fallbackReply(lastUser?.content ?? ""), emergency);
@@ -166,10 +164,6 @@ export const Route = createFileRoute("/api/humi-chat")({
               stream: true,
               messages: [{ role: "system", content: system }, ...messages],
               max_tokens: 8192,
-              // Keep Chat Completions broadly compatible across Gateway providers.
-              // GPT-5.6 supports reasoning, but Responses is the preferred endpoint
-              // for advanced reasoning; HUMI uses Chat Completions here for streaming
-              // compatibility and lets the provider use its safe default.
               ...(authHeaderName === "Authorization" && endpoint.includes("api.openai.com")
                 ? { reasoning_effort: "medium" }
                 : {}),
@@ -179,14 +173,23 @@ export const Route = createFileRoute("/api/humi-chat")({
         let res: Response;
         try {
           res = await requestModel(model);
-          if ((!res.ok || !res.body) && gatewayKey && model !== "openai/gpt-6-sol") {
-            console.warn("[humi-chat] primary model unavailable; retrying with GPT-6 Sol");
-            res = await requestModel("openai/gpt-6-sol");
+
+          // Gateway failover: Luna -> Terra -> Sol. These are all valid
+          // GPT-5.6 Gateway model IDs and keep HUMI resilient to model/provider
+          // availability changes.
+          const gatewayFallbacks = [
+            "openai/gpt-5.6-luna",
+            "openai/gpt-5.6-terra",
+            "openai/gpt-5.6-sol",
+          ];
+          for (const fallbackModel of gatewayFallbacks) {
+            if (res.ok && res.body) break;
+            if (gatewayKey && fallbackModel !== model) {
+              console.warn(`[humi-chat] model unavailable; retrying with ${fallbackModel}`);
+              res = await requestModel(fallbackModel);
+            }
           }
-          if ((!res.ok || !res.body) && gatewayKey && model !== "openai/gpt-6-luna") {
-            console.warn("[humi-chat] secondary model unavailable; retrying with GPT-6 Luna");
-            res = await requestModel("openai/gpt-6-luna");
-          }
+
           if ((!res.ok || !res.body) && gatewayKey && openaiKey) {
             console.warn("[humi-chat] AI Gateway unavailable; retrying direct OpenAI");
             const previousEndpoint = endpoint;
@@ -195,7 +198,7 @@ export const Route = createFileRoute("/api/humi-chat")({
             endpoint = "https://api.openai.com/v1/chat/completions";
             apiKey = openaiKey;
             authHeaderName = "Authorization";
-            res = await requestModel("gpt-5.6-sol");
+            res = await requestModel("gpt-5.6-luna");
             endpoint = previousEndpoint;
             apiKey = previousKey;
             authHeaderName = previousHeader;
