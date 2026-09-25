@@ -328,6 +328,24 @@ export const verifyRazorpaySubscription = createServerFn({ method: "POST" })
     return { ok: true, tier: sub.tier, expires_at: expiresAt.toISOString() };
   });
 
+export const cancelRazorpaySubscription = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ razorpay_subscription_id: z.string().min(1) }).parse(data))
+  .handler(async ({ data, context }) => {
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keyId || !keySecret) throw new Error("Razorpay is not configured");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: sub } = await supabaseAdmin.from("subscriptions")
+      .select("id, user_id, status")
+      .eq("razorpay_subscription_id", data.razorpay_subscription_id)
+      .maybeSingle();
+    if (!sub || sub.user_id !== context.userId) throw new Error("Subscription not found");
+    await razorpayRequest(`subscriptions/${data.razorpay_subscription_id}/cancel`, "POST", keyId, keySecret, { cancel_at_cycle_end: 0 });
+    await supabaseAdmin.from("subscriptions").update({ status: "cancelled", cancelled_at: new Date().toISOString(), cancel_at_period_end: false }).eq("id", sub.id);
+    return { ok: true };
+  });
+
 export const cancelRazorpayOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({ razorpay_order_id: z.string().min(1) }).parse(data))
