@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { useIsAdmin } from "@/hooks/use-role";
 import { openRazorpay, loadRazorpay, type RazorpayResponse } from "@/lib/razorpay";
-import { createRazorpayOrder, verifyRazorpayPayment, cancelRazorpayOrder } from "@/lib/razorpay.functions";
+import { createRazorpaySubscription, verifyRazorpaySubscription, cancelSubscription } from "@/lib/razorpay.functions";
 import { SESSION_EXPIRED_MESSAGE, endExpiredSession, isAuthError } from "@/lib/supabase-session";
 
 export type TierKey = "plus" | "volunteer" | "professional" | "ngo" | "business" | "healthcare" | "education" | "csr";
@@ -39,9 +39,9 @@ const CARDS: PlanCard[] = [
 export function RazorpayCheckoutModal({ open, onOpenChange, defaultTier = "plus", onSuccess }: { open: boolean; onOpenChange: (v: boolean) => void; defaultTier?: TierKey; onSuccess?: () => void }) {
   const { user } = useAuth();
   const { isAdmin } = useIsAdmin();
-  const createOrder = useServerFn(createRazorpayOrder);
-  const verifyPayment = useServerFn(verifyRazorpayPayment);
-  const cancelOrder = useServerFn(cancelRazorpayOrder);
+  const createSubscription = useServerFn(createRazorpaySubscription);
+  const verifySubscription = useServerFn(verifyRazorpaySubscription);
+  const cancelCurrentSubscription = useServerFn(cancelSubscription);
   const [selected, setSelected] = useState<TierKey>(defaultTier);
   const [planIds, setPlanIds] = useState<Record<TierKey, string | null>>({
     plus: null, volunteer: null, professional: null, ngo: null, business: null, healthcare: null, education: null, csr: null,
@@ -78,15 +78,19 @@ export function RazorpayCheckoutModal({ open, onOpenChange, defaultTier = "plus"
 
   const handleVerified = async (response: RazorpayResponse) => {
     setStage("processing");
-    if (!response.razorpay_order_id || !response.razorpay_payment_id || !response.razorpay_signature) {
-      setErrorMsg("Razorpay did not return a complete payment response. Please contact support if your bank account was charged.");
+    if (!response.razorpay_payment_id || !response.razorpay_subscription_id || !response.razorpay_signature) {
+      setErrorMsg("Razorpay did not return a complete subscription response. If you were charged, please contact support.");
       setStage("error");
       return;
     }
     try {
-      await verifyPayment({ data: { razorpay_order_id: response.razorpay_order_id, razorpay_payment_id: response.razorpay_payment_id, razorpay_signature: response.razorpay_signature } });
+      await verifySubscription({ data: {
+        razorpay_payment_id: response.razorpay_payment_id,
+        razorpay_subscription_id: response.razorpay_subscription_id,
+        razorpay_signature: response.razorpay_signature,
+      }});
       setStage("done");
-      toast.success(`${active.title} activated!`);
+      toast.success(`${active.title} subscription activated!`);
       window.dispatchEvent(new CustomEvent("humanlink:premium-updated"));
       setTimeout(() => { onOpenChange(false); onSuccess?.(); }, 1800);
     } catch (e) {
@@ -101,34 +105,34 @@ export function RazorpayCheckoutModal({ open, onOpenChange, defaultTier = "plus"
     if (!user) { toast.error("Please sign in first"); return; }
     setLoading(true); setErrorMsg("");
     try {
-      const order = await createOrder({ data: { plan_id: planIds[selected] ?? undefined, plan_key: selected, amount: active.price } });
-      if (!order.order_id || order.amount !== active.price * 100 || order.currency !== "INR") {
-        throw new Error("HumanLink could not create a secure Razorpay order. Please try again.");
-      }
+      const subscription = await createSubscription({ data: { plan_key: selected }});
+      if (!subscription.subscription_id || !subscription.key_id) throw new Error("HumanLink could not create a secure subscription. Please try again.");
       await openRazorpay({
-        key: order.key_id, amount: order.amount, currency: order.currency, name: "HumanLink",
-        description: order.plan_name, order_id: order.order_id,
+        key: subscription.key_id,
+        currency: "INR",
+        name: "HumanLink",
+        description: subscription.plan_name,
+        subscription_id: subscription.subscription_id,
         prefill: { name: (user?.user_metadata?.full_name as string | undefined) ?? "", email: user?.email ?? "" },
         theme: { color: "#0b57d0" },
         handler: (response) => { void handleVerified(response); },
-        modal: { ondismiss: () => { setLoading(false); void cancelOrder({ data: { razorpay_order_id: order.order_id } }).catch(() => {}); } },
+        modal: { ondismiss: () => { setLoading(false); void cancelCurrentSubscription({ data: {} }).catch(() => {}); } },
       });
     } catch (e) {
-      console.error("Checkout error details:", e);
+      console.error("Subscription checkout error:", e);
       const auth = isAuthError(e);
       if (auth) { toast.error(SESSION_EXPIRED_MESSAGE); setErrorMsg(SESSION_EXPIRED_MESSAGE); setStage("error"); void endExpiredSession(); return; }
-      const msg = (e instanceof Error ? e.message : "").trim() || "Checkout isn't available right now. Please try again.";
+      const msg = (e instanceof Error ? e.message : "").trim() || "Subscription checkout isn't available right now. Please try again.";
       toast.error(msg); setErrorMsg(msg); setStage("error");
     } finally { setLoading(false); }
   };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl p-0 overflow-hidden">
         <div className="relative bg-primary text-primary-foreground p-6">
           <DialogHeader className="relative">
             <DialogTitle className="text-primary-foreground flex items-center gap-2"><ShieldCheck className="h-5 w-5" /> Choose a HumanLink plan</DialogTitle>
-            <DialogDescription className="text-primary-foreground/85">Secure monthly checkout powered by Razorpay</DialogDescription>
+            <DialogDescription className="text-primary-foreground/85">Secure recurring monthly checkout powered by Razorpay</DialogDescription>
           </DialogHeader>
         </div>
         <div className="p-6">
