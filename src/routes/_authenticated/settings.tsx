@@ -841,8 +841,7 @@ function VerificationSection() {
     load();
   };
 
-  const { data: authData } = await supabase.auth.getUser();
-  const emailVerified = Boolean(authData.user?.email_confirmed_at);
+  const emailVerified = Boolean(user?.email_confirmed_at);
 
   return (
     <div>
