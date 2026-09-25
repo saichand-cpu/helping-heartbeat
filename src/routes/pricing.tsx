@@ -7,6 +7,7 @@ import { Check, Sparkles, Crown, HeartHandshake, BriefcaseBusiness, GraduationCa
 import { RazorpayCheckoutModal } from "@/components/site/RazorpayCheckoutModal";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { usePremium } from "@/hooks/use-premium";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -48,6 +49,7 @@ const PLANS: Plan[] = [
 function Pricing() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { tier, godMode } = usePremium();
   const [openTier, setOpenTier] = useState<Tier | null>(null);
 
   const choose = (tier: Tier) => {
@@ -73,11 +75,22 @@ function Pricing() {
         </div>
 
         <div className="mt-10 rounded-3xl border border-primary/20 bg-primary/5 p-6 text-center">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-background px-3 py-1 text-xs font-semibold text-primary">
+            <Crown className="h-3.5 w-3.5" /> Monthly subscriptions
+          </div>
           <div className="text-lg font-semibold">Community · ₹0/month</div>
           <p className="mt-1 text-sm text-muted-foreground">Help requests, offers, donations, volunteering, groups, messaging, feed, reviews and core Humi features.</p>
         </div>
 
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">Choose your subscription</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Recurring monthly plans. Cancel anytime from Settings → Subscription.</p>
+          </div>
+          {user && <div className="rounded-2xl border bg-card px-4 py-3 text-sm"><span className="text-muted-foreground">Current plan:</span> <span className="font-semibold capitalize">{godMode ? "Admin" : tier ?? "free"}</span></div>}
+        </div>
+
+        <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {PLANS.map((plan) => {
             const Icon = plan.icon;
             const accent = plan.accent === "gold"
@@ -95,7 +108,7 @@ function Pricing() {
                 <ul className="mt-5 space-y-2 text-sm flex-1">
                   {plan.perks.map((perk) => <li key={perk} className="flex gap-2"><Check className="h-4 w-4 shrink-0 text-primary" />{perk}</li>)}
                 </ul>
-                <Button onClick={() => choose(plan.key)} className="mt-6 w-full">Subscribe · ₹{plan.price}/mo</Button>
+                <Button onClick={() => choose(plan.key)} className="mt-6 w-full">{user && tier === plan.key ? "Current plan" : `Subscribe · ₹${plan.price}/mo`}</Button>
               </div>
             );
           })}
