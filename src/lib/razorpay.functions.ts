@@ -259,7 +259,7 @@ export const createRazorpaySubscription = createServerFn({ method: "POST" })
       plan_id: plan.id,
       plan_name: canonical.name,
       tier: planKey,
-      status: subscription.status === "authenticated" ? "authenticated" : "active",
+      status: "active",
       razorpay_subscription_id: subscription.id,
       current_period_start: start,
       current_period_end: end,
@@ -309,11 +309,12 @@ export const verifyRazorpaySubscription = createServerFn({ method: "POST" })
     }).eq("id", sub.id);
     if (updateErr) throw new Error("Payment succeeded but subscription activation failed");
 
+    const { data: planRow } = await supabaseAdmin.from("premium_plans").select("price_cents").eq("id", sub.plan_id).maybeSingle();
     await supabaseAdmin.from("payments").insert({
       user_id: context.userId,
       razorpay_payment_id: data.razorpay_payment_id,
       razorpay_subscription_id: data.razorpay_subscription_id,
-      amount: 0,
+      amount: planRow?.price_cents ?? 0,
       currency: "INR",
       status: "paid",
       plan_name: sub.plan_name,
