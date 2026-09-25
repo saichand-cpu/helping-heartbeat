@@ -2,67 +2,32 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export type HumiMetrics = {
-  today: {
-    newUsers: number;
-    newRequests: number;
-    completed: number;
-    newPosts: number;
-    adImpressions: number;
-    adClicks: number;
-  };
-  last7d: {
-    newUsers: number;
-    newRequests: number;
-    completed: number;
-    newPosts: number;
-    adImpressions: number;
-    adClicks: number;
-  };
-  totals: {
-    users: number;
-    requests: number;
-    openRequests: number;
-    activeAds: number;
-  };
+  today: { newUsers: number; newRequests: number; completed: number; newPosts: number; adImpressions: number; adClicks: number };
+  last7d: { newUsers: number; newRequests: number; completed: number; newPosts: number; adImpressions: number; adClicks: number };
+  totals: { users: number; requests: number; openRequests: number; activeAds: number };
   briefing: string;
   highlights: string[];
   generatedAt: string;
 };
 
-const since = (days: number) =>
-  new Date(Date.now() - days * 86400000).toISOString();
+const since = (days: number) => new Date(Date.now() - days * 86400000).toISOString();
 
 export const getHumiBriefing = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<HumiMetrics> => {
     const { supabase, userId } = context;
-
-    // Admin gate
-    const { data: isAdmin } = await supabase.rpc("has_role", {
-      _user_id: userId,
-      _role: "admin",
-    });
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
     if (!isAdmin) throw new Error("Forbidden");
 
     const day1 = since(1);
     const day7 = since(7);
-
     const head = { count: "exact" as const, head: true };
     const c = async (q: any) => (await q).count ?? 0;
 
     const [
-      usersTotal,
-      requestsTotal,
-      openRequests,
-      activeAds,
-      newUsers1,
-      newUsers7,
-      newReq1,
-      newReq7,
-      done1,
-      done7,
-      newPosts1,
-      newPosts7,
+      usersTotal, requestsTotal, openRequests, activeAds,
+      newUsers1, newUsers7, newReq1, newReq7,
+      done1, done7, newPosts1, newPosts7,
     ] = await Promise.all([
       c(supabase.from("profiles").select("*", head)),
       c(supabase.from("help_requests").select("*", head)),
@@ -78,11 +43,7 @@ export const getHumiBriefing = createServerFn({ method: "POST" })
       c(supabase.from("posts").select("*", head).gte("created_at", day7)),
     ]);
 
-    // Ad events (admin-only readable)
-    const { data: events } = await supabase
-      .from("ad_events")
-      .select("event_type, created_at")
-      .gte("created_at", day7);
+    const { data: events } = await supabase.from("ad_events").select("event_type, created_at").gte("created_at", day7);
     let imp1 = 0, imp7 = 0, clk1 = 0, clk7 = 0;
     const cutoff1 = Date.now() - 86400000;
     for (const e of events ?? []) {
@@ -97,7 +58,6 @@ export const getHumiBriefing = createServerFn({ method: "POST" })
       totals: { users: usersTotal, requests: requestsTotal, openRequests, activeAds },
     };
 
-    // HUMI AI briefing
     let briefing = "";
     let highlights: string[] = [];
     const gatewayKey = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
@@ -111,20 +71,15 @@ Given platform metrics JSON, return STRICT JSON: {
   "highlights": ["3-5 short bullet insights, each under 90 chars, no emojis"]
 }
 No markdown. No preface.`;
-        const endpoint = gatewayKey
-          ? "https://ai-gateway.vercel.sh/v1/chat/completions"
-          : "https://ai.gateway.lovable.dev/v1/chat/completions";
+        const endpoint = gatewayKey ? "https://ai-gateway.vercel.sh/v1/chat/completions" : "https://ai.gateway.lovable.dev/v1/chat/completions";
         const res = await fetch(endpoint, {
           method: "POST",
           headers: gatewayKey
             ? { "Content-Type": "application/json", Authorization: `Bearer ${gatewayKey}` }
             : { "Content-Type": "application/json", "Lovable-API-Key": lovableKey! },
           body: JSON.stringify({
-            model: gatewayKey ? "openai/gpt-6-luna" : "google/gemini-3-flash-preview",
-            messages: [
-              { role: "system", content: system },
-              { role: "user", content: JSON.stringify(metrics) },
-            ],
+            model: gatewayKey ? "openai/gpt-5.6-luna" : "google/gemini-3-flash-preview",
+            messages: [{ role: "system", content: system }, { role: "user", content: JSON.stringify(metrics) }],
             response_format: { type: "json_object" },
           }),
         });
@@ -136,7 +91,7 @@ No markdown. No preface.`;
           highlights = Array.isArray(parsed.highlights) ? parsed.highlights.map(String).slice(0, 5) : [];
         }
       } catch {
-        // fall through to fallback
+        // fall through to deterministic fallback
       }
     }
     if (!briefing) {
@@ -148,6 +103,5 @@ No markdown. No preface.`;
         `${metrics.today.adImpressions} ad impressions / ${metrics.today.adClicks} clicks today`,
       ];
     }
-
     return { ...metrics, briefing, highlights, generatedAt: new Date().toISOString() };
   });
