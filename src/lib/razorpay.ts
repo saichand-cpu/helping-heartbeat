@@ -16,7 +16,7 @@ export type RazorpayResponse = {
 
 export type RazorpayOptions = {
   key: string;
-  amount: number;
+  amount?: number;
   currency: string;
   name: string;
   description?: string;
