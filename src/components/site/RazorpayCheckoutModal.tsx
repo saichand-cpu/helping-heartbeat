@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { useIsAdmin } from "@/hooks/use-role";
 import { openRazorpay, loadRazorpay, type RazorpayResponse } from "@/lib/razorpay";
-import { createRazorpaySubscription, verifyRazorpaySubscription, cancelSubscription } from "@/lib/razorpay.functions";
+import { createRazorpaySubscription, verifyRazorpaySubscription, cancelRazorpaySubscription } from "@/lib/razorpay.functions";
 import { SESSION_EXPIRED_MESSAGE, endExpiredSession, isAuthError } from "@/lib/supabase-session";
 
 export type TierKey = "plus" | "volunteer" | "professional" | "ngo" | "business" | "healthcare" | "education" | "csr";
@@ -41,7 +41,7 @@ export function RazorpayCheckoutModal({ open, onOpenChange, defaultTier = "plus"
   const { isAdmin } = useIsAdmin();
   const createSubscription = useServerFn(createRazorpaySubscription);
   const verifySubscription = useServerFn(verifyRazorpaySubscription);
-  const cancelCurrentSubscription = useServerFn(cancelSubscription);
+  const cancelPendingSubscription = useServerFn(cancelRazorpaySubscription);
   const [selected, setSelected] = useState<TierKey>(defaultTier);
   const [planIds, setPlanIds] = useState<Record<TierKey, string | null>>({
     plus: null, volunteer: null, professional: null, ngo: null, business: null, healthcare: null, education: null, csr: null,
@@ -116,7 +116,7 @@ export function RazorpayCheckoutModal({ open, onOpenChange, defaultTier = "plus"
         prefill: { name: (user?.user_metadata?.full_name as string | undefined) ?? "", email: user?.email ?? "" },
         theme: { color: "#0b57d0" },
         handler: (response) => { void handleVerified(response); },
-        modal: { ondismiss: () => { setLoading(false); void cancelCurrentSubscription({ data: {} }).catch(() => {}); } },
+        modal: { ondismiss: () => { setLoading(false); void cancelPendingSubscription({ data: { razorpay_subscription_id: subscription.subscription_id } }).catch(() => {}); } },
       });
     } catch (e) {
       console.error("Subscription checkout error:", e);
