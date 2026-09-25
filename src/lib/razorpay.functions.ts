@@ -166,6 +166,168 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
     return { ok: true, payment_id: payment.id, tier, expires_at: expiresAt.toISOString() };
   });
 
+
+async function razorpayRequest(path: string, method: "GET" | "POST", keyId: string, keySecret: string, body?: unknown) {
+  const response = await fetch(`https://api.razorpay.com/v1/${path}`, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Basic " + Buffer.from(`${keyId}:${keySecret}`).toString("base64"),
+    },
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+  });
+  const raw = await response.text();
+  let data: any = null;
+  try { data = raw ? JSON.parse(raw) : null; } catch { data = null; }
+  if (!response.ok) {
+    console.error("[razorpay] api error", path, response.status, raw.slice(0, 1000));
+    throw new Error(response.status === 401 ? "Razorpay credentials invalid on backend" : "Razorpay subscription service returned an error");
+  }
+  return data;
+}
+
+export const createRazorpaySubscription = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ plan_key: z.string().min(1) }).parse(data))
+  .handler(async ({ data, context }) => {
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keyId || !keySecret) throw new Error("Razorpay credentials missing on backend");
+    const planKey = data.plan_key.toLowerCase() as PlanKey;
+    if (!(planKey in CANONICAL_PLANS)) throw new Error("Unsupported subscription plan");
+    const canonical = CANONICAL_PLANS[planKey];
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    let { data: plan, error: planErr } = await supabaseAdmin
+      .from("premium_plans")
+      .select("id, name, price_cents, currency, is_active, razorpay_plan_id")
+      .eq("name", canonical.name)
+      .eq("is_active", true)
+      .maybeSingle();
+    if (planErr) await log(null, context.userId, "subscription.plan_lookup_failed", "warn", planErr.message);
+
+    if (plan && (plan.price_cents !== canonical.price_cents || (plan.currency ?? "INR") !== "INR")) {
+      throw new Error("Subscription plan is temporarily unavailable.");
+    }
+    if (!plan) {
+      throw new Error("Subscription plan is not configured. Please contact HumanLink support.");
+    }
+
+    let razorpayPlanId = plan.razorpay_plan_id as string | null;
+    if (!razorpayPlanId) {
+      const created = await razorpayRequest("plans", "POST", keyId, keySecret, {
+        period: "monthly",
+        interval: 1,
+        item: {
+          name: canonical.name,
+          amount: canonical.price_cents,
+          currency: "INR",
+          description: `${canonical.name} monthly subscription`,
+        },
+        notes: { humanlink_plan_key: planKey },
+      });
+      razorpayPlanId = created?.id;
+      if (!razorpayPlanId) throw new Error("Razorpay did not return a subscription plan ID");
+      const { error: savePlanErr } = await supabaseAdmin.from("premium_plans").update({ razorpay_plan_id: razorpayPlanId }).eq("id", plan.id);
+      if (savePlanErr) await log(null, context.userId, "subscription.plan_id_save_failed", "warn", savePlanErr.message);
+    }
+
+    const existing = await supabaseAdmin
+      .from("subscriptions")
+      .select("id, razorpay_subscription_id, status, current_period_end, expires_at")
+      .eq("user_id", context.userId)
+      .in("status", ["active", "authenticated"])
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (existing.data?.razorpay_subscription_id) {
+      return { subscription_id: existing.data.razorpay_subscription_id, plan_name: canonical.name, key_id: keyId, existing: true };
+    }
+
+    const subscription = await razorpayRequest("subscriptions", "POST", keyId, keySecret, {
+      plan_id: razorpayPlanId,
+      customer_notify: 1,
+      total_count: 120,
+      notes: { user_id: context.userId, plan_key: planKey, humanlink_plan_id: plan.id },
+    });
+    if (!subscription?.id) throw new Error("Razorpay did not create the subscription");
+
+    const start = subscription.current_start ? new Date(subscription.current_start * 1000).toISOString() : null;
+    const end = subscription.current_end ? new Date(subscription.current_end * 1000).toISOString() : null;
+    const { error: subErr } = await supabaseAdmin.from("subscriptions").insert({
+      user_id: context.userId,
+      plan_id: plan.id,
+      plan_name: canonical.name,
+      tier: planKey,
+      status: subscription.status === "authenticated" ? "authenticated" : "active",
+      razorpay_subscription_id: subscription.id,
+      current_period_start: start,
+      current_period_end: end,
+      expires_at: end,
+      cancel_at_period_end: false,
+    });
+    if (subErr) {
+      await log(null, context.userId, "subscription.persist_failed", "error", subErr.message, { subscription_id: subscription.id });
+      throw new Error("Subscription was created but could not be saved. Please contact HumanLink support.");
+    }
+
+    await log(null, context.userId, "subscription.created", "info", "Recurring Razorpay subscription created", { subscription_id: subscription.id, plan: canonical.name });
+    return { subscription_id: subscription.id, plan_name: canonical.name, key_id: keyId, existing: false };
+  });
+
+export const verifyRazorpaySubscription = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({
+    razorpay_payment_id: z.string().min(1),
+    razorpay_subscription_id: z.string().min(1),
+    razorpay_signature: z.string().min(1),
+  }).parse(data))
+  .handler(async ({ data, context }) => {
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keySecret) throw new Error("Razorpay is not configured");
+    const expected = createHmac("sha256", keySecret).update(`${data.razorpay_payment_id}|${data.razorpay_subscription_id}`).digest("hex");
+    const given = data.razorpay_signature;
+    const ok = expected.length === given.length && timingSafeEqual(Buffer.from(expected), Buffer.from(given));
+    if (!ok) throw new Error("Subscription verification failed");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: sub } = await supabaseAdmin
+      .from("subscriptions")
+      .select("id, user_id, plan_id, plan_name, tier, status, razorpay_subscription_id")
+      .eq("razorpay_subscription_id", data.razorpay_subscription_id)
+      .maybeSingle();
+    if (!sub || sub.user_id !== context.userId) throw new Error("Subscription not found");
+
+    const now = new Date();
+    const expiresAt = new Date(now);
+    expiresAt.setMonth(expiresAt.getMonth() + 1);
+    const { error: updateErr } = await supabaseAdmin.from("subscriptions").update({
+      status: "active",
+      current_period_start: now.toISOString(),
+      current_period_end: expiresAt.toISOString(),
+      expires_at: expiresAt.toISOString(),
+    }).eq("id", sub.id);
+    if (updateErr) throw new Error("Payment succeeded but subscription activation failed");
+
+    await supabaseAdmin.from("payments").insert({
+      user_id: context.userId,
+      razorpay_payment_id: data.razorpay_payment_id,
+      razorpay_subscription_id: data.razorpay_subscription_id,
+      amount: 0,
+      currency: "INR",
+      status: "paid",
+      plan_name: sub.plan_name,
+      plan_id: sub.plan_id,
+      razorpay_signature: data.razorpay_signature,
+      verified_at: now.toISOString(),
+      notes: { kind: "subscription_initial_charge" },
+    });
+
+    await supabaseAdmin.from("profiles").update({ premium_tier: sub.tier }).eq("id", context.userId);
+    await log(null, context.userId, "subscription.verified", "info", "Recurring subscription verified", { subscription_id: data.razorpay_subscription_id, tier: sub.tier });
+    return { ok: true, tier: sub.tier, expires_at: expiresAt.toISOString() };
+  });
+
 export const cancelRazorpayOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({ razorpay_order_id: z.string().min(1) }).parse(data))
