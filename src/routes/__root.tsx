@@ -188,16 +188,21 @@ function RootComponent() {
   }, []);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+      if (event === "SIGNED_IN" && session?.access_token) {
+        void initializeMobilePushNotifications(session.access_token);
+      }
     });
     return () => sub.subscription.unsubscribe();
   }, [router, queryClient]);
 
   useEffect(() => {
-    void initializeMobilePushNotifications();
+    void supabase.auth.getSession().then(({ data }) => {
+      void initializeMobilePushNotifications(data.session?.access_token);
+    });
   }, []);
 
   return (
