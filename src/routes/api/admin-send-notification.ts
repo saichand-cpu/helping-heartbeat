@@ -71,21 +71,35 @@ async function requireAdmin(request: Request) {
   if (!token) return null;
 
   const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
-  if (!supabaseUrl || !publishableKey || !serviceRoleKey) return null;
+  const publishableKey =
+    process.env.SUPABASE_PUBLISHABLE_KEY ||
+    process.env.SUPABASE_ANON_KEY ||
+    process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.VITE_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !publishableKey) return null;
 
-  const authClient = createClient(supabaseUrl, publishableKey, { auth: { persistSession: false, autoRefreshToken: false } });
-  const { data: userData } = await authClient.auth.getUser(token);
-  if (!userData.user) return null;
+  // Use the signed-in user's access token for both auth and the role query.
+  // This avoids requiring a Supabase service-role secret just to verify admin access.
+  const client = createClient(supabaseUrl, publishableKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  });
 
-  const adminClient = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
-  const { data: role } = await adminClient
+  const { data: userData, error: authError } = await client.auth.getUser(token);
+  if (authError || !userData.user) return null;
+
+  const { data: role, error: roleError } = await client
     .from("user_roles")
     .select("role")
     .eq("user_id", userData.user.id)
     .eq("role", "admin")
     .maybeSingle();
+
+  if (roleError) {
+    console.error("[admin-send-notification] role check failed", roleError);
+    return null;
+  }
+
   return role ? userData.user : null;
 }
 
