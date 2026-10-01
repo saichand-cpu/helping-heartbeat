@@ -11,7 +11,7 @@ import { HumanNetwork3D } from "@/components/site/HumanNetwork3D";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
-const SITE_URL = "https://www.humanlink.in";
+const SITE_URL = "https://humanlink.in";
 const OG_IMAGE = `${SITE_URL}/humanlink-logo.jpeg`;
 
 export const Route = createFileRoute("/")({
