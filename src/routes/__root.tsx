@@ -135,6 +135,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
               description: SITE_DESCRIPTION,
               slogan: "Helping Humanity, One Connection at a Time.",
               areaServed: "Worldwide",
+              areaServed: "Worldwide",
             },
             {
               "@type": "WebSite",
