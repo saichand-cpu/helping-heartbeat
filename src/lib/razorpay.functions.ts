@@ -331,7 +331,10 @@ export const verifyRazorpaySubscription = createServerFn({ method: "POST" })
 
 export const cancelRazorpaySubscription = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({ razorpay_subscription_id: z.string().min(1) }).parse(data))
+  .inputValidator((data) => z.object({
+    razorpay_subscription_id: z.string().min(1),
+    cancel_at_period_end: z.boolean().optional().default(true),
+  }).parse(data))
   .handler(async ({ data, context }) => {
     const keyId = process.env.RAZORPAY_KEY_ID;
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
@@ -342,8 +345,25 @@ export const cancelRazorpaySubscription = createServerFn({ method: "POST" })
       .eq("razorpay_subscription_id", data.razorpay_subscription_id)
       .maybeSingle();
     if (!sub || sub.user_id !== context.userId) throw new Error("Subscription not found");
-    await razorpayRequest(`subscriptions/${data.razorpay_subscription_id}/cancel`, "POST", keyId, keySecret, { cancel_at_cycle_end: 0 });
-    await supabaseAdmin.from("subscriptions").update({ status: "cancelled", cancelled_at: new Date().toISOString(), cancel_at_period_end: false }).eq("id", sub.id);
+
+    await razorpayRequest(`subscriptions/${data.razorpay_subscription_id}/cancel`, "POST", keyId, keySecret, {
+      cancel_at_cycle_end: data.cancel_at_period_end ? 1 : 0,
+    });
+
+    if (data.cancel_at_period_end) {
+      // Keep benefits active until the paid period ends. Razorpay's webhook
+      // will mark the subscription cancelled/expired and remove the tier.
+      await supabaseAdmin.from("subscriptions").update({
+        cancel_at_period_end: true,
+      }).eq("id", sub.id);
+    } else {
+      await supabaseAdmin.from("subscriptions").update({
+        status: "cancelled",
+        cancelled_at: new Date().toISOString(),
+        cancel_at_period_end: false,
+      }).eq("id", sub.id);
+      await supabaseAdmin.from("profiles").update({ premium_tier: "free" }).eq("id", context.userId);
+    }
     return { ok: true };
   });
 
