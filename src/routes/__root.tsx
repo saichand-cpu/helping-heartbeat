@@ -18,7 +18,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { GlobalErrorBoundary } from "@/components/site/GlobalErrorBoundary";
 
-const SITE_URL = "https://humanlink.in";
+const SITE_URL = "https://www.humanlink.in";
 const SITE_NAME = "HumanLink";
 const SITE_DESCRIPTION =
   "HumanLink is a community platform connecting people who need help with volunteers, NGOs, professionals, students, teachers, job seekers, HR teams and local businesses.";
@@ -83,7 +83,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "HumanLink | Help, Volunteer, Jobs, Skills & Community" },
       { name: "description", content: SITE_DESCRIPTION },
       { name: "keywords", content: "HumanLink, help platform, volunteer platform India, NGO platform, community help, students, jobs, HR jobs, local businesses, social impact, humanitarian help, Hyderabad" },
