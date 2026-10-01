@@ -18,7 +18,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { GlobalErrorBoundary } from "@/components/site/GlobalErrorBoundary";
 
-const SITE_URL = "https://www.humanlink.in";
+const SITE_URL = "https://humanlink.in";
 const SITE_NAME = "HumanLink";
 const SITE_DESCRIPTION =
   "HumanLink is a community platform connecting people who need help with volunteers, NGOs, professionals, students, teachers, job seekers, HR teams and local businesses.";
