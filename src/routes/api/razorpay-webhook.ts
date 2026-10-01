@@ -55,11 +55,13 @@ export const Route = createFileRoute("/api/razorpay-webhook")({
           await supabase.from("subscriptions").update({
             status: event === "subscription.completed" ? "expired" : "cancelled",
             cancel_at_period_end: false,
+            cancelled_at: new Date().toISOString(),
             ...(currentEnd ? { current_period_end: currentEnd, expires_at: currentEnd } : {}),
           }).eq("id", sub.id);
-          if (event !== "subscription.cancelled") {
-            await supabase.from("profiles").update({ premium_tier: "free" }).eq("id", sub.user_id);
-          }
+
+          // Never leave paid entitlements behind after Razorpay confirms the
+          // subscription has ended or been halted.
+          await supabase.from("profiles").update({ premium_tier: "free" }).eq("id", sub.user_id);
         }
 
         return Response.json({ ok: true });
