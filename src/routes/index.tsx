@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
+import { FounderPortrait } from "@/components/site/FounderPortrait";
 import { HumanNetwork3D } from "@/components/site/HumanNetwork3D";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -43,6 +44,7 @@ function Landing() {
       <Hero />
       <Stats />
       <HowItWorks />
+      <Founder />
       <Categories />
     </main>
   );
@@ -96,6 +98,33 @@ function Stats() {
 function HowItWorks() {
   const steps = [{ icon: Search, title: "Describe", text: "Describe what you need in simple words." }, { icon: BrainCircuit, title: "HUMI Helps", text: "AI can improve, organize, translate, and guide." }, { icon: Users, title: "Get Matched", text: "Discover relevant people and organizations." }, { icon: MessageCircle, title: "Connect", text: "Chat and coordinate help safely." }, { icon: Star, title: "Help & Review", text: "Complete the help and build reputation." }];
   return <Section className="!py-16"><h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center">How HumanLink Works</h2><div className="mt-12 grid gap-6 md:grid-cols-5">{steps.map((s, i) => <motion.div key={s.title} variants={fadeUp} custom={i} initial="hidden" whileInView="show" viewport={{ once: true }} className="relative text-center px-2">{i < steps.length - 1 && <ArrowRight className="hidden md:block absolute top-7 -right-4 h-5 w-5 text-border" aria-hidden />}<div className="mx-auto h-14 w-14 rounded-2xl bg-accent grid place-items-center text-primary shadow-soft"><s.icon className="h-6 w-6" /></div><div className="mt-5 text-sm font-semibold"><span className="text-primary mr-1.5">{i + 1}</span>{s.title}</div><p className="mt-2 text-xs text-muted-foreground leading-relaxed">{s.text}</p></motion.div>)}</div></Section>;
+}
+
+function Founder() {
+  return (
+    <Section className="!py-16 md:!py-24">
+      <div className="grid items-center gap-12 rounded-3xl border border-border bg-card p-8 md:p-12 lg:grid-cols-[.8fr_1.2fr] shadow-soft">
+        <div className="mx-auto w-full max-w-sm">
+          <FounderPortrait />
+        </div>
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Meet the Founder</div>
+          <h2 className="mt-3 text-3xl md:text-4xl font-bold tracking-tight">Saichand Lakavath</h2>
+          <p className="mt-2 text-sm font-semibold text-primary">Founder &amp; CEO, HumanLink</p>
+          <p className="mt-5 text-base md:text-lg leading-relaxed text-muted-foreground">
+            HumanLink was created from a simple belief: technology should make it easier for people to ask for help, offer help, and create meaningful human connections.
+          </p>
+          <p className="mt-4 text-muted-foreground leading-relaxed">
+            Saichand is building HumanLink as a trusted community platform where kindness, technology and real-world action can come together — helping people connect with volunteers, NGOs, professionals, students, teachers and local businesses.
+          </p>
+          <div className="mt-7 flex flex-wrap gap-3">
+            <Link to="/about"><Button variant="outline" className="rounded-full">Read Our Story <ArrowRight className="ml-2 h-4 w-4" /></Button></Link>
+            <Link to="/auth"><Button className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90">Join HumanLink</Button></Link>
+          </div>
+        </div>
+      </div>
+    </Section>
+  );
 }
 
 function Categories() {
