@@ -116,7 +116,7 @@ export function RazorpayCheckoutModal({ open, onOpenChange, defaultTier = "plus"
         prefill: { name: (user?.user_metadata?.full_name as string | undefined) ?? "", email: user?.email ?? "" },
         theme: { color: "#0b57d0" },
         handler: (response) => { void handleVerified(response); },
-        modal: { ondismiss: () => { setLoading(false); void cancelPendingSubscription({ data: { razorpay_subscription_id: subscription.subscription_id } }).catch(() => {}); } },
+        modal: { ondismiss: () => { setLoading(false); void cancelPendingSubscription({ data: { razorpay_subscription_id: subscription.subscription_id, cancel_at_period_end: false } }).catch(() => {}); } },
       });
     } catch (e) {
       console.error("Subscription checkout error:", e);
