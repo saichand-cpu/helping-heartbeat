@@ -11,4 +11,4 @@ Disallow: /messages
 Disallow: /notifications
 Disallow: /profile/edit
 
-Sitemap: https://humanlink.in/sitemap.xml
+Sitemap: https://www.humanlink.in/sitemap.xml
