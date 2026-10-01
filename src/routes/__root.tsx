@@ -134,6 +134,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
               logo: { "@type": "ImageObject", url: OG_IMAGE },
               description: SITE_DESCRIPTION,
               slogan: "Helping Humanity, One Connection at a Time.",
+              areaServed: "Worldwide",
             },
             {
               "@type": "WebSite",
@@ -141,12 +142,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
               url: SITE_URL,
               name: SITE_NAME,
               description: SITE_DESCRIPTION,
+              inLanguage: "en-IN",
               publisher: { "@id": `${SITE_URL}/#organization` },
-              potentialAction: {
-                "@type": "SearchAction",
-                target: `${SITE_URL}/search?q={search_term_string}`,
-                "query-input": "required name=search_term_string",
-              },
             },
           ],
         }),
