@@ -12,6 +12,13 @@ export function useIsAdmin() {
       setIsAdmin(false);
       return;
     }
+    // The commercial-data RLS policies use trusted server-managed app_metadata.
+    // Respect that same source for the admin UI while retaining legacy user_roles support.
+    const appRole = user.app_metadata?.role;
+    if (appRole === "admin" || appRole === "super_admin") {
+      setIsAdmin(true);
+      return;
+    }
     let cancelled = false;
     supabase
       .from("user_roles")
