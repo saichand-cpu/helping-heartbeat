@@ -135,7 +135,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
               description: SITE_DESCRIPTION,
               slogan: "Helping Humanity, One Connection at a Time.",
               areaServed: "Worldwide",
-              areaServed: "Worldwide",
+              founder: { "@id": `${SITE_URL}/#founder` },
+            },
+            {
+              "@type": "Person",
+              "@id": `${SITE_URL}/#founder`,
+              name: "Saichand Lakavath",
+              jobTitle: "Founder and CEO",
+              worksFor: { "@id": `${SITE_URL}/#organization` },
+              url: SITE_URL,
             },
             {
               "@type": "WebSite",
