@@ -87,6 +87,9 @@ function AdminDashboard() {
           </div>
           <p className="text-muted-foreground text-sm">Manage users, content, plans, and payment details.</p>
         </div>
+        <Link to="/admin-sales">
+          <Button variant="outline"><Megaphone className="mr-2 h-4 w-4" />Sales & Promotions</Button>
+        </Link>
       </header>
 
       <StatsRow />
