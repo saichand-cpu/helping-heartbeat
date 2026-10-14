@@ -25,6 +25,7 @@ import { Route as TermsOfServiceRouteImport } from './routes/terms-of-service'
 import { Route as UserSafetyRouteImport } from './routes/user-safety'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAdminMetricsRouteImport } from './routes/_authenticated/admin-metrics'
+import { Route as AuthenticatedAdminSalesRouteImport } from './routes/_authenticated/admin-sales'
 import { Route as AuthenticatedCapsulesRouteImport } from './routes/_authenticated/capsules'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedDiscoverRouteImport } from './routes/_authenticated/discover'
@@ -126,6 +127,11 @@ const AuthenticatedAdminMetricsRoute =
     path: '/admin-metrics',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminSalesRoute = AuthenticatedAdminSalesRouteImport.update({
+  id: '/admin-sales',
+  path: '/admin-sales',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCapsulesRoute = AuthenticatedCapsulesRouteImport.update({
   id: '/capsules',
   path: '/capsules',
@@ -252,6 +258,7 @@ export interface FileRoutesByFullPath {
   '/user-safety': typeof UserSafetyRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/admin-metrics': typeof AuthenticatedAdminMetricsRoute
+  '/admin-sales': typeof AuthenticatedAdminSalesRoute
   '/capsules': typeof AuthenticatedCapsulesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/discover': typeof AuthenticatedDiscoverRoute
@@ -328,6 +335,7 @@ export interface FileRoutesById {
   '/user-safety': typeof UserSafetyRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/admin-metrics': typeof AuthenticatedAdminMetricsRoute
+  '/_authenticated/admin-sales': typeof AuthenticatedAdminSalesRoute
   '/_authenticated/capsules': typeof AuthenticatedCapsulesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/discover': typeof AuthenticatedDiscoverRoute
@@ -367,6 +375,7 @@ export interface FileRouteTypes {
     | '/user-safety'
     | '/admin'
     | '/admin-metrics'
+    | '/admin-sales'
     | '/capsules'
     | '/dashboard'
     | '/discover'
@@ -442,6 +451,7 @@ export interface FileRouteTypes {
     | '/user-safety'
     | '/_authenticated/admin'
     | '/_authenticated/admin-metrics'
+    | '/_authenticated/admin-sales'
     | '/_authenticated/capsules'
     | '/_authenticated/dashboard'
     | '/_authenticated/discover'
@@ -594,6 +604,13 @@ declare module '@tanstack/react-router' {
       path: '/admin-metrics'
       fullPath: '/admin-metrics'
       preLoaderRoute: typeof AuthenticatedAdminMetricsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin-sales': {
+      id: '/_authenticated/admin-sales'
+      path: '/admin-sales'
+      fullPath: '/admin-sales'
+      preLoaderRoute: typeof AuthenticatedAdminSalesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/capsules': {
@@ -753,6 +770,7 @@ const AuthenticatedProfileRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAdminMetricsRoute: typeof AuthenticatedAdminMetricsRoute
+  AuthenticatedAdminSalesRoute: typeof AuthenticatedAdminSalesRoute
   AuthenticatedCapsulesRoute: typeof AuthenticatedCapsulesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDiscoverRoute: typeof AuthenticatedDiscoverRoute
@@ -776,6 +794,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAdminMetricsRoute: AuthenticatedAdminMetricsRoute,
+  AuthenticatedAdminSalesRoute: AuthenticatedAdminSalesRoute,
   AuthenticatedCapsulesRoute: AuthenticatedCapsulesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDiscoverRoute: AuthenticatedDiscoverRoute,
