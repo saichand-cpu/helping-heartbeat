@@ -296,6 +296,7 @@ export interface FileRoutesByTo {
   '/user-safety': typeof UserSafetyRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/admin-metrics': typeof AuthenticatedAdminMetricsRoute
+  '/admin-sales': typeof AuthenticatedAdminSalesRoute
   '/capsules': typeof AuthenticatedCapsulesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/discover': typeof AuthenticatedDiscoverRoute
@@ -413,6 +414,7 @@ export interface FileRouteTypes {
     | '/user-safety'
     | '/admin'
     | '/admin-metrics'
+    | '/admin-sales'
     | '/capsules'
     | '/dashboard'
     | '/discover'
