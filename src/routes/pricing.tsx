@@ -51,6 +51,9 @@ function Pricing() {
   const { user } = useAuth();
   const { tier, godMode } = usePremium();
   const [openTier, setOpenTier] = useState<TierKey | null>(null);
+  const [audience, setAudience] = useState<"all" | "individuals" | "organisations">("all");
+  const individualKeys: TierKey[] = ["plus", "creator", "volunteer", "professional"];
+  const visiblePlans = PLANS.filter((plan) => audience === "all" || (audience === "individuals" ? individualKeys.includes(plan.key) : !individualKeys.includes(plan.key)));
   const choose = (selected: TierKey) => {
     if (!user) { navigate({ to: "/auth" }); return; }
     setOpenTier(selected);
@@ -86,8 +89,22 @@ function Pricing() {
           {user && <div className="rounded-2xl border bg-card px-4 py-3 text-sm"><span className="text-muted-foreground">Current plan:</span> <span className="font-semibold capitalize">{godMode ? "Admin" : tier ?? "free"}</span></div>}
         </div>
 
-        <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {PLANS.map((plan) => {
+        <div className="mt-6 flex flex-wrap gap-2" role="tablist" aria-label="Choose pricing audience">
+          {([
+            ["all", "All plans"],
+            ["individuals", "Individuals"],
+            ["organisations", "Organisations & businesses"],
+          ] as const).map(([key, label]) => (
+            <button key={key} type="button" role="tab" aria-selected={audience === key}
+              onClick={() => setAudience(key)}
+              className={cn("rounded-full px-4 py-2 text-sm font-medium transition-colors border", audience === key ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:text-foreground")}>
+              {label}
+            </button>
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">Choose a category to see only the plans relevant to you. Start free and upgrade when you need additional tools.</p>
+        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {visiblePlans.map((plan) => {
             const Icon = plan.icon;
             const accent = plan.accent === "gold" ? "border-primary/50 bg-primary/5" : plan.accent === "green" ? "border-emerald-500/40 bg-emerald-500/5" : plan.accent === "blue" ? "border-blue-500/30 bg-blue-500/5" : "border-border bg-card";
             return (
@@ -97,7 +114,7 @@ function Pricing() {
                 <div className="mt-3 text-4xl font-bold">₹{plan.price}<span className="text-sm font-medium text-muted-foreground">/mo</span></div>
                 <p className="mt-2 min-h-10 text-xs text-muted-foreground">{plan.tagline}</p>
                 <ul className="mt-5 space-y-2 text-sm flex-1">{plan.perks.map((perk) => <li key={perk} className="flex gap-2"><Check className="h-4 w-4 shrink-0 text-primary" />{perk}</li>)}</ul>
-                <Button onClick={() => choose(plan.key)} className="mt-6 w-full">{user && tier === plan.key ? "Current plan" : `Choose · ₹${plan.price}/mo`}</Button>
+                <Button onClick={() => choose(plan.key)} className="mt-6 w-full" disabled={user && tier === plan.key}>{user && tier === plan.key ? "Your current plan" : `Choose plan · ₹${plan.price}/mo`}</Button>
               </div>
             );
           })}
