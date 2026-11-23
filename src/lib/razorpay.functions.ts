@@ -11,14 +11,17 @@ async function log(payment_id: string | null, user_id: string | null, event: str
 }
 
 const CANONICAL_PLANS = {
-  plus: { name: "HumanLink Plus", price_cents: 4900 },
-  volunteer: { name: "HumanLink Volunteer Plus", price_cents: 9900 },
-  professional: { name: "HumanLink Professional", price_cents: 19900 },
-  ngo: { name: "HumanLink NGO", price_cents: 29900 },
-  business: { name: "HumanLink Business", price_cents: 59900 },
-  healthcare: { name: "HumanLink Healthcare Partner", price_cents: 99900 },
-  education: { name: "HumanLink Education Partner", price_cents: 49900 },
-  csr: { name: "HumanLink CSR Partner", price_cents: 249900 },
+  plus: { name: "HumanLink Plus", price_cents: 3900 },
+  creator: { name: "HumanLink Creator", price_cents: 9900 },
+  volunteer: { name: "HumanLink Volunteer Plus", price_cents: 6900 },
+  professional: { name: "HumanLink Professional", price_cents: 14900 },
+  ngo: { name: "HumanLink NGO", price_cents: 19900 },
+  business: { name: "HumanLink Business Starter", price_cents: 29900 },
+  business_growth: { name: "HumanLink Business Growth", price_cents: 59900 },
+  business_pro: { name: "HumanLink Business Pro", price_cents: 99900 },
+  healthcare: { name: "HumanLink Healthcare Partner", price_cents: 69900 },
+  education: { name: "HumanLink Education Partner", price_cents: 29900 },
+  csr: { name: "HumanLink CSR Partner", price_cents: 149900 },
 } as const;
 type PlanKey = keyof typeof CANONICAL_PLANS;
 
@@ -137,10 +140,13 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
     const tier = nameLower.includes("healthcare") ? "healthcare"
       : nameLower.includes("education") ? "education"
       : nameLower.includes("csr") ? "csr"
+      : nameLower.includes("business pro") ? "business_pro"
+      : nameLower.includes("business growth") ? "business_growth"
       : nameLower.includes("business") ? "business"
       : nameLower.includes("ngo") ? "ngo"
       : nameLower.includes("professional") ? "professional"
       : nameLower.includes("volunteer") ? "volunteer"
+      : nameLower.includes("creator") ? "creator"
       : nameLower.includes("plus") ? "plus"
       : "basic";
     const expiresAt = new Date(); expiresAt.setMonth(expiresAt.getMonth() + 1);
