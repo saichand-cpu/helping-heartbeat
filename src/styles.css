@@ -4,7 +4,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* HumanLink design system — white, blue, emerald. Glassmorphic, soft 3D. */
+/* HumanLink design system — Aurora Tide: deep teal, orchid, warm amber and soft ivory. */
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -66,121 +66,121 @@
   --radius: 1.25rem; /* 20px — premium rounded */
 
   /* Surfaces — pure white primary, #F8FAFC secondary */
-  --background: #ffffff;
-  --foreground: #111827;
+  --background: #f7f8f5;
+  --foreground: #172b35;
 
   --card: #ffffff;
-  --card-foreground: #111827;
+  --card-foreground: #172b35;
   --popover: #ffffff;
-  --popover-foreground: #111827;
+  --popover-foreground: #172b35;
 
-  /* Royal Blue #2563EB */
-  --primary: #2563eb;
+  /* Signature deep teal */
+  --primary: #0f766e;
   --primary-foreground: #ffffff;
 
-  /* Emerald Green #22C55E — used as "brand"/success */
-  --brand: #22c55e;
-  --brand-foreground: #052e16;
+  /* Orchid accent gives HumanLink a distinctive identity */
+  --brand: #7c3aed;
+  --brand-foreground: #ffffff;
 
-  --success: #22c55e;
-  --success-foreground: #052e16;
+  --success: #0f9f78;
+  --success-foreground: #ffffff;
 
-  /* Amber warning #F59E0B */
-  --warning: #f59e0b;
-  --warning-foreground: #451a03;
+  /* Warm amber for highlights and alerts */
+  --warning: #d97706;
+  --warning-foreground: #ffffff;
 
-  --secondary: #f8fafc;
-  --secondary-foreground: #111827;
-  --muted: #f8fafc;
-  --muted-foreground: #6b7280;
-  --accent: #eff6ff;
-  --accent-foreground: #1e3a8a;
+  --secondary: #eef3f1;
+  --secondary-foreground: #172b35;
+  --muted: #eef3f1;
+  --muted-foreground: #647780;
+  --accent: #f2eefe;
+  --accent-foreground: #5b21b6;
 
   /* Emergency red #EF4444 */
-  --destructive: #ef4444;
+  --destructive: #dc5353;
   --destructive-foreground: #ffffff;
 
-  --border: #e5e7eb;
-  --input: #e5e7eb;
-  --ring: #2563eb;
+  --border: #dce6e2;
+  --input: #dce6e2;
+  --ring: #0f766e;
 
-  --chart-1: #2563eb;
-  --chart-2: #22c55e;
-  --chart-3: #38bdf8;
-  --chart-4: #f59e0b;
-  --chart-5: #a855f7;
+  --chart-1: #0f766e;
+  --chart-2: #7c3aed;
+  --chart-3: #e59a55;
+  --chart-4: #14b8a6;
+  --chart-5: #d97786;
 
-  --sidebar: #ffffff;
-  --sidebar-foreground: #111827;
-  --sidebar-primary: #2563eb;
+  --sidebar: #f7f8f5;
+  --sidebar-foreground: #172b35;
+  --sidebar-primary: #0f766e;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f8fafc;
-  --sidebar-accent-foreground: #111827;
-  --sidebar-border: #e5e7eb;
-  --sidebar-ring: #2563eb;
+  --sidebar-accent: #eef3f1;
+  --sidebar-accent-foreground: #172b35;
+  --sidebar-border: #dce6e2;
+  --sidebar-ring: #0f766e;
 
-  --gradient-hero: radial-gradient(at 15% 10%, rgb(37 99 235 / 0.10) 0px, transparent 55%),
-    radial-gradient(at 85% 5%, rgb(34 197 94 / 0.10) 0px, transparent 55%),
-    radial-gradient(at 50% 100%, rgb(37 99 235 / 0.06) 0px, transparent 60%);
-  --gradient-brand: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-  --gradient-soft: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  --gradient-hero: radial-gradient(at 15% 10%, rgb(15 118 110 / 0.12) 0px, transparent 55%),
+    radial-gradient(at 85% 5%, rgb(124 58 237 / 0.10) 0px, transparent 55%),
+    radial-gradient(at 50% 100%, rgb(229 154 85 / 0.08) 0px, transparent 60%);
+  --gradient-brand: linear-gradient(135deg, #0f766e 0%, #14b8a6 52%, #7c3aed 100%);
+  --gradient-soft: linear-gradient(180deg, #ffffff 0%, #f1f5f1 100%);
 
   /* Clean, subtle shadows — Apple/Notion feel */
-  --shadow-glow: 0 8px 24px -8px rgb(37 99 235 / 0.25);
-  --shadow-soft: 0 1px 2px rgb(17 24 39 / 0.04), 0 4px 16px -4px rgb(17 24 39 / 0.06);
-  --shadow-pop: 0 4px 8px rgb(17 24 39 / 0.04), 0 20px 40px -12px rgb(17 24 39 / 0.10);
+  --shadow-glow: 0 8px 24px -8px rgb(15 118 110 / 0.24);
+  --shadow-soft: 0 1px 2px rgb(23 43 53 / 0.04), 0 4px 16px -4px rgb(23 43 53 / 0.06);
+  --shadow-pop: 0 4px 8px rgb(23 43 53 / 0.04), 0 20px 40px -12px rgb(23 43 53 / 0.10);
 }
 
 .dark {
-  --background: #0b1220;
-  --foreground: #f9fafb;
+  --background: #101d2a;
+  --foreground: #f4f7f5;
 
-  --card: #111a2e;
-  --card-foreground: #f9fafb;
-  --popover: #111a2e;
-  --popover-foreground: #f9fafb;
+  --card: #172a38;
+  --card-foreground: #f4f7f5;
+  --popover: #172a38;
+  --popover-foreground: #f4f7f5;
 
-  --primary: #3b82f6;
+  --primary: #2dd4bf;
   --primary-foreground: #ffffff;
 
-  --brand: #22c55e;
-  --brand-foreground: #052e16;
+  --brand: #7c3aed;
+  --brand-foreground: #ffffff;
 
-  --success: #22c55e;
-  --success-foreground: #052e16;
+  --success: #0f9f78;
+  --success-foreground: #ffffff;
 
-  --warning: #f59e0b;
-  --warning-foreground: #451a03;
+  --warning: #d97706;
+  --warning-foreground: #ffffff;
 
-  --secondary: #1a2540;
-  --secondary-foreground: #f9fafb;
-  --muted: #1a2540;
-  --muted-foreground: #9ca3af;
-  --accent: #1e2f52;
-  --accent-foreground: #dbeafe;
+  --secondary: #203746;
+  --secondary-foreground: #f4f7f5;
+  --muted: #203746;
+  --muted-foreground: #a8b9bd;
+  --accent: #30264a;
+  --accent-foreground: #e9ddff;
 
-  --destructive: #ef4444;
+  --destructive: #dc5353;
   --destructive-foreground: #ffffff;
 
   --border: rgb(255 255 255 / 0.08);
   --input: rgb(255 255 255 / 0.10);
-  --ring: #3b82f6;
+  --ring: #2dd4bf;
 
-  --sidebar: #0b1220;
-  --sidebar-foreground: #f9fafb;
-  --sidebar-primary: #3b82f6;
+  --sidebar: #101d2a;
+  --sidebar-foreground: #f4f7f5;
+  --sidebar-primary: #2dd4bf;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1a2540;
-  --sidebar-accent-foreground: #f9fafb;
+  --sidebar-accent: #203746;
+  --sidebar-accent-foreground: #f4f7f5;
   --sidebar-border: rgb(255 255 255 / 0.08);
-  --sidebar-ring: #3b82f6;
+  --sidebar-ring: #2dd4bf;
 
-  --gradient-hero: radial-gradient(at 15% 10%, rgb(59 130 246 / 0.18) 0px, transparent 55%),
-    radial-gradient(at 85% 5%, rgb(34 197 94 / 0.12) 0px, transparent 55%),
-    radial-gradient(at 50% 100%, rgb(59 130 246 / 0.10) 0px, transparent 60%);
-  --gradient-soft: linear-gradient(180deg, #0b1220 0%, #111a2e 100%);
+  --gradient-hero: radial-gradient(at 15% 10%, rgb(45 212 191 / 0.18) 0px, transparent 55%),
+    radial-gradient(at 85% 5%, rgb(167 139 250 / 0.14) 0px, transparent 55%),
+    radial-gradient(at 50% 100%, rgb(229 154 85 / 0.10) 0px, transparent 60%);
+  --gradient-soft: linear-gradient(180deg, #101d2a 0%, #172a38 100%);
 
-  --shadow-glow: 0 8px 24px -8px rgb(59 130 246 / 0.45);
+  --shadow-glow: 0 8px 24px -8px rgb(45 212 191 / 0.38);
   --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.4), 0 4px 16px -4px rgb(0 0 0 / 0.4);
   --shadow-pop: 0 4px 8px rgb(0 0 0 / 0.3), 0 20px 40px -12px rgb(0 0 0 / 0.5);
 }
