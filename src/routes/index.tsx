@@ -2,10 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import {
   Heart, Sparkles, Users, MessageCircle, ShieldCheck, HandHeart,
-  BrainCircuit, MapPin, Star, ArrowRight, Check, Building2,
-  Stethoscope, GraduationCap, Utensils, BriefcaseBusiness, BadgeCheck,
-  Globe2, LockKeyhole, Zap, LifeBuoy, CircleDollarSign, BookOpen,
-  Handshake, HeartHandshake,
+  BrainCircuit, MapPin, Star, ArrowRight, Building2,
+  Stethoscope, GraduationCap, BriefcaseBusiness, BadgeCheck,
+  Globe2, LockKeyhole, LifeBuoy, CircleDollarSign, HeartHandshake,
 } from "lucide-react";
 import { FounderPortrait } from "@/components/site/FounderPortrait";
 import { HumanNetwork3D } from "@/components/site/HumanNetwork3D";
