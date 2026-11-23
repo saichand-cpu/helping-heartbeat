@@ -12,7 +12,7 @@ import { openRazorpay, loadRazorpay, type RazorpayResponse } from "@/lib/razorpa
 import { createRazorpaySubscription, verifyRazorpaySubscription, cancelRazorpaySubscription } from "@/lib/razorpay.functions";
 import { SESSION_EXPIRED_MESSAGE, endExpiredSession, isAuthError } from "@/lib/supabase-session";
 
-export type TierKey = "plus" | "volunteer" | "professional" | "ngo" | "business" | "healthcare" | "education" | "csr";
+export type TierKey = "plus" | "creator" | "volunteer" | "professional" | "ngo" | "business" | "business_growth" | "business_pro" | "healthcare" | "education" | "csr";
 
 type PlanCard = {
   key: TierKey;
@@ -26,14 +26,17 @@ type PlanCard = {
 };
 
 const CARDS: PlanCard[] = [
-  { key: "plus", title: "HumanLink Plus", price: 49, planName: "HumanLink Plus", tagline: "More visibility for individuals", perks: ["Enhanced profile", "Priority discovery", "Plus badge"], icon: Users, accent: "neutral" },
-  { key: "volunteer", title: "Volunteer Plus", price: 99, planName: "HumanLink Volunteer Plus", tagline: "Tools for active volunteers", perks: ["Skill badge", "Opportunity matching", "Activity analytics"], icon: HeartHandshake, accent: "green" },
-  { key: "professional", title: "Professional", price: 199, planName: "HumanLink Professional", tagline: "For verified professionals", perks: ["Professional profile", "Service listing", "Priority discovery"], icon: BadgeCheck, accent: "blue" },
-  { key: "ngo", title: "HumanLink NGO", price: 299, planName: "HumanLink NGO", tagline: "For NGOs & charitable organizations", perks: ["NGO verification", "Campaign tools", "Verified NGO badge"], icon: HeartHandshake, accent: "green" },
-  { key: "business", title: "HumanLink Business", price: 599, planName: "HumanLink Business", tagline: "For businesses & service providers", perks: ["Verified business profile", "Promotions & offers", "Business analytics"], icon: BriefcaseBusiness, accent: "gold" },
-  { key: "healthcare", title: "Healthcare Partner", price: 999, planName: "HumanLink Healthcare Partner", tagline: "For hospitals & clinics", perks: ["Verified organization", "Community campaigns", "Outreach analytics"], icon: Stethoscope, accent: "blue" },
-  { key: "education", title: "Education Partner", price: 499, planName: "HumanLink Education Partner", tagline: "For schools & colleges", perks: ["Student volunteering", "Community campaigns", "Impact insights"], icon: GraduationCap, accent: "blue" },
-  { key: "csr", title: "CSR Partner", price: 2499, planName: "HumanLink CSR Partner", tagline: "For corporate CSR programs", perks: ["CSR campaigns", "Employee volunteering", "Impact dashboard"], icon: Building2, accent: "gold" },
+  { key: "plus", title: "Individual Plus", price: 39, planName: "HumanLink Plus", tagline: "More visibility for individuals", perks: ["Enhanced profile", "Priority discovery", "Plus badge"], icon: Users, accent: "neutral" },
+  { key: "creator", title: "Creator", price: 99, planName: "HumanLink Creator", tagline: "For creators and community voices", perks: ["Creator profile tools", "Content insights", "Featured profile eligibility"], icon: BadgeCheck, accent: "gold" },
+  { key: "volunteer", title: "Volunteer Plus", price: 69, planName: "HumanLink Volunteer Plus", tagline: "Tools for active volunteers", perks: ["Skill badge", "Opportunity matching", "Activity analytics"], icon: HeartHandshake, accent: "green" },
+  { key: "professional", title: "Professional", price: 149, planName: "HumanLink Professional", tagline: "For verified professionals", perks: ["Professional profile", "Service listing", "Priority discovery"], icon: BadgeCheck, accent: "blue" },
+  { key: "ngo", title: "NGO Partner", price: 199, planName: "HumanLink NGO", tagline: "For NGOs & charitable organizations", perks: ["NGO verification", "Campaign tools", "Verified NGO badge"], icon: HeartHandshake, accent: "green" },
+  { key: "business", title: "Business Starter", price: 299, planName: "HumanLink Business Starter", tagline: "For small businesses", perks: ["Business profile", "Offers and listings", "Basic performance insights"], icon: BriefcaseBusiness, accent: "gold" },
+  { key: "business_growth", title: "Business Growth", price: 599, planName: "HumanLink Business Growth", tagline: "For growing businesses", perks: ["Everything in Starter", "Promotion campaign tools", "Audience and click insights"], icon: BriefcaseBusiness, accent: "gold" },
+  { key: "business_pro", title: "Business Pro", price: 999, planName: "HumanLink Business Pro", tagline: "For established businesses", perks: ["Everything in Growth", "Multiple campaigns", "Advanced performance reports"], icon: Building2, accent: "gold" },
+  { key: "healthcare", title: "Healthcare Partner", price: 699, planName: "HumanLink Healthcare Partner", tagline: "For hospitals & clinics", perks: ["Verified organization", "Community campaigns", "Outreach analytics"], icon: Stethoscope, accent: "blue" },
+  { key: "education", title: "Education Partner", price: 299, planName: "HumanLink Education Partner", tagline: "For schools & colleges", perks: ["Student volunteering", "Community campaigns", "Impact insights"], icon: GraduationCap, accent: "blue" },
+  { key: "csr", title: "CSR Partner", price: 1499, planName: "HumanLink CSR Partner", tagline: "For corporate CSR programs", perks: ["CSR campaigns", "Employee volunteering", "Impact dashboard"], icon: Building2, accent: "gold" },
 ];
 
 export function RazorpayCheckoutModal({ open, onOpenChange, defaultTier = "plus", onSuccess }: { open: boolean; onOpenChange: (v: boolean) => void; defaultTier?: TierKey; onSuccess?: () => void }) {
@@ -44,7 +47,7 @@ export function RazorpayCheckoutModal({ open, onOpenChange, defaultTier = "plus"
   const cancelPendingSubscription = useServerFn(cancelRazorpaySubscription);
   const [selected, setSelected] = useState<TierKey>(defaultTier);
   const [planIds, setPlanIds] = useState<Record<TierKey, string | null>>({
-    plus: null, volunteer: null, professional: null, ngo: null, business: null, healthcare: null, education: null, csr: null,
+    plus: null, creator: null, volunteer: null, professional: null, ngo: null, business: null, business_growth: null, business_pro: null, healthcare: null, education: null, csr: null,
   });
   const [loading, setLoading] = useState(false);
   const [stage, setStage] = useState<"pick" | "processing" | "done" | "error">("pick");
@@ -61,10 +64,13 @@ export function RazorpayCheckoutModal({ open, onOpenChange, defaultTier = "plus"
       const rows = data ?? [];
       setPlanIds({
         plus: rows.find((r) => r?.name === "HumanLink Plus")?.id ?? null,
+        creator: rows.find((r) => r?.name === "HumanLink Creator")?.id ?? null,
         volunteer: rows.find((r) => r?.name === "HumanLink Volunteer Plus")?.id ?? null,
         professional: rows.find((r) => r?.name === "HumanLink Professional")?.id ?? null,
         ngo: rows.find((r) => r?.name === "HumanLink NGO")?.id ?? null,
-        business: rows.find((r) => r?.name === "HumanLink Business")?.id ?? null,
+        business: rows.find((r) => r?.name === "HumanLink Business Starter")?.id ?? null,
+        business_growth: rows.find((r) => r?.name === "HumanLink Business Growth")?.id ?? null,
+        business_pro: rows.find((r) => r?.name === "HumanLink Business Pro")?.id ?? null,
         healthcare: rows.find((r) => r?.name === "HumanLink Healthcare Partner")?.id ?? null,
         education: rows.find((r) => r?.name === "HumanLink Education Partner")?.id ?? null,
         csr: rows.find((r) => r?.name === "HumanLink CSR Partner")?.id ?? null,
