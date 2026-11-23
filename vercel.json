@@ -14,6 +14,17 @@
       ],
       "destination": "https://www.humanlink.in/:path*",
       "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "helping-heartbeat.vercel.app"
+        }
+      ],
+      "destination": "https://www.humanlink.in/:path*",
+      "permanent": true
     }
   ],
   "headers": [
