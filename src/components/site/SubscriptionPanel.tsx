@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { cancelSubscription } from "@/lib/razorpay.functions";
+import type { TierKey } from "@/components/site/RazorpayCheckoutModal";
 import { RazorpayCheckoutModal } from "./RazorpayCheckoutModal";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -38,7 +39,7 @@ export function SubscriptionPanel() {
   const [sub, setSub] = useState<Subscription | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [openCheckout, setOpenCheckout] = useState<"pro" | "ngo" | null>(null);
+  const [openCheckout, setOpenCheckout] = useState<TierKey | null>(null);
   const [cancelling, setCancelling] = useState(false);
 
   const load = async () => {
@@ -149,7 +150,7 @@ export function SubscriptionPanel() {
           <div className="flex gap-2">
             {isActive ? (
               <>
-                <Button variant="outline" onClick={() => setOpenCheckout(sub?.tier === "ngo" ? "pro" : "pro")}>
+                <Button variant="outline" onClick={() => setOpenCheckout("business_pro")}>
                   Change plan
                 </Button>
                 {!sub?.cancelled_at && (
@@ -165,13 +166,13 @@ export function SubscriptionPanel() {
                   onClick={() => setOpenCheckout("ngo")}
                   className="bg-emerald-500 hover:bg-emerald-500/90 text-black border-0"
                 >
-                  <HeartHandshake className="h-4 w-4 mr-1" /> NGO · ₹299
+                  <HeartHandshake className="h-4 w-4 mr-1" /> NGO · ₹199
                 </Button>
                 <Button
-                  onClick={() => setOpenCheckout("pro")}
+                  onClick={() => setOpenCheckout("business")}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground border-0 shadow-sm"
                 >
-                  <Crown className="h-4 w-4 mr-1" /> Pro · ₹599
+                  <Crown className="h-4 w-4 mr-1" /> Business · ₹299
                 </Button>
               </>
             )}
@@ -218,7 +219,7 @@ export function SubscriptionPanel() {
 
       <RazorpayCheckoutModal
         open={!!openCheckout}
-        defaultTier={openCheckout ?? "pro"}
+        defaultTier={openCheckout ?? "plus"}
         onOpenChange={(v) => !v && setOpenCheckout(null)}
         onSuccess={load}
       />
