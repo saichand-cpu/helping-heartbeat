@@ -7,37 +7,28 @@ type Body = {
   appVersion?: string;
 };
 
-function getClients() {
+function userClient(accessToken: string) {
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
   const publishableKey =
     process.env.SUPABASE_PUBLISHABLE_KEY ||
     process.env.SUPABASE_ANON_KEY ||
     process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
     process.env.VITE_SUPABASE_ANON_KEY;
-  const serviceRoleKey =
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
 
-  if (!url || !publishableKey || !serviceRoleKey) return null;
+  if (!url || !publishableKey) return null;
 
-  return {
-    auth: createClient(url, publishableKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    }),
-    admin: createClient(url, serviceRoleKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    }),
-  };
+  // Device tokens belong to the signed-in user. Keep this operation under
+  // Supabase RLS instead of requiring a service-role key.
+  return createClient(url, publishableKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { headers: { Authorization: `Bearer ${accessToken}` } },
+  });
 }
 
 export const Route = createFileRoute("/api/register-push-token")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const clients = getClients();
-        if (!clients) {
-          return Response.json({ error: "Push registration is not configured." }, { status: 503 });
-        }
-
         const authHeader = request.headers.get("authorization") ?? "";
         const accessToken = authHeader.startsWith("Bearer ")
           ? authHeader.slice(7).trim()
@@ -46,7 +37,12 @@ export const Route = createFileRoute("/api/register-push-token")({
           return Response.json({ error: "Authentication required." }, { status: 401 });
         }
 
-        const { data, error: userError } = await clients.auth.auth.getUser(accessToken);
+        const client = userClient(accessToken);
+        if (!client) {
+          return Response.json({ error: "Push registration is not configured." }, { status: 503 });
+        }
+
+        const { data, error: userError } = await client.auth.getUser(accessToken);
         if (userError || !data.user) {
           return Response.json({ error: "Invalid authentication token." }, { status: 401 });
         }
@@ -64,7 +60,7 @@ export const Route = createFileRoute("/api/register-push-token")({
           return Response.json({ error: "A valid FCM token is required." }, { status: 400 });
         }
 
-        const { error } = await clients.admin.from("mobile_push_tokens").upsert(
+        const { error } = await client.from("mobile_push_tokens").upsert(
           {
             user_id: data.user.id,
             token,
