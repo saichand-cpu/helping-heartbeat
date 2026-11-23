@@ -49,6 +49,8 @@ export const Route = createFileRoute("/api/razorpay-webhook")({
           const update: Record<string, unknown> = { status: "active", cancel_at_period_end: false };
           if (currentStart) update.current_period_start = currentStart;
           if (currentEnd) { update.current_period_end = currentEnd; update.expires_at = currentEnd; }
+          await supabase.from("subscriptions").update({ status: "superseded" })
+            .eq("user_id", sub.user_id).eq("status", "active").neq("id", sub.id);
           await supabase.from("subscriptions").update(update).eq("id", sub.id);
           await supabase.from("profiles").update({ premium_tier: sub.tier }).eq("id", sub.user_id);
         } else if (["subscription.cancelled", "subscription.halted", "subscription.completed"].includes(event)) {
@@ -59,9 +61,17 @@ export const Route = createFileRoute("/api/razorpay-webhook")({
             ...(currentEnd ? { current_period_end: currentEnd, expires_at: currentEnd } : {}),
           }).eq("id", sub.id);
 
-          // Never leave paid entitlements behind after Razorpay confirms the
-          // subscription has ended or been halted.
-          await supabase.from("profiles").update({ premium_tier: "free" }).eq("id", sub.user_id);
+          // Restore another still-active plan if one exists; otherwise return to free.
+          const { data: remaining } = await supabase.from("subscriptions")
+            .select("tier")
+            .eq("user_id", sub.user_id)
+            .eq("status", "active")
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          await supabase.from("profiles")
+            .update({ premium_tier: remaining?.tier ?? "free" })
+            .eq("id", sub.user_id);
         }
 
         return Response.json({ ok: true });

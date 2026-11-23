@@ -236,7 +236,8 @@ export const createRazorpaySubscription = createServerFn({ method: "POST" })
       .from("subscriptions")
       .select("id, razorpay_subscription_id, status, current_period_end, expires_at")
       .eq("user_id", context.userId)
-      .in("status", ["active", "authenticated"])
+      .eq("tier", planKey)
+      .in("status", ["created", "active", "authenticated"])
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -259,7 +260,8 @@ export const createRazorpaySubscription = createServerFn({ method: "POST" })
       plan_id: plan.id,
       plan_name: canonical.name,
       tier: planKey,
-      status: "active",
+      // Do not grant paid access until Razorpay confirms authorization/payment.
+      status: "created",
       razorpay_subscription_id: subscription.id,
       current_period_start: start,
       current_period_end: end,
@@ -301,6 +303,17 @@ export const verifyRazorpaySubscription = createServerFn({ method: "POST" })
     const now = new Date();
     const expiresAt = new Date(now);
     expiresAt.setMonth(expiresAt.getMonth() + 1);
+    // Replace a previous plan only after the new subscription signature is verified.
+    const { error: supersedeErr } = await supabaseAdmin
+      .from("subscriptions")
+      .update({ status: "superseded" })
+      .eq("user_id", context.userId)
+      .eq("status", "active")
+      .neq("id", sub.id);
+    if (supersedeErr) {
+      await log(null, context.userId, "subscription.supersede_failed", "warn", supersedeErr.message);
+    }
+
     const { error: updateErr } = await supabaseAdmin.from("subscriptions").update({
       status: "active",
       current_period_start: now.toISOString(),
