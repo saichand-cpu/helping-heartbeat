@@ -33,7 +33,7 @@ Respond ONLY with valid JSON. No markdown.`;
         ? { "Content-Type": "application/json", Authorization: `Bearer ${gatewayKey}` }
         : { "Content-Type": "application/json", "Lovable-API-Key": lovableKey! },
       body: JSON.stringify({
-        model: gatewayKey ? "openai/gpt-6-luna" : "google/gemini-3-flash-preview",
+        model: gatewayKey ? (process.env.HUMI_MODEL || "openai/gpt-5.6-luna") : "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: system },
           { role: "user", content: data.description },
@@ -67,7 +67,7 @@ export const writeCaption = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => CaptionInput.parse(input))
   .handler(async ({ data }): Promise<{ caption: string }> => {
-    const gatewayKey = process.env.AI_GATEWAY_API_KEY;
+    const gatewayKey = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
     const lovableKey = process.env.LOVABLE_API_KEY;
     if (!gatewayKey && !lovableKey) throw new Error("AI is not configured");
 
@@ -84,7 +84,7 @@ Return ONLY the post text — no quotes, no preamble, no markdown.`;
         ? { "Content-Type": "application/json", Authorization: `Bearer ${gatewayKey}` }
         : { "Content-Type": "application/json", "Lovable-API-Key": lovableKey! },
       body: JSON.stringify({
-        model: gatewayKey ? "openai/gpt-6-luna" : "google/gemini-3-flash-preview",
+        model: gatewayKey ? (process.env.HUMI_MODEL || "openai/gpt-5.6-luna") : "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: system },
           { role: "user", content: data.draft || "(empty draft — write something)" },
